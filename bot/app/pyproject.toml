@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "wzzzz bot"
+version = "0.0.1"
+description = "Wzzzz bot"
+authors = ["Konstantin Klepikov <oformleno@gmail.com>"]
+
+[build-system]
+requires = [
+    "setuptools",
+]
+
+[tool.poetry.dependencies]
+python = "3.10.6"
+python-dotenv = ">=0.20.0"
+passlib = "^1.7.4"
+toml = "^0.10.2"
+aiogram = "2.25.1"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=4.6"
+ipython = "^8.0.0"
+mypy = "^0.931"
+black = "^21.12b0"
+isort = "^5.10.1"
+autoflake = "^1.4"
+flake8 = "^4.0.1"
+pytest-cov = "^3.0.0"
+pytest-asyncio = "^0.20.3"
+
+[tool.poe.tasks]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+asyncio_mode = "auto"

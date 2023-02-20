@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "wzzzz api"
+version = "0.0.1"
+description = "Wzzzz API"
+authors = ["Konstantin Klepikov <oformleno@gmail.com>"]
+
+[build-system]
+requires = [
+    "setuptools",
+]
+
+[tool.poetry.dependencies]
+python = "3.10.6"
+python-dotenv = ">=0.20.0"
+fastapi = "^0.79.1"
+uvicorn = {extras = ["standard"], version = "^0.18.2"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = "^1.7.4"
+toml = "^0.10.2"
+python-multipart = "^0.0.5"
+bcrypt = "^4.0.1"
+motor = "^3.1.1"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=4.6"
+ipython = "^8.0.0"
+mypy = "^0.931"
+black = "^21.12b0"
+isort = "^5.10.1"
+autoflake = "^1.4"
+flake8 = "^4.0.1"
+pytest-cov = "^3.0.0"
+pytest-asyncio = "^0.20.3"
+
+[tool.poe.tasks]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+asyncio_mode = "auto"
