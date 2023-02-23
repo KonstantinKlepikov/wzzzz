@@ -1,6 +1,6 @@
 import toml
 from pydantic import BaseSettings
-from typing import Optional, Type
+from typing import Optional
 
 
 poetry_data = toml.load('pyproject.toml')['tool']['poetry']
@@ -16,7 +16,6 @@ class Settings(BaseSettings):
     test_mongodb_url: Optional[str] = None
     access_token_expires_minites: Optional[int] = None
 
-
     # open-api settings
     title: str = poetry_data['name']
     descriprion: str = poetry_data['description']
@@ -26,7 +25,14 @@ class Settings(BaseSettings):
             "name": "user",
             "description": "Users api",
         },
+        {
+            "name": "check_hhru",
+            "description": "CTest hh.ru OpenAPI endpoint",
+        },
     ]
+
+    size_pool_http: int = 100
+    timeout_aiohttp: int = 2
 
 
 settings = Settings()
