@@ -711,6 +711,22 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-aiohttp"
+version = "1.0.4"
+description = "Pytest plugin for aiohttp support"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+aiohttp = ">=3.8.1"
+pytest = ">=6.1.0"
+pytest-asyncio = ">=0.17.2"
+
+[package.extras]
+testing = ["coverage (==6.2)", "mypy (==0.931)"]
+
+[[package]]
 name = "pytest-asyncio"
 version = "0.20.3"
 description = "Pytest support for asyncio"
@@ -959,7 +975,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.10.6"
-content-hash = "2f98463e7c30465e0c5cd6654a7056b098bf7c591fbb8458f343b7178908fb57"
+content-hash = "4107084dc6b647c8e95fc57967c8337a1cc506938db1efed85f4cb9503424d6b"
 
 [metadata.files]
 aiohttp = [
@@ -1835,6 +1851,10 @@ pymongo = [
 pytest = [
     {file = "pytest-7.2.1-py3-none-any.whl", hash = "sha256:c7c6ca206e93355074ae32f7403e8ea12163b1163c976fee7d4d84027c162be5"},
     {file = "pytest-7.2.1.tar.gz", hash = "sha256:d45e0952f3727241918b8fd0f376f5ff6b301cc0777c6f9a556935c92d8a7d42"},
+]
+pytest-aiohttp = [
+    {file = "pytest-aiohttp-1.0.4.tar.gz", hash = "sha256:39ff3a0d15484c01d1436cbedad575c6eafbf0f57cdf76fb94994c97b5b8c5a4"},
+    {file = "pytest_aiohttp-1.0.4-py3-none-any.whl", hash = "sha256:1d2dc3a304c2be1fd496c0c2fb6b31ab60cd9fc33984f761f951f8ea1eb4ca95"},
 ]
 pytest-asyncio = [
     {file = "pytest-asyncio-0.20.3.tar.gz", hash = "sha256:83cbf01169ce3e8eb71c6c278ccb0574d1a7a3bb8eaaf5e50e0ad342afb33b36"},

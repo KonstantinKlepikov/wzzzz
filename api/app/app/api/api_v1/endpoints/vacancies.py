@@ -8,16 +8,16 @@ router = APIRouter()
 
 
 @router.post(
-    "/check_simple_post",
+    "/",
     status_code=status.HTTP_200_OK,
-    summary='Check simple post',
-    response_description="OK. Request is responsed."
+    summary='Request for vacancyies data',
+    response_description="OK. Requested data."
         )
-async def check_simple_post(request: Request) -> Any:
+async def vacancies(request: Request) -> Any:
     """Test request to hh.ru API
 
     Returns:
         _Any: json response
     """
-    url = "https://api.hh.ru/professional_roles"
-    return await SessionMaker.simple_query(url)
+    url = "https://api.hh.ru/vacancyes"
+    return await SessionMaker.vacancy_query(url, params={})

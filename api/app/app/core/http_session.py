@@ -1,30 +1,29 @@
 from socket import AF_INET
 from typing import Optional, Any
+from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from app.config import settings
-import aiohttp
+from app.schemas.scheme_error import HttpError400
 
 
 class SessionMaker:
     """This class realise aiohttp client session singleton pattern
-    # TODO: test me
     """
-    aiohttp_client: Optional[aiohttp.ClientSession] = None
+    aiohttp_client: Optional[ClientSession] = None
 
     @classmethod
-    def get_aiohttp_client(cls) -> aiohttp.ClientSession:
+    def get_aiohttp_client(cls) -> ClientSession:
         """Get aiohttp client session
 
         Returns:
             ClientSession: client session object
         """
-
         if cls.aiohttp_client is None:
-            timeout = aiohttp.ClientTimeout(total=settings.timeout_aiohttp)
-            connector = aiohttp.TCPConnector(
+            timeout = ClientTimeout(total=settings.timeout_aiohttp)
+            connector = TCPConnector(
                 family=AF_INET,
                 limit_per_host=settings.size_pool_http
                     )
-            cls.aiohttp_client = aiohttp.ClientSession(
+            cls.aiohttp_client = ClientSession(
                 timeout=timeout,
                 connector=connector
                     )
@@ -40,25 +39,20 @@ class SessionMaker:
             cls.aiohttp_client = None
 
     @classmethod
-    async def simple_query(cls, url: str) -> Any:
-        """Test query
+    async def vacancy_query(
+        cls,
+        url: str,
+        params: dict[str, Any]
+            ) -> Any:
 
-        Args:
-            url (str): test query
-
-        Returns:
-            Any: json response
-        """
         client = cls.get_aiohttp_client()
 
-        try:
-            async with client.get(url) as response:
-                if response.status != 200:
-                    return {"ERROR OCCURED" + str(await response.text())}
+        async with client.get(url, params=params) as response:
+            if response.status == 400:
+                raise HttpError400(
+                    detail="Reques parameters error"
+                        )
 
-                json_result = await response.json()
-
-        except Exception as e:
-            return {"ERROR": e}
+            json_result = await response.text()
 
         return json_result
