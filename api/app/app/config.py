@@ -4,6 +4,7 @@ from typing import Optional, Type
 from app.schemas.scheme_error import (
     HttpErrorMessage,
     HttpError400,
+    HttpError404,
     HttpError409
         )
 
@@ -38,6 +39,7 @@ class Settings(BaseSettings):
     ]
     ERRORS: ErrorType = {
         400: {'model': HttpError400},
+        404: {'model': HttpError404},
         409: {'model': HttpError409},
             }
 

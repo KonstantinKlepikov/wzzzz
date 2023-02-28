@@ -1,4 +1,4 @@
-from app.schemas.scheme_response import VacancyResponseScheme
+from app.schemas import VacancyResponseScheme
 
 
 class TestVacancyResponsetData:
@@ -12,10 +12,11 @@ class TestVacancyResponsetData:
 
         scheme = VacancyResponseScheme(**data)
 
-        assert scheme.hhru_id == data['hhru_id'], 'wrong hhru_id'
-        assert scheme.name == data['name'], 'wrong name'
+        assert scheme.vac_id == data['vac_id'], 'wrong hhru_id'
+        assert scheme.professional_roles == data['professional_roles'], \
+            'wrong professional_roles'
         assert scheme.area == data['area'], 'wrong area'
         assert scheme.description == data['description'], 'wrong description'
         assert scheme.key_skills == data['key_skills'], 'wrong key_skills'
         assert scheme.employer == data['employer'], 'wrong employer'
-        assert scheme.alternative_url == data['alternative_url'], 'wrong url'
+        assert scheme.alternate_url == data['alternate_url'], 'wrong url'

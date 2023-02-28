@@ -5,7 +5,7 @@ from app.schemas.constraint import Employment, Schedule
 
 
 class VacancyRequestScheme(BaseModel):
-
+    """Request to hh.ru vacancy API"""
     area: list[int] = []
     text: str
     search_field: list[str]

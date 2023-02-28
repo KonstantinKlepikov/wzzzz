@@ -1,7 +1,8 @@
 from typing import Any
 from fastapi import APIRouter, status
 from fastapi.requests import Request
-from app.core.http_session import SessionMaker
+from app.core import SessionMaker, HhruQueries
+from app.schemas import VacancyRequestScheme, VacanciesResponseScheme
 
 
 router = APIRouter()
@@ -10,14 +11,14 @@ router = APIRouter()
 @router.post(
     "/",
     status_code=status.HTTP_200_OK,
-    summary='Request for vacancyies data',
+    summary='Request for vacancies data',
     response_description="OK. Requested data."
         )
-async def vacancies(request: Request) -> Any:
-    """Test request to hh.ru API
-
-    Returns:
-        _Any: json response
+async def vacancies(request: Request) -> VacanciesResponseScheme:
+    """Request for vacancies data
     """
-    url = "https://api.hh.ru/vacancyes"
-    return await SessionMaker.vacancy_query(url, params={})
+    queries = HhruQueries(SessionMaker, "https://api.hh.ru/vacancies")
+    scheme = VacancyRequestScheme(**VacancyRequestScheme.Config.schema_extra['example']) # FIXME: fixme
+    result = await queries.vacancies_query(scheme)
+
+    return result

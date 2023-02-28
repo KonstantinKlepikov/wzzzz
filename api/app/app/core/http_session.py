@@ -1,8 +1,8 @@
 from socket import AF_INET
 from typing import Optional, Any
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from fastapi import HTTPException
 from app.config import settings
-from app.schemas.scheme_error import HttpError400
 
 
 class SessionMaker:
@@ -39,18 +39,25 @@ class SessionMaker:
             cls.aiohttp_client = None
 
     @classmethod
-    async def vacancy_query(
+    async def vacancies_query(
         cls,
         url: str,
-        params: dict[str, Any]
+        params: Optional[dict[str, Any]] = None
             ) -> Any:
 
         client = cls.get_aiohttp_client()
 
         async with client.get(url, params=params) as response:
             if response.status == 400:
-                raise HttpError400(
+                raise HTTPException(
+                    status_code=400,
                     detail="Reques parameters error"
+                        )
+
+            if response.status == 404:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Resource {url} not found"
                         )
 
             json_result = await response.text()

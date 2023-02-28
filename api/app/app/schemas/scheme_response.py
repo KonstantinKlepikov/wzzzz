@@ -1,23 +1,26 @@
-from pydantic import BaseModel, NonNegativeInt, HttpUrl
+from typing import Optional
+from pydantic import BaseModel, NonNegativeInt, HttpUrl, Field
 
 
 class VacancyResponseScheme(BaseModel):
+    """Response vacancy data
+    """
 
-    hhru_id: NonNegativeInt
-    name: str
-    area: str
-    expirience: str
-    description: str
-    key_skills: list[str]
-    employer: str
-    alternative_url: HttpUrl
+    vac_id: NonNegativeInt
+    professional_roles: list[str] = []
+    area: Optional[str]
+    expirience: Optional[str]
+    description: Optional[str]
+    key_skills: list[str] = []
+    employer: Optional[str]
+    alternate_url: HttpUrl
 
     class Config:
 
         schema_extra = {
                 "example": {
-                    'hhru_id': 76294246,
-                    'name': 'Middle Backend Python программист',
+                    'vac_id': 76294246,
+                    'professional_roles': ['Middle Backend Python программист', ],
                     'area': 'Москва',
                     'expirience': 'От 1 года до 3 лет',
                     'description':
@@ -27,6 +30,33 @@ class VacancyResponseScheme(BaseModel):
                         'Django Framework', 'REST', 'Git', 'SQL'
                         ],
                     'employer': 'Lexicom',
-                    'alternative_url': 'https://hh.ru/vacancy/76294246',
+                    'alternate_url': 'https://hh.ru/vacancy/76294246',
                         }
                     }
+
+class VacanciesResponseScheme(BaseModel):
+    """Vacancies
+    """
+
+    vacancies: list[VacancyResponseScheme]
+
+    class Config:
+
+        schema_extra = {
+                "example":
+                    {'vacancies': [{
+                        'vac_id': 76294246,
+                        'professional_roles': ['Middle Backend Python программист', ],
+                        'area': 'Москва',
+                        'expirience': 'От 1 года до 3 лет',
+                        'description':
+                            'Мы создаем системы искусственного интеллекта',
+                        'key_skills': [
+                            'Python', 'MongoDB', 'Swagger', 'FastAPI',
+                            'Django Framework', 'REST', 'Git', 'SQL'
+                            ],
+                        'employer': 'Lexicom',
+                        'alternate_url': 'https://hh.ru/vacancy/76294246',
+                        }]
+                    }
+                }

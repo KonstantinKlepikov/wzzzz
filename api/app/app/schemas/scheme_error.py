@@ -17,7 +17,6 @@ class HttpErrorMessage(BaseModel):
 class HttpError400(HttpErrorMessage):
     """400 Bad Request
     """
-    status_code: int = 400
 
     class Config:
         schema_extra = {
@@ -27,10 +26,21 @@ class HttpError400(HttpErrorMessage):
             }
 
 
+class HttpError404(HttpErrorMessage):
+    """404 Not Found
+    """
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "detail": "Resource not found",
+            }
+        }
+
+
 class HttpError409(HttpErrorMessage):
     """409 Conflict
     """
-    status_code: int = 409
 
     class Config:
         schema_extra = {
