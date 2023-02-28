@@ -34,7 +34,7 @@ async def test_vacancies_query(
         ) -> None:
     """Test vacancy query
     """
-    result = await session.vacancies_query(
+    result = await session.get_query(
         url='/vacancies',
         params=VacancyRequestScheme.Config.schema_extra['example']
             )

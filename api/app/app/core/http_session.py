@@ -39,7 +39,7 @@ class SessionMaker:
             cls.aiohttp_client = None
 
     @classmethod
-    async def vacancies_query(
+    async def get_query(
         cls,
         url: str,
         params: Optional[dict[str, Any]] = None

@@ -27,11 +27,6 @@ class TestHhruQueries:
     """
 
     @pytest.mark.skip('# TODO: test me')
-    def test_get_vacancy(self, hhruqueries: HhruQueries) -> None:
-        """Test get_vacancy
-        """
-
-    @pytest.mark.skip('# TODO: test me')
     def test_field_to_list(self, hhruqueries: HhruQueries) -> None:
         """Test field_to_list
         """

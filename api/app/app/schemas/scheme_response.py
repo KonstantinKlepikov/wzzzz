@@ -13,7 +13,8 @@ class VacancyResponseScheme(BaseModel):
     description: Optional[str]
     key_skills: list[str] = []
     employer: Optional[str]
-    alternate_url: HttpUrl
+    alternate_url: Optional[HttpUrl] = None
+    url: Optional[HttpUrl] = None
 
     class Config:
 
@@ -31,6 +32,7 @@ class VacancyResponseScheme(BaseModel):
                         ],
                     'employer': 'Lexicom',
                     'alternate_url': 'https://hh.ru/vacancy/76294246',
+                    'url': 'https://api.hh.ru/vacancies/8331228',
                         }
                     }
 
@@ -57,6 +59,7 @@ class VacanciesResponseScheme(BaseModel):
                             ],
                         'employer': 'Lexicom',
                         'alternate_url': 'https://hh.ru/vacancy/76294246',
+                        'url': 'https://api.hh.ru/vacancies/8331228',
                         }]
                     }
                 }
