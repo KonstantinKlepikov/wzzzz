@@ -17,8 +17,8 @@ router = APIRouter()
 async def vacancies(request: Request) -> VacanciesResponseScheme:
     """Request for vacancies data
     """
-    queries = HhruQueries(SessionMaker, "https://api.hh.ru/vacancies")
-    scheme = VacancyRequestScheme(**VacancyRequestScheme.Config.schema_extra['example']) # FIXME: fixme
-    result = await queries.vacancies_query(scheme)
+    params = VacancyRequestScheme(**VacancyRequestScheme.Config.schema_extra['example']) # FIXME: fixme
+    queries = HhruQueries(SessionMaker, "https://api.hh.ru/vacancies", params)
+    result = await queries.vacancies_query()
 
     return result

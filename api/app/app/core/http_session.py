@@ -48,6 +48,7 @@ class SessionMaker:
         client = cls.get_aiohttp_client()
 
         async with client.get(url, params=params) as response:
+            print(response.status)
             if response.status == 400:
                 raise HTTPException(
                     status_code=400,

@@ -4,13 +4,18 @@ from typing import Any
 from aiohttp import web
 from aiohttp.test_utils import TestClient
 from app.core import HhruQueries
+from app.schemas import VacancyRequestScheme
 
 
 @pytest.fixture
 def hhruqueries(session: TestClient) -> HhruQueries:
     """Make queries class
     """
-    q = HhruQueries(session, "https://api.hh.ru/vacancies")
+    q = HhruQueries(
+        session,
+        "https://api.hh.ru/vacancies",
+        VacancyRequestScheme(**VacancyRequestScheme.Config.schema_extra['example'])
+        )
     return q
 
 @pytest.fixture
@@ -36,22 +41,17 @@ class TestHhruQueries:
         """Test get_text
         """
 
-    def test_get_vacancy_item(
+    def test_simple_to_scheme(
         self,
         hhruqueries: HhruQueries,
         hhru_vacancy: dict[str, Any]
             ) -> None:
-        """Test get_vacancy_item
+        """Test simple_to_scheme
         """
-        item = hhruqueries.get_vacancy_item(hhru_vacancy)
+        item = hhruqueries.simple_to_scheme(hhru_vacancy)
         assert item.vac_id == int(hhru_vacancy['id']), 'wrong id'
 
     @pytest.mark.skip('# TODO: test me')
     async def vacancies_query(self, hhruqueries: HhruQueries) -> None:
         """Test vacancies_query
-        """
-
-    @pytest.mark.skip('# TODO: test me')
-    async def go_deeper(self, hhruqueries: HhruQueries) -> None:
-        """Test go_deeper
         """
