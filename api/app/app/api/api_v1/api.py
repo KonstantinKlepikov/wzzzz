@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from app.api.api_v1.endpoints import check_hhru
+from app.api.api_v1.endpoints import vacancies
 
 
 api_router = APIRouter()
 
 
 api_router.include_router(
-    check_hhru.router, prefix="/check_hhru", tags=['check_hhru', ]
+    vacancies.router, prefix="/vacancies", tags=['vacancies', ]
         )

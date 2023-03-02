@@ -22,4 +22,4 @@ ARG INSTALL_DEV=false
 RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install && mypy --install-types --non-interactive ; else poetry install --without dev ; fi"
 
 ENTRYPOINT ["uvicorn"]
-CMD ["app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

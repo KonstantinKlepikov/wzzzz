@@ -1,30 +1,30 @@
+from asyncio import Semaphore, sleep
 from socket import AF_INET
 from typing import Optional, Any
+from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from fastapi import HTTPException
 from app.config import settings
-import aiohttp
 
 
 class SessionMaker:
     """This class realise aiohttp client session singleton pattern
-    # TODO: test me
     """
-    aiohttp_client: Optional[aiohttp.ClientSession] = None
+    aiohttp_client: Optional[ClientSession] = None
 
     @classmethod
-    def get_aiohttp_client(cls) -> aiohttp.ClientSession:
+    def get_aiohttp_client(cls) -> ClientSession:
         """Get aiohttp client session
 
         Returns:
             ClientSession: client session object
         """
-
         if cls.aiohttp_client is None:
-            timeout = aiohttp.ClientTimeout(total=settings.timeout_aiohttp)
-            connector = aiohttp.TCPConnector(
+            timeout = ClientTimeout(total=settings.timeout_aiohttp)
+            connector = TCPConnector(
                 family=AF_INET,
                 limit_per_host=settings.size_pool_http
                     )
-            cls.aiohttp_client = aiohttp.ClientSession(
+            cls.aiohttp_client = ClientSession(
                 timeout=timeout,
                 connector=connector
                     )
@@ -40,25 +40,57 @@ class SessionMaker:
             cls.aiohttp_client = None
 
     @classmethod
-    async def simple_query(cls, url: str) -> Any:
-        """Test query
+    async def _get(
+        cls,
+        client: ClientSession,
+        url: str,
+        params: Optional[dict[str, Any]] = None,
+            ) -> dict[str, Any]:
+        async with client.get(url, params=params) as response:
+            if response.status == 400:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Reques parameters error"
+                        )
 
-        Args:
-            url (str): test query
+            if response.status == 404:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Resource {url} not found"
+                        )
 
-        Returns:
-            Any: json response
-        """
+            if response.status == 429:
+                raise HTTPException(
+                    status_code=429,
+                    detail="To Many Requests"
+                        )
+
+            return await response.json()
+
+    @classmethod
+    async def get_query(
+        cls,
+        url: str,
+        params: Optional[dict[str, Any]] = None,
+        sem: Optional[Semaphore] = None,
+            ) -> dict[str, Any]:
+
         client = cls.get_aiohttp_client()
 
-        try:
-            async with client.get(url) as response:
-                if response.status != 200:
-                    return {"ERROR OCCURED" + str(await response.text())}
+        if sem:
+            async with sem:
 
-                json_result = await response.json()
+                result = await cls._get(
+                    client=client,
+                    url=url,
+                    params=params
+                        )
+                await sleep(settings.query_sleep)
+        else:
+            result = await cls._get(
+                client=client,
+                url=url,
+                params=params
+                    )
 
-        except Exception as e:
-            return {"ERROR": e}
-
-        return json_result
+        return result

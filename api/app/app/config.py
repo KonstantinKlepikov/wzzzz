@@ -1,8 +1,16 @@
 import toml
 from pydantic import BaseSettings
-from typing import Optional
+from typing import Optional, Type
+from app.schemas.scheme_error import (
+    HttpErrorMessage,
+    HttpError400,
+    HttpError404,
+    HttpError409,
+    HttpError429,
+        )
 
 
+ErrorType = dict[int, dict[str, Type[HttpErrorMessage]]]
 poetry_data = toml.load('pyproject.toml')['tool']['poetry']
 
 
@@ -26,13 +34,20 @@ class Settings(BaseSettings):
             "description": "Users api",
         },
         {
-            "name": "check_hhru",
-            "description": "CTest hh.ru OpenAPI endpoint",
+            "name": "vacancies",
+            "description": "Transformed vacancies data from hh.ru",
         },
     ]
+    ERRORS: ErrorType = {
+        400: {'model': HttpError400},
+        404: {'model': HttpError404},
+        409: {'model': HttpError409},
+        429: {'model': HttpError429}
+            }
 
     size_pool_http: int = 100
     timeout_aiohttp: int = 2
+    query_sleep: float = 0.05
 
 
 settings = Settings()
