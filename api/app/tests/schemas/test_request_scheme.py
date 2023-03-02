@@ -11,7 +11,6 @@ class TestVacancyRequestData:
         """Test VacancyRequestScheme fill
         """
         data = VacancyRequestScheme.Config.schema_extra['example']
-
         scheme = VacancyRequestScheme(**data)
 
         assert scheme.area == data['area'], 'wrong area'

@@ -5,7 +5,8 @@ from app.schemas.scheme_error import (
     HttpErrorMessage,
     HttpError400,
     HttpError404,
-    HttpError409
+    HttpError409,
+    HttpError429,
         )
 
 
@@ -34,17 +35,19 @@ class Settings(BaseSettings):
         },
         {
             "name": "vacancies",
-            "description": "Get vacancy from hh.ru",
+            "description": "Transformed vacancies data from hh.ru",
         },
     ]
     ERRORS: ErrorType = {
         400: {'model': HttpError400},
         404: {'model': HttpError404},
         409: {'model': HttpError409},
+        429: {'model': HttpError429}
             }
 
     size_pool_http: int = 100
     timeout_aiohttp: int = 2
+    query_sleep: float = 0.05
 
 
 settings = Settings()

@@ -12,7 +12,9 @@ async def hhru_vacancy(request: web.Request) -> web.Response:
     """
     with open('./tests/core/vac_resp.json', 'r') as f:
         data = json.loads(f.read())
-    return web.Response(text=json.dumps(data, ensure_ascii=False))
+    return web.Response(text=json.dumps(
+        data, ensure_ascii=False), content_type='application/json'
+            )
 
 
 @pytest.fixture

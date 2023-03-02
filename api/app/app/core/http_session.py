@@ -1,3 +1,4 @@
+from asyncio import Semaphore, sleep
 from socket import AF_INET
 from typing import Optional, Any
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
@@ -39,16 +40,13 @@ class SessionMaker:
             cls.aiohttp_client = None
 
     @classmethod
-    async def get_query(
+    async def _get(
         cls,
+        client: ClientSession,
         url: str,
-        params: Optional[dict[str, Any]] = None
-            ) -> Any:
-
-        client = cls.get_aiohttp_client()
-
+        params: Optional[dict[str, Any]] = None,
+            ) -> dict[str, Any]:
         async with client.get(url, params=params) as response:
-            print(response.status)
             if response.status == 400:
                 raise HTTPException(
                     status_code=400,
@@ -61,6 +59,38 @@ class SessionMaker:
                     detail=f"Resource {url} not found"
                         )
 
-            json_result = await response.text()
+            if response.status == 429:
+                raise HTTPException(
+                    status_code=429,
+                    detail="To Many Requests"
+                        )
 
-        return json_result
+            return await response.json()
+
+    @classmethod
+    async def get_query(
+        cls,
+        url: str,
+        params: Optional[dict[str, Any]] = None,
+        sem: Optional[Semaphore] = None,
+            ) -> dict[str, Any]:
+
+        client = cls.get_aiohttp_client()
+
+        if sem:
+            async with sem:
+
+                result = await cls._get(
+                    client=client,
+                    url=url,
+                    params=params
+                        )
+                await sleep(settings.query_sleep)
+        else:
+            result = await cls._get(
+                client=client,
+                url=url,
+                params=params
+                    )
+
+        return result

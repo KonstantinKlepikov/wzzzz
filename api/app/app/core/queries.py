@@ -1,14 +1,14 @@
 import json
 import asyncio
+from asyncio import Semaphore
 from copy import copy
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
-from app.schemas import (
-    VacancyRequestScheme,
-    VacancyResponseScheme,
-    VacanciesResponseScheme,
-        )
+from app.schemas import VacancyRequestScheme
+
+
+VacancyRaw: TypeAlias = dict[str, Any]
 
 
 class HhruQueries:
@@ -23,113 +23,183 @@ class HhruQueries:
             ) -> None:
         self.session = session
         self.url = url
-        self.params = json.loads(params.json()) #TODO: fixme. Here form dict returns dt, but need srt
+        self.params = json.loads(params.json())
+        # TODO: fixme. Here form dict returns dt, but need srt
 
     @staticmethod
-    def field_to_list(x) -> list[str]:
+    def _field_to_list(x: Optional[list[VacancyRaw] | VacancyRaw]) -> list[Any]:
+        """Make list ov values from response field
+
+        Args:
+            x (VacancyRaw): vacancy raw
+
+        Returns:
+            list[Any]: transformed data
+        """
         if x:
             if isinstance(x[0], dict):
                 items = [i['name'] for i in x]
                 return items
             else:
                 return [x, ]
-        else: return []
+        return []
 
     @staticmethod
-    def get_text(x) -> str:
+    def _field_to_value(x: Optional[VacancyRaw]) -> Optional[Any]:
+        """Get value from response field
+
+        Args:
+            x (VacancyRaw): vacancy raw
+
+        Returns:
+            Any: transformed data
+        """
+        if x:
+            if isinstance(x, dict):
+                return x.get('name')
+            return x
+        return None
+
+    @staticmethod
+    def _html_to_text(x: Optional[str]) -> Optional[str]:
+        """Transform html to text
+
+        Args:
+            x (str): html text
+
+        Returns:
+            str: text without tags
+        """
         if x:
             soup = bs(x, features="html.parser")
             text = soup.get_text()
             return text
-        else: return ''
+        return None
 
-    def simple_to_scheme(self, item: dict[str, Any]) -> VacancyResponseScheme:
-        """Get vacancy scheme
+    def _simple_to_dict(self, item: VacancyRaw) -> VacancyRaw:
+        """Get simple vacancy dict
 
         Args:
-            vacancy (dict[str, Any]): _description_
+            item (VacancyRaw): vacancy raw
 
         Returns:
-            dict[str, Any]: _description_
+            VacancyRaw: transformed vacancy raw
         """
         result = {}
-        result['vac_id'] = item['id']
         for field in ['area', 'employer', ]:
-            result[field] = item[field]['name']
-        result['alternate_url'] = item['alternate_url']
-        result['url'] = item['url']
-        return VacancyResponseScheme(**result)
+            result[field] = self._field_to_value(item.get(field))
+        result['alternate_url'] = item.get('alternate_url')
+        result['url'] = item.get('url')
+        return result
 
+    def _deeper_to_dict(self, item: VacancyRaw) -> VacancyRaw:
+        """Get deeper vacancy dict
 
-    def deeper_to_scheme(self) -> VacancyResponseScheme:
-        """_summary_
+        Args:
+            item (VacancyRaw): vacancy raw
 
         Returns:
-            VacancyResponseScheme: _description_
+            VacancyRaw: transformed vacancy raw
         """
+        result = {}
+        result['experience'] = self._field_to_value(item.get('experience'))
+        for field in ['professional_roles', 'key_skills', ]:
+            result[field] = self._field_to_list(item.get(field))
+        result['description'] = self._html_to_text(item.get('description'))
+        return result
 
-
-    async def make_simple_requests(self, entry):
+    async def _make_simple_requests(
+        self,
+        result: VacancyRaw,
+        sem: Optional[Semaphore] = None,
+            ) -> list[VacancyRaw]:
 
         tasks = []
 
-        for page in range(1, entry['pages'] + 1):
+        for page in range(1, result['pages'] + 1):
             p = copy(self.params)
             p['page'] = page
             tasks.append(asyncio.create_task(
-                self.session.get_query(self.url, p)
+                self.session.get_query(url=self.url, params=p, sem=sem)
                     ))
 
-        for task in tasks:
-            await task
+        await asyncio.wait(tasks)
+        return [result, ] + [task.result() for task in tasks]
 
-        return [task.result() for task in tasks]
-
-
-    async def make_deeper_requests(self, entry):
+    async def _make_deeper_requests(
+        self,
+        result: dict[int, VacancyRaw],
+        sem: Optional[Semaphore] = None,
+            ) -> list[VacancyRaw]:
 
         tasks = []
 
-        for page in entry:
-            if page.url:
+        for page in result.values():
+            if page.get('url'):
                 tasks.append(asyncio.create_task(
-                    self.session.get_query(page.url)
+                    self.session.get_query(url=page['url'], sem=sem)
                         ))
 
-        for task in tasks:
-            await task
-
+        await asyncio.wait(tasks)
         return [task.result() for task in tasks]
 
-
-    async def vacancies_query(self) -> VacanciesResponseScheme:
-        """Request for vacancies
+    def _make_simple_result(
+        self,
+        result: list[VacancyRaw]
+            ) -> dict[int, VacancyRaw]:
+        """Make simple result from list of transformed response data
 
         Args:
-            request_scheme (VacanciesResponseScheme): request scheme
+            result (list[VacancyRaw]): transformed response data
 
         Returns:
-            VacancyResponseScheme: response scheme
+            dict[int, VacancyRaw]: transformed data
         """
-        entry = await self.session.get_query(self.url, self.params)
-
-        result = await self.make_simple_requests(json.loads(entry))
-
-        result = [
-            self.simple_to_scheme(i)
+        return {
+            i['id']: self._simple_to_dict(i)
             for r in result
-            for i in json.loads(r)['items']
-                ]
+            for i in r['items']
+                }
 
-        # result2 = []
-        # tasks = []
-        # for page in result:
-        #     if page.url:
-        #         tasks.append(asyncio.create_task(
-        #             self.go_simple(result2, page.url)
-        #                 ))
+    def _make_deeper_result(
+        self,
+        result: list[VacancyRaw]
+            ) -> dict[int, VacancyRaw]:
+        """Make deeper result from list of transformed response data
 
-        # for task in tasks:
-        #     await task
+        Args:
+            result (list[VacancyRaw]): transformed response data
 
-        return VacanciesResponseScheme(vacancies=result)
+        Returns:
+            dict[int, VacancyRaw]: transformed data
+        """
+        return {r['id']: self._deeper_to_dict(r) for r in result}
+
+    @staticmethod
+    def _update(
+        simple: dict[int, VacancyRaw],
+        deeper: dict[int, VacancyRaw]
+            ) -> dict[int, VacancyRaw]:
+        for key in simple.keys():
+            if deeper.get(key):
+                simple[key].update(deeper[key])
+        return simple
+
+    async def vacancies_query(self) -> VacancyRaw:
+        """Request for vacancies
+
+        Returns:
+            VacancyRaw:: transformed response data
+        """
+        semaphore = Semaphore(10)
+        entry = await self.session.get_query(
+            url=self.url,
+            params=self.params,
+            sem=semaphore
+                )
+        simple = await self._make_simple_requests(entry, semaphore)
+        simple = self._make_simple_result(simple)
+        deeper = await self._make_deeper_requests(simple, semaphore)
+        deeper = self._make_deeper_result(deeper)
+
+        return self._update(simple, deeper)

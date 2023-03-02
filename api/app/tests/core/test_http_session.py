@@ -38,4 +38,4 @@ async def test_vacancies_query(
         url='/vacancies',
         params=VacancyRequestScheme.Config.schema_extra['example']
             )
-    assert 'Секретарь' in result, 'wrong result'
+    assert result['per_page'] == 1, 'wrong result'
