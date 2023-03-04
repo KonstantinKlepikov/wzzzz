@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 from fastapi.requests import Request
 from app.core import SessionMaker, HhruQueries
 from app.schemas import VacancyRequestScheme, Vacancies
@@ -6,6 +6,18 @@ from app.config import settings
 
 
 router = APIRouter()
+
+
+@router.get(
+    "/test",
+    status_code=status.HTTP_200_OK,
+    summary='Test data',
+    response_description="OK",
+    responses=settings.ERRORS
+        )
+async def get_test() -> None:
+    """Test request
+    """
 
 
 @router.post(

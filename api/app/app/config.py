@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # db settings
     mongodb_url: str
-    db_name: str = 'prod-db'
+    db_name: str
     test_mongodb_url: Optional[str] = None
     access_token_expires_minites: Optional[int] = None
 
