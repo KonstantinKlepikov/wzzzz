@@ -1,1 +1,1 @@
-from app.db.init_db import BdContext, db_on_start_up
+from app.db.init_db import get_client, get_session

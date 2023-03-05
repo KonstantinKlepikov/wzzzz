@@ -1,11 +1,9 @@
 import pytest
 from typing import Generator
 from fastapi.testclient import TestClient
-from app.config import settings
-from app.main import app, db_on_start_up
-
-
 from motor.motor_asyncio import AsyncIOMotorClient
+from app.config import settings
+from app.main import app
 
 
 class BdTestContext:
@@ -21,18 +19,9 @@ class BdTestContext:
         self.client.close()
 
 
-async def test_db_on_start_up():
-    async with BdTestContext(settings.test_mongodb_url, 'test-db') as cont:
-        global db
-        db = cont[settings.db_name]
-
-
-app.dependency_overrides[db_on_start_up] = test_db_on_start_up
-
-
 @pytest.fixture(scope="function")
-async def client() -> Generator:
-    async with TestClient(app) as c:
+def client() -> Generator:
+    with TestClient(app) as c:
         yield c
 
 
