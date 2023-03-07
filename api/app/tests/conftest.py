@@ -5,7 +5,12 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.config import settings
 from app.main import app
 from app.crud.crud_vacancy import CRUDVacancies
-from app.schemas import VacancyDb
+from app.crud.crud_template import CRUDTemplate
+from app.schemas import (
+    VacancyResponseSchemeDb,
+    TemplateNameScheme,
+    VacancyConstraintsScheme,
+        )
 from app.schemas.constraint import Collections
 
 
@@ -41,11 +46,19 @@ async def db() -> Generator:
             await db.create_collection(collection)
             if collection == Collections.VACANCIES:
                 await db[collection].create_index('v_id', unique=True)
+            if collection == Collections.TEMPLATES.value:
+                await db[collection].create_index('name', unique=True)
 
+        # fill vacancies
         collection = db[Collections.VACANCIES.value]
-        one = VacancyDb.Config.schema_extra['example']
+        one = VacancyResponseSchemeDb.Config.schema_extra['example']
         another = {'v_id': 654321}
         await collection.insert_many([one, another])
+
+        # fill template
+        collection = db[Collections.TEMPLATES.value]
+        one = TemplateNameScheme.Config.schema_extra['example']
+        await collection.insert_one(one)
         yield db
 
 
@@ -54,7 +67,18 @@ async def crud_vacancy() -> CRUDVacancies:
     """Get crud vacancies
     """
     return CRUDVacancies(
-        schema=VacancyDb,
+        schema=VacancyResponseSchemeDb,
         col_name=Collections.VACANCIES.value,
+        db_name=DB_NAME
+            )
+
+
+@pytest.fixture(scope="function")
+async def crud_template() -> CRUDTemplate:
+    """Get crud template
+    """
+    return CRUDTemplate(
+        schema=VacancyConstraintsScheme,
+        col_name=Collections.TEMPLATES.value,
         db_name=DB_NAME
             )

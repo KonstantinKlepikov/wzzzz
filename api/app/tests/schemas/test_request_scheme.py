@@ -22,6 +22,7 @@ class TestVacancyRequestData:
         assert scheme.date_from == date(2022, 6, 1), 'wrong date'
         assert scheme.page == data['page'], 'wrong per page'
         assert scheme.per_page == data['per_page'], 'wrong per page'
+        assert scheme.expirience == data['expirience'], 'wrong expirience'
 
         result = scheme.json()
 

@@ -32,6 +32,9 @@ async def create_collections() -> None:
             if collection == Collections.VACANCIES:
                 await client[settings.db_name][collection] \
                     .create_index('v_id', unique=True)
+            if collection == Collections.TEMPLATES.value:
+                await client[settings.db_name][collection] \
+                    .create_index('name', unique=True)
         except CollectionInvalid:
             continue
 
