@@ -1,4 +1,4 @@
-from app.schemas import Vacancy
+from app.schemas import VacancyResponseScheme
 
 class TestVacancyResponsetData:
     """Test response schemas
@@ -7,8 +7,8 @@ class TestVacancyResponsetData:
     def test_full_fill_response(self):
         """Test VacancyResponseScheme fill
         """
-        data = Vacancy.Config.schema_extra['example']
-        scheme = Vacancy(**data)
+        data = VacancyResponseScheme.Config.schema_extra['example']
+        scheme = VacancyResponseScheme(**data)
 
         assert scheme.professional_roles == data['professional_roles'], \
             'wrong professional_roles'

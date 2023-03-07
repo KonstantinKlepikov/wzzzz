@@ -13,6 +13,13 @@ class BaseEnum(str, Enum):
         return [e.value for e in cls]
 
 
+class Expirience(BaseEnum):
+    NO = 'noExperience'
+    B1TO3= 'between1And3'
+    B3TO6 = 'between3And6'
+    MORE6 = 'moreThan6'
+
+
 class Employment(BaseEnum):
     FULL = 'full'
     PART = 'part'
@@ -31,3 +38,4 @@ class Schedule(BaseEnum):
 
 class Collections(BaseEnum):
     VACANCIES = 'vacancies'
+    TEMPLATES = 'templates'

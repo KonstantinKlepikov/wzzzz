@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, NonNegativeInt, HttpUrl
+from app.schemas import VacancyConstraintsScheme
 
 
 class VacancyId(BaseModel):
@@ -16,7 +17,7 @@ class VacancyId(BaseModel):
                     }
 
 
-class Vacancy(BaseModel):
+class VacancyResponseScheme(BaseModel):
     """Response vacancy data
     """
     professional_roles: list[str] = []
@@ -46,7 +47,7 @@ class Vacancy(BaseModel):
                     }
 
 
-class VacancyDb(VacancyId, Vacancy):
+class VacancyResponseSchemeDb(VacancyId, VacancyResponseScheme):
     """Vacancy in db
     """
 
@@ -70,11 +71,11 @@ class VacancyDb(VacancyId, Vacancy):
                 }
 
 
-class Vacancies(BaseModel):
+class VacanciesResponseScheme(BaseModel):
     """Vacancies
     """
 
-    vacancies: dict[NonNegativeInt, Vacancy]
+    vacancies: dict[NonNegativeInt, VacancyResponseScheme]
 
     class Config:
 
@@ -97,5 +98,50 @@ class Vacancies(BaseModel):
                             'alternate_url': 'https://hh.ru/vacancy/76294246',
                                 },
                             }
+                        }
+                    }
+
+
+class TemplateNameScheme(BaseModel):
+    """Template name
+    """
+    name: str
+
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'name': 'my_template'
+                        }
+                    }
+
+
+class TemplateNamesScheme(BaseModel):
+    """List of templates names
+    """
+    names: list[TemplateNameScheme] = []
+
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'names': {
+                        'name': 'my_template'
+                            }
+                        }
+                    }
+
+
+class TemplateResponseScheme(TemplateNameScheme):
+    """Template response
+    """
+    constraints: VacancyConstraintsScheme
+
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'name': 'my_template',
+                    'constarints': VacancyConstraintsScheme.Config.schema_extra['example']
                         }
                     }

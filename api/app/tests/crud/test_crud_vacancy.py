@@ -3,7 +3,7 @@ from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from app.crud.crud_vacancy import CRUDVacancies
-from app.schemas import VacancyDb
+from app.schemas import VacancyResponseSchemeDb
 from app.schemas.constraint import Collections
 
 
@@ -18,7 +18,7 @@ class TestCRUDVacancy:
             ) -> None:
         """Test crud vacancy get by id
         """
-        data = VacancyDb.Config.schema_extra['example']
+        data = VacancyResponseSchemeDb.Config.schema_extra['example']
         vacancy = await crud_vacancy.get(db, {'v_id': data['v_id']})
         assert isinstance(vacancy, dict), 'wrong result type'
         assert vacancy['v_id'] == data['v_id'], 'wrong geted data'
@@ -43,7 +43,7 @@ class TestCRUDVacancy:
             ) -> None:
         """Test vacancy create
         """
-        result = await crud_vacancy.create(db, VacancyDb(v_id=444555))
+        result = await crud_vacancy.create(db, VacancyResponseSchemeDb(v_id=444555))
         assert isinstance(result, InsertOneResult), 'wrong result'
         assert result.inserted_id, 'result hasnt _id'
         result = await db[Collections.VACANCIES.value].count_documents({})
@@ -57,7 +57,7 @@ class TestCRUDVacancy:
         """Test vacancy raise error if vacancy id isnt unique
         """
         with pytest.raises(DuplicateKeyError) as e:
-            await crud_vacancy.create(db, VacancyDb(v_id=123456))
+            await crud_vacancy.create(db, VacancyResponseSchemeDb(v_id=123456))
             assert 'duplicate key error collection' in e.value.detail, 'wrong error'
 
     async def test_crud_vacancy_replace(
@@ -67,19 +67,31 @@ class TestCRUDVacancy:
             ) -> None:
         """Test vacancy replace
         """
-        result = await crud_vacancy.replace(db, {'v_id': 123456}, VacancyDb(v_id=999999))
+        result = await crud_vacancy.replace(
+            db,
+            {'v_id': 123456},
+            VacancyResponseSchemeDb(v_id=999999)
+                )
         assert isinstance(result, UpdateResult), 'wrong result'
         assert result.matched_count == 1, 'wrong matched count'
         assert result.modified_count == 1, 'wrong updated count'
         result = await db[Collections.VACANCIES.value].count_documents({})
         assert result == 2, 'wrong replace'
 
-        result = await crud_vacancy.replace(db, {'v_id': 555555}, VacancyDb(v_id=999999))
+        result = await crud_vacancy.replace(
+            db,
+            {'v_id': 555555},
+            VacancyResponseSchemeDb(v_id=999999)
+                )
         assert result.matched_count == 0, 'wrong matched count'
         assert result.modified_count == 0, 'wrong updated count'
 
         with pytest.raises(DuplicateKeyError) as e:
-            await crud_vacancy.replace(db, {'v_id': 999999}, VacancyDb(v_id=654321))
+            await crud_vacancy.replace(
+                db,
+                {'v_id': 999999},
+                VacancyResponseSchemeDb(v_id=654321)
+                    )
             assert 'duplicate key error collection' in e.value.detail, 'wrong error'
 
     async def test_crud_vacancy_delete(

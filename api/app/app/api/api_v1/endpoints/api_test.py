@@ -13,7 +13,7 @@ router = APIRouter()
     summary='Test data',
     response_description="OK",
         )
-async def get_db_name(session: ClientSession = Depends(get_session)) -> None:
+async def get_db_name(db: ClientSession = Depends(get_session)) -> None:
     """Test request
     """
-    return {'name': session.client[settings.db_name].name}
+    return {'name': db.client[settings.db_name].name}
