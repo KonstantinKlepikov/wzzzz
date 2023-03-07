@@ -1,6 +1,8 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 from fastapi.requests import Request
+from pymongo.client_session import ClientSession
 from app.core import SessionMaker, HhruQueries
+from app.db.init_db import get_session
 from app.schemas import VacancyRequestScheme, Vacancies
 from app.config import settings
 
