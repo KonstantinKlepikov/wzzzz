@@ -10,18 +10,6 @@ from app.config import settings
 router = APIRouter()
 
 
-@router.get(
-    "/test",
-    status_code=status.HTTP_200_OK,
-    summary='Test data',
-    response_description="OK",
-        )
-async def get_test(session: ClientSession = Depends(get_session)) -> None:
-    """Test request
-    """
-    return {'name': session.client[settings.db_name].name}
-
-
 @router.post(
     "/",
     status_code=status.HTTP_200_OK,

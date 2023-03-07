@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.api_v1.api import api_router
 from app.core import SessionMaker
+from app.db import create_collections
 
 
 async def aio_on_start_up() -> None:
@@ -23,7 +24,7 @@ app = FastAPI(
     version=settings.version,
     openapi_tags=settings.openapi_tags,
     swagger_ui_parameters={"defaultModelsExpandDepth": -1},
-    on_startup=[aio_on_start_up],
+    on_startup=[aio_on_start_up, create_collections],
     on_shutdown=[aio_on_shutdown],
         )
 

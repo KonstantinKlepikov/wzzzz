@@ -25,9 +25,9 @@ class TestDB:
             db = cont[settings.db_name]
             assert db.name == 'dev-db', 'wrong dev db'
 
-    def test_test_db_connection(self, connection: Generator) -> None:
+    def test_test_db_connection(self, db: Generator) -> None:
         """Test dev db is available
         """
         with BdTestContext(settings.test_mongodb_url) as cont:
             db = cont['test-db']
-            assert connection.name == 'test-db', 'wrong dev db'
+            assert db.name == 'test-db', 'wrong dev db'
