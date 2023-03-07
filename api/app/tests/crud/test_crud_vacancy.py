@@ -1,7 +1,7 @@
 import pytest
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
-from pymongo.results import InsertOneResult, DeleteResult
+from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from app.crud.crud_vacancy import CRUDVacancies
 from app.schemas import VacancyDb
 from app.schemas.constraint import Collections
@@ -60,14 +60,40 @@ class TestCRUDVacancy:
             await crud_vacancy.create(db, VacancyDb(v_id=123456))
             assert 'duplicate key error collection' in e.value.detail, 'wrong error'
 
-    async def test_crud_vacancy_remove(
+    async def test_crud_vacancy_replace(
         self,
         db: ClientSession,
         crud_vacancy: CRUDVacancies
             ) -> None:
-        """Test vacancy remove
+        """Test vacancy replace
         """
-        result = await crud_vacancy.remove(db, {'v_id': 123456})
-        assert isinstance(result, DeleteResult), 'wrong result'
+        result = await crud_vacancy.replace(db, {'v_id': 123456}, VacancyDb(v_id=999999))
+        assert isinstance(result, UpdateResult), 'wrong result'
+        assert result.matched_count == 1, 'wrong matched count'
+        assert result.modified_count == 1, 'wrong updated count'
         result = await db[Collections.VACANCIES.value].count_documents({})
-        assert result == 1, 'not added'
+        assert result == 2, 'wrong replace'
+
+        result = await crud_vacancy.replace(db, {'v_id': 555555}, VacancyDb(v_id=999999))
+        assert result.matched_count == 0, 'wrong matched count'
+        assert result.modified_count == 0, 'wrong updated count'
+
+        with pytest.raises(DuplicateKeyError) as e:
+            await crud_vacancy.replace(db, {'v_id': 999999}, VacancyDb(v_id=654321))
+            assert 'duplicate key error collection' in e.value.detail, 'wrong error'
+
+    async def test_crud_vacancy_delete(
+        self,
+        db: ClientSession,
+        crud_vacancy: CRUDVacancies
+            ) -> None:
+        """Test vacancy delete
+        """
+        result = await crud_vacancy.delete(db, {'v_id': 123456})
+        assert isinstance(result, DeleteResult), 'wrong result'
+        assert result.deleted_count == 1, 'wrong matched count'
+        result = await db[Collections.VACANCIES.value].count_documents({})
+        assert result == 1, 'not removed'
+
+        result = await crud_vacancy.delete(db, {'v_id': 555555})
+        assert result.deleted_count == 0, 'wrong matched count'

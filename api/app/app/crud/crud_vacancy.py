@@ -1,4 +1,3 @@
-from bson.objectid import ObjectId
 from app.config import settings
 from app.crud import CRUDBase
 from app.schemas import VacancyDb

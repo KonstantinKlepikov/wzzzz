@@ -1,9 +1,7 @@
 import pytest
-import copy
 from typing import Generator
 from fastapi.testclient import TestClient
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.errors import BulkWriteError
 from app.config import settings
 from app.main import app
 from app.crud.crud_vacancy import CRUDVacancies

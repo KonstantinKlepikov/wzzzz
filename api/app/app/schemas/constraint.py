@@ -28,5 +28,6 @@ class Schedule(BaseEnum):
     REMOTE = 'remote'
     FLY = 'lyInFlyOut'
 
+
 class Collections(BaseEnum):
     VACANCIES = 'vacancies'
