@@ -1,7 +1,7 @@
 from aiohttp.test_utils import TestClient
 from yarl import URL
 from app.core import SessionMaker
-from app.schemas import VacancyRequestScheme
+from app.schemas import VacancyRequest
 
 
 async def test_aiohttp_client(
@@ -36,6 +36,6 @@ async def test_vacancies_query(
     """
     result = await session.get_query(
         url='/vacancies',
-        params=VacancyRequestScheme.Config.schema_extra['example']
+        params=VacancyRequest.Config.schema_extra['example']
             )
     assert result['per_page'] == 1, 'wrong result'

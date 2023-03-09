@@ -1,5 +1,6 @@
 from typing import Generator
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import ASCENDING
 from pymongo.client_session import ClientSession
 from pymongo.errors import CollectionInvalid
 from fastapi.logger import logger as fastAPI_logger
@@ -34,7 +35,13 @@ async def create_collections() -> None:
                     .create_index('v_id', unique=True)
             if collection == Collections.TEMPLATES.value:
                 await client[settings.db_name][collection] \
-                    .create_index('name', unique=True)
+                    .create_index(
+                        [('name', ASCENDING), ('user', ASCENDING), ],
+                        unique=True
+                            )
+            if collection == Collections.USERS.value:
+                await client[settings.db_name][collection] \
+                    .create_index('login', unique=True)
         except CollectionInvalid:
             continue
 

@@ -15,7 +15,7 @@ class BaseEnum(str, Enum):
 
 class Expirience(BaseEnum):
     NO = 'noExperience'
-    B1TO3= 'between1And3'
+    B1TO3 = 'between1And3'
     B3TO6 = 'between3And6'
     MORE6 = 'moreThan6'
 
@@ -39,3 +39,4 @@ class Schedule(BaseEnum):
 class Collections(BaseEnum):
     VACANCIES = 'vacancies'
     TEMPLATES = 'templates'
+    USERS = 'users'

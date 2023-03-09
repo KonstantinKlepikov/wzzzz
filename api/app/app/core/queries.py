@@ -5,7 +5,7 @@ from copy import copy
 from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
-from app.schemas import VacancyRequestScheme
+from app.schemas import VacancyRequest
 
 
 VacancyRaw: TypeAlias = dict[str, Any]
@@ -19,7 +19,7 @@ class HhruQueries:
         self,
         session: SessionMaker,
         url: str,
-        params: VacancyRequestScheme
+        params: VacancyRequest
             ) -> None:
         self.session = session
         self.url = url

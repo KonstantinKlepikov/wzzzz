@@ -1,11 +1,11 @@
 from pymongo.client_session import ClientSession
 from app.config import settings
 from app.crud import CRUDBase
-from app.schemas import VacancyConstraintsScheme
+from app.schemas import TemplateConstraints
 from app.schemas.constraint import Collections
 
 
-class CRUDTemplate(CRUDBase[VacancyConstraintsScheme]):
+class CRUDTemplate(CRUDBase[TemplateConstraints]):
     """Templates crud
     """
 
@@ -28,8 +28,8 @@ class CRUDTemplate(CRUDBase[VacancyConstraintsScheme]):
         return await data.to_list(length=lenght)
 
 
-template = CRUDTemplate(
-    schema=VacancyConstraintsScheme,
+templates = CRUDTemplate(
+    schema=TemplateConstraints,
     col_name=Collections.TEMPLATES.value,
     db_name=settings.db_name,
         )

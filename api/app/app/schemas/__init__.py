@@ -1,12 +1,15 @@
-from app.schemas.scheme_request import (
-    VacancyRequestScheme,
-    VacancyConstraintsScheme,
+from app.schemas.scheme_templates import (
+    TemplateConstraints,
+    TemplateName,
+    TemplatesNames,
+    Template,
         )
-from app.schemas.scheme_response import (
-    VacancyResponseScheme,
-    VacanciesResponseScheme,
-    VacancyResponseSchemeDb,
-    TemplateNameScheme,
-    TemplateNamesScheme,
-    TemplateResponseScheme,
+
+from app.schemas.scheme_vacanciy import (
+    VacancyRequest,
+    VacancyResponse,
+    VacancyResponseInDb,
+    Vacancies,
         )
+
+from app.schemas.scheme_user import UserInDb

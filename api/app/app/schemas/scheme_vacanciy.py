@@ -1,6 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, NonNegativeInt, HttpUrl
-from app.schemas import VacancyConstraintsScheme
+from pydantic import BaseModel, NonNegativeInt, HttpUrl, conint
+from app.schemas.scheme_templates import TemplateConstraints
 
 
 class VacancyId(BaseModel):
@@ -17,7 +17,32 @@ class VacancyId(BaseModel):
                     }
 
 
-class VacancyResponseScheme(BaseModel):
+class VacancyRequest(TemplateConstraints):
+    """Request querie to hh.ru vacancy API
+    """
+    search_field: list[str]
+    page: conint(ge=0, le=100) = 0
+    per_page: conint(gt=0, le=100) = 100
+
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'area': [113, 40, 1001],
+                    'text': 'game* OR гейм*',
+                    'search_field': ['description', ],
+                    'expirience': 'noExperience',
+                    'employment': ['full', 'part', ],
+                    'schedule': ['remote', ],
+                    'professional_role': [25, 96],
+                    'date_from': '2022-06-01',
+                    'page': 0,
+                    'per_page': 100,
+                        }
+                    }
+
+
+class VacancyResponse(BaseModel):
     """Response vacancy data
     """
     professional_roles: list[str] = []
@@ -47,7 +72,7 @@ class VacancyResponseScheme(BaseModel):
                     }
 
 
-class VacancyResponseSchemeDb(VacancyId, VacancyResponseScheme):
+class VacancyResponseInDb(VacancyId, VacancyResponse):
     """Vacancy in db
     """
 
@@ -71,11 +96,11 @@ class VacancyResponseSchemeDb(VacancyId, VacancyResponseScheme):
                 }
 
 
-class VacanciesResponseScheme(BaseModel):
+class Vacancies(BaseModel):
     """Vacancies
     """
 
-    vacancies: dict[NonNegativeInt, VacancyResponseScheme]
+    vacancies: dict[NonNegativeInt, VacancyResponse]
 
     class Config:
 
@@ -98,50 +123,5 @@ class VacanciesResponseScheme(BaseModel):
                             'alternate_url': 'https://hh.ru/vacancy/76294246',
                                 },
                             }
-                        }
-                    }
-
-
-class TemplateNameScheme(BaseModel):
-    """Template name
-    """
-    name: str
-
-    class Config:
-
-        schema_extra = {
-                "example": {
-                    'name': 'my_template'
-                        }
-                    }
-
-
-class TemplateNamesScheme(BaseModel):
-    """List of templates names
-    """
-    names: list[TemplateNameScheme] = []
-
-    class Config:
-
-        schema_extra = {
-                "example": {
-                    'names': {
-                        'name': 'my_template'
-                            }
-                        }
-                    }
-
-
-class TemplateResponseScheme(TemplateNameScheme):
-    """Template response
-    """
-    constraints: VacancyConstraintsScheme
-
-    class Config:
-
-        schema_extra = {
-                "example": {
-                    'name': 'my_template',
-                    'constarints': VacancyConstraintsScheme.Config.schema_extra['example']
                         }
                     }
