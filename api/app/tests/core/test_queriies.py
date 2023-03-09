@@ -4,7 +4,7 @@ from typing import Any
 from aiohttp import web
 from aiohttp.test_utils import TestClient
 from app.core import HhruQueries
-from app.schemas import VacancyRequestScheme
+from app.schemas import VacancyRequest
 
 
 @pytest.fixture
@@ -14,7 +14,7 @@ def hhruqueries(session: TestClient) -> HhruQueries:
     q = HhruQueries(
         session,
         "https://api.hh.ru/vacancies",
-        VacancyRequestScheme(**VacancyRequestScheme.Config.schema_extra['example'])
+        VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
         )
     return q
 

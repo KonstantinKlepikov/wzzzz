@@ -4,7 +4,7 @@ from aiohttp import web
 from aiohttp.test_utils import TestClient
 from yarl import URL
 from app.core import SessionMaker
-from app.schemas import VacancyRequestScheme
+from app.schemas import VacancyRequest
 
 
 async def hhru_vacancy(request: web.Request) -> web.Response:
@@ -27,7 +27,7 @@ def urls() -> dict[str, str]:
     urls = {
         'hhru_vacancy': str(URL.build(
             path='/vacancies',
-            query=VacancyRequestScheme.Config.schema_extra['example']
+            query=VacancyRequest.Config.schema_extra['example']
                 ),
             )}
     return urls

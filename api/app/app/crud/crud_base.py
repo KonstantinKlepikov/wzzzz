@@ -5,7 +5,6 @@ from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
 from app.config import settings
 
 
-SchemaType = TypeVar("SchemaType", bound=BaseModel)
 SchemaDbType = TypeVar("SchemaDbType", bound=BaseModel)
 SchemaReturnType = TypeVar("SchemaReturnType", bound=BaseModel)
 
@@ -46,7 +45,7 @@ class CRUDBase(Generic[SchemaDbType]):
         db: ClientSession,
         q: dict[str, Any],
         lenght: int = 100,
-            ) -> list[SchemaType]:
+            ) -> list[dict[str, Any]]:
         """Get many documents
 
         Args:

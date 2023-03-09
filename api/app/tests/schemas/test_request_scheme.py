@@ -1,4 +1,4 @@
-from app.schemas import VacancyRequestScheme
+from app.schemas import VacancyRequest
 from app.schemas.constraint import Employment, Schedule
 from datetime import date
 
@@ -8,10 +8,10 @@ class TestVacancyRequestData:
     """
 
     def test_full_fill_request(self):
-        """Test VacancyRequestScheme fill
+        """Test VacancyRequest fill
         """
-        data = VacancyRequestScheme.Config.schema_extra['example']
-        scheme = VacancyRequestScheme(**data)
+        data = VacancyRequest.Config.schema_extra['example']
+        scheme = VacancyRequest(**data)
 
         assert scheme.area == data['area'], 'wrong area'
         assert scheme.text == data['text'], 'wrong text'

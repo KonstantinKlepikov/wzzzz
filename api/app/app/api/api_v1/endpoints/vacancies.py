@@ -4,13 +4,13 @@ from pymongo.client_session import ClientSession
 from app.core import SessionMaker, HhruQueries
 from app.db.init_db import get_session
 from app.schemas import (
-    VacancyRequestScheme,
-    VacanciesResponseScheme,
-    TemplateNamesScheme,
-    TemplateResponseScheme,
+    VacancyRequest,
+    Vacancies,
+    TemplatesNames,
+    Template,
         )
 from app.config import settings
-from app.crud import template
+from app.crud import templates, users
 
 
 router = APIRouter()
@@ -19,36 +19,56 @@ router = APIRouter()
 @router.post(
     "/template",
     status_code=status.HTTP_201_CREATED,
-    summary='Create template with given name',
+    summary='Create template with given template_name',
     response_description="Created.",
     responses=settings.ERRORS
         )
-async def create_template(name: str, db: ClientSession = Depends(get_session)) -> None:
-    """Create template with given name
+async def create_template(
+    login: str,
+    template_name: str,
+    db: ClientSession = Depends(get_session)
+        ) -> None:
+    """Create template with given template_name
     """
 
 
 @router.get(
     "/template",
     status_code=status.HTTP_200_OK,
-    summary='Get template by name name',
+    summary='Get template by template_name',
     response_description="Ok.",
-    response_model=TemplateResponseScheme,
+    response_model=Template,
     responses=settings.ERRORS
         )
 async def get_template(
-    name: str,
+    login: str,
+    template_name: str,
     db: ClientSession = Depends(get_session)
         ) -> None:
-    """Get template constraints by name
+    """Get template constraints by template_name
+
+    Args:
+        login (str): user login
+        template_name (str):name of template
     """
-    result = await template.get(db, {'name': name})
-    if result:
-        return TemplateResponseScheme(**result)
+    user = await users.get(db, {'login': login})
+
+    if user:
+
+        result = await templates.get(db, {'name': template_name, 'user': user['_id']})
+
+        if result:
+            return Template(**result)
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Template not finded."
+                    )
     else:
         raise HTTPException(
             status_code=400,
-            detail="Template not find."
+            detail=f"User {login} not exist."
                 )
 
 
@@ -57,26 +77,33 @@ async def get_template(
     status_code=status.HTTP_200_OK,
     summary='Get list of templates names',
     response_description="Ok.",
-    response_model=TemplateNamesScheme,
+    response_model=TemplatesNames,
     responses=settings.ERRORS
         )
-async def get_templates(db: ClientSession = Depends(get_session)) -> None:
+async def get_templates(
+    login: str,
+    db: ClientSession = Depends(get_session)
+        ) -> None:
     """Get list of templates names
     """
-    result = await template.get_names(db)
-    return TemplateNamesScheme(names=result)
-
+    # TODO: rewrite me
+    result = await templates.get_names(db)
+    return TemplatesNames(names=result)
 
 
 @router.delete(
     "/template",
     status_code=status.HTTP_200_OK,
-    summary='Get template by name name',
+    summary='Get template by template_name',
     response_description="Ok.",
     responses=settings.ERRORS
         )
-async def delete_template(name: str, db: ClientSession = Depends(get_session)) -> None:
-    """Delete template by name
+async def delete_template(
+    login: str,
+    template_name: str,
+    db: ClientSession = Depends(get_session)
+        ) -> None:
+    """Delete template by template_name
     """
 
 
@@ -87,7 +114,11 @@ async def delete_template(name: str, db: ClientSession = Depends(get_session)) -
     response_description="Ok.",
     responses=settings.ERRORS
         )
-async def change_template(name: str, db: ClientSession = Depends(get_session)) -> None:
+async def change_template(
+    login: str,
+    template_name: str,
+    db: ClientSession = Depends(get_session)
+        ) -> None:
     """Change templates constraints
     """
 
@@ -97,15 +128,15 @@ async def change_template(name: str, db: ClientSession = Depends(get_session)) -
     status_code=status.HTTP_200_OK,
     summary='Request for vacancies data',
     response_description="OK. Requested data.",
-    response_model=VacanciesResponseScheme,
+    response_model=Vacancies,
     responses=settings.ERRORS
         )
-async def vacancies(request: Request) -> VacanciesResponseScheme:
+async def vacancies(request: Request) -> Vacancies:
     """Request for vacancies data
     """
-    params = VacancyRequestScheme(
-        **VacancyRequestScheme.Config.schema_extra['example']
+    params = VacancyRequest(
+        **VacancyRequest.Config.schema_extra['example']
             )  # FIXME: fixme
     queries = HhruQueries(SessionMaker, "https://api.hh.ru/vacancies", params)
     result = await queries.vacancies_query()
-    return VacanciesResponseScheme(vacancies=result)
+    return Vacancies(vacancies=result)

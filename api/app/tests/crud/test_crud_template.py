@@ -1,7 +1,7 @@
 import pytest
 from pymongo.client_session import ClientSession
 from app.crud.crud_template import CRUDTemplate
-from app.schemas import TemplateNameScheme
+from app.schemas import TemplateName
 
 
 class TestCRUDTemplate:
@@ -18,5 +18,5 @@ class TestCRUDTemplate:
         templates = await crud_template.get_names(db)
         assert isinstance(templates, list), 'wrong result type'
         assert len(templates) == 1, 'wrong len'
-        assert templates[0]['name'] == TemplateNameScheme.Config.schema_extra['example']['name'], \
+        assert templates[0]['name'] == TemplateName.Config.schema_extra['example']['name'], \
             'wrong name'
