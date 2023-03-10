@@ -1,6 +1,6 @@
 import pytest
 from pymongo.client_session import ClientSession
-from app.crud.crud_template import CRUDTemplate
+from app.crud import CRUDTemplate
 from app.schemas import TemplateName
 
 

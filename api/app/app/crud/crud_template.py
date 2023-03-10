@@ -1,8 +1,7 @@
 from pymongo.client_session import ClientSession
 from app.config import settings
 from app.crud import CRUDBase
-from app.schemas import TemplateConstraints
-from app.schemas.constraint import Collections
+from app.schemas import TemplateConstraints, Collections
 
 
 class CRUDTemplate(CRUDBase[TemplateConstraints]):
