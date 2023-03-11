@@ -3,6 +3,7 @@ from typing import Callable
 from httpx import AsyncClient
 from app.config import settings
 from app.crud import users, CRUDUser
+from app.schemas import UserInDb
 
 
 class TestUsers:
@@ -31,7 +32,7 @@ class TestUsers:
         """
         response = await client.post(
             f"{settings.api_v1_str}/users/create",
-            params={'login': 'new'}
+            params={'login': 45456897}
                 )
 
         assert response.status_code == 201, f'{response.content=}'
@@ -43,10 +44,11 @@ class TestUsers:
             ) -> None:
         """Test create double user rises error
         """
+        login = UserInDb.Config.schema_extra['example']['login']
         response = await client.post(
             f"{settings.api_v1_str}/users/create",
-            params={'login': 'me'}
+            params={'login': login}
                 )
 
         assert response.status_code == 409, f'{response.content=}'
-        assert response.json()['detail'] == 'User me exist.', 'wrong error'
+        assert response.json()['detail'] == f'User {login} exist.', 'wrong error'

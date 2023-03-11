@@ -9,7 +9,7 @@ from app.main import app
 from app.crud import CRUDVacancies, CRUDTemplate, CRUDUser
 from app.schemas import (
     VacancyResponseInDb,
-    Template,
+    TemplateInDb,
     TemplateConstraints,
     UserInDb,
     Collections,
@@ -64,7 +64,7 @@ async def db() -> Generator:
 
         # fill template
         collection = db[Collections.TEMPLATES.value]
-        one = Template.Config.schema_extra['example']
+        one = TemplateInDb.Config.schema_extra['example']
         one['user'] = in_db.inserted_id
         await collection.insert_one(one)
 

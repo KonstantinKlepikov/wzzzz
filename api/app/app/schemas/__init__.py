@@ -3,6 +3,7 @@ from app.schemas.scheme_templates import (
     TemplateName,
     TemplatesNames,
     Template,
+    TemplateInDb,
         )
 
 from app.schemas.scheme_vacanciy import (

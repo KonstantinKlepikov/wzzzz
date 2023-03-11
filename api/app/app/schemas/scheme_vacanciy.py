@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel, NonNegativeInt, HttpUrl, conint
 from app.schemas.scheme_templates import TemplateConstraints
 
@@ -35,11 +36,14 @@ class VacancyRequest(TemplateConstraints):
                     'employment': ['full', 'part', ],
                     'schedule': ['remote', ],
                     'professional_role': [25, 96],
-                    'date_from': '2022-06-01',
+                    'date_from': '2022-06-01T10:20:30',
                     'page': 0,
                     'per_page': 100,
                         }
                     }
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%d'),
+                }
 
 
 class VacancyResponse(BaseModel):

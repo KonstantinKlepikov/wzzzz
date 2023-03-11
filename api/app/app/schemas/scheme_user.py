@@ -4,13 +4,13 @@ from pydantic import BaseModel
 class UserLogin(BaseModel):
     """User login
     """
-    login: str
+    login: int
 
     class Config:
 
         schema_extra = {
                 "example": {
-                    'login': 'me'
+                    'login': 88005553535
                         }
                     }
 

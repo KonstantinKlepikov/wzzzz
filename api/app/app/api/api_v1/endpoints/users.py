@@ -18,7 +18,7 @@ router = APIRouter()
     responses=settings.ERRORS
         )
 async def create_user(
-    login: str,
+    login: int,
     db: ClientSession = Depends(get_session)
         ) -> None:
     """Create user with given login
