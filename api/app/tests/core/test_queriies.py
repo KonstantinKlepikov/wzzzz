@@ -55,7 +55,7 @@ class TestHhruQueries:
         data = [
             {'name': '1', 'profarea_name': 'a'},
             {'name': '2', 'profarea_name': 'b'},
-            ]
+                ]
         result = hhruqueries._field_to_list(data)
         assert isinstance(result, list), 'wrong type'
         assert len(result) == 2, 'wrong len'

@@ -17,7 +17,8 @@ class CRUDBase(Generic[SchemaDbType]):
         db_name: str = settings.db_name
             ):
         """
-        CRUD object with default methods to Create, Read, Update, Delete (CRUD).
+        CRUD object with default methods to Create,
+        Read, Update, Delete (CRUD).
         """
         self.schema = schema
         self.col_name = col_name
@@ -37,8 +38,7 @@ class CRUDBase(Generic[SchemaDbType]):
         Returns:
             Optional[dict[str, Any]]: search result
         """
-        return await db.client[self.db_name][self.col_name] \
-            .find_one(q)
+        return await db.client[self.db_name][self.col_name].find_one(q)
 
     async def get_many(
         self,
@@ -56,8 +56,7 @@ class CRUDBase(Generic[SchemaDbType]):
         Returns:
             list[dict[str, Any]]: search result
         """
-        data = db.client[self.db_name][self.col_name] \
-            .find(q)
+        data = db.client[self.db_name][self.col_name].find(q)
         return await data.to_list(length=lenght)
 
     async def create(

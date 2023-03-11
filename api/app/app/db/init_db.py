@@ -5,7 +5,7 @@ from pymongo.client_session import ClientSession
 from pymongo.errors import CollectionInvalid
 from fastapi.logger import logger as fastAPI_logger
 from app.config import settings
-from app.schemas.constraint import Collections
+from app.schemas import Collections
 
 
 def get_client(mongodb_url: str) -> AsyncIOMotorClient:
@@ -51,7 +51,7 @@ async def get_session() -> Generator[ClientSession, None, None]:
     """
     try:
         fastAPI_logger.info("Create mongo session")
-        session: ClientSession = await client.start_session()
+        session = await client.start_session()
         yield session
     finally:
         await session.end_session()

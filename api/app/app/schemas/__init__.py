@@ -3,6 +3,7 @@ from app.schemas.scheme_templates import (
     TemplateName,
     TemplatesNames,
     Template,
+    TemplateInDb,
         )
 
 from app.schemas.scheme_vacanciy import (
@@ -13,3 +14,10 @@ from app.schemas.scheme_vacanciy import (
         )
 
 from app.schemas.scheme_user import UserInDb
+
+from app.schemas.constraint import (
+    Expirience,
+    Employment,
+    Schedule,
+    Collections,
+        )

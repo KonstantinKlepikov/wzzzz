@@ -1,13 +1,15 @@
 from fastapi import APIRouter
-from app.api.api_v1.endpoints import vacancies, api_test
+from app.api.api_v1.endpoints import vacancies, users, templ
 
 
 api_router = APIRouter()
 
-
 api_router.include_router(
-    vacancies.router, prefix="/vacancies", tags=['vacancies', ]
+    users.router, prefix="/users", tags=['users', ]
         )
 api_router.include_router(
-    api_test.router, prefix="/test", tags=['test', ]
+    templ.router, prefix="/templates", tags=['templates', ]
+        )
+api_router.include_router(
+    vacancies.router, prefix="/vacancies", tags=['vacancies', ]
         )

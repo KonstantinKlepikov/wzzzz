@@ -1,7 +1,8 @@
 from typing import Optional
-from pydantic import BaseModel, Field
-from datetime import date
+from pydantic import BaseModel
+from datetime import timedelta, datetime
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from app.schemas.constraint import Employment, Schedule, Expirience
 
 
@@ -13,7 +14,7 @@ class TemplateConstraints(BaseModel):
     employment: list[Employment] = []
     schedule: list[Schedule] = []
     professional_role: list[int] = []
-    date_from: date
+    date_from: datetime = datetime.utcnow() - timedelta(weeks=12)
     text: Optional[str] = None
 
     class Config:
@@ -25,7 +26,7 @@ class TemplateConstraints(BaseModel):
                 'employment': ['full', 'part', ],
                 'schedule': ['remote', ],
                 'professional_role': [25, 96],
-                'date_from': '2022-06-01',
+                'date_from': '2022-06-01T10:20:30',
                 'text': 'game* OR гейм*',
                     }
                 }
@@ -61,26 +62,45 @@ class TemplatesNames(BaseModel):
                     }
 
 
+class Template(TemplateName, TemplateConstraints):
+    """Template response
+    """
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'name': 'my_template',
+                    'area': [113, 40, 1001],
+                    'expirience': 'noExperience',
+                    'employment': ['full', 'part', ],
+                    'schedule': ['remote', ],
+                    'professional_role': [25, 96],
+                    'date_from': '2022-06-01T10:20:30',
+                    'text': 'game* OR гейм*',
+                        }
+                    }
+
+
 class PydanticObjectId(ObjectId):
+
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
     @classmethod
     def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
-        return ObjectId(v)
+        if not isinstance(v, ObjectId):
+            try:
+                ObjectId(v)
+            except InvalidId:
+                raise TypeError('ObjectId required')
+        return str(v)
 
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
 
-
-class Template(TemplateName, TemplateConstraints):
-    """Template response
+class TemplateInDb(Template):
+    """Template in db
     """
-    user: PydanticObjectId = Field(default_factory=PydanticObjectId)
+    user: PydanticObjectId  # TODO: test validation str/obj
 
     class Config:
 
@@ -92,7 +112,7 @@ class Template(TemplateName, TemplateConstraints):
                     'employment': ['full', 'part', ],
                     'schedule': ['remote', ],
                     'professional_role': [25, 96],
-                    'date_from': '2022-06-01',
+                    'date_from': '2022-06-01T10:20:30',
                     'text': 'game* OR гейм*',
                     'user': '123456781234567812345678'
                         }

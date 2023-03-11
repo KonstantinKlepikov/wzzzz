@@ -1,5 +1,6 @@
 from app.schemas import VacancyResponse
 
+
 class TestVacancyResponsetData:
     """Test response schemas
     """

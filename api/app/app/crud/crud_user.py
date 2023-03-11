@@ -1,7 +1,6 @@
 from app.config import settings
 from app.crud import CRUDBase
-from app.schemas import UserInDb
-from app.schemas.constraint import Collections
+from app.schemas import UserInDb, Collections
 
 
 class CRUDUser(CRUDBase[UserInDb]):

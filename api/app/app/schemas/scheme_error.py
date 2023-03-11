@@ -21,7 +21,7 @@ class HttpError400(HttpErrorMessage):
     class Config:
         schema_extra = {
             "example": {
-                "detail": "Reques parameters error",
+                "detail": "Request parameters error",
                 }
             }
 

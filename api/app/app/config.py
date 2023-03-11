@@ -30,12 +30,12 @@ class Settings(BaseSettings):
     version: str = poetry_data['version']
     openapi_tags: list = [
         {
-            "name": "test",
-            "description": "Test api",
+            "name": "users",
+            "description": "Users api",
         },
         {
-            "name": "user",
-            "description": "Users api",
+            "name": "templates",
+            "description": "Search templates",
         },
         {
             "name": "vacancies",

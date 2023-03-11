@@ -1,20 +1,20 @@
 import pytest
 from typing import Generator
-from fastapi.testclient import TestClient
 from pymongo import ASCENDING
+from pymongo.client_session import ClientSession
 from motor.motor_asyncio import AsyncIOMotorClient
+from httpx import AsyncClient
 from app.config import settings
 from app.main import app
-from app.crud.crud_vacancy import CRUDVacancies
-from app.crud.crud_template import CRUDTemplate
+from app.crud import CRUDVacancies, CRUDTemplate, CRUDUser
 from app.schemas import (
     VacancyResponseInDb,
-    TemplateName,
-    Template,
+    TemplateInDb,
     TemplateConstraints,
     UserInDb,
+    Collections,
         )
-from app.schemas.constraint import Collections
+from app.db import get_session
 
 
 DB_NAME = 'test-db'
@@ -31,12 +31,6 @@ class BdTestContext:
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.client.drop_database(self.db_name)
         self.client.close()
-
-
-@pytest.fixture(scope="function")
-def client() -> Generator:
-    with TestClient(app) as c:
-        yield c
 
 
 @pytest.fixture(scope="function")
@@ -70,10 +64,45 @@ async def db() -> Generator:
 
         # fill template
         collection = db[Collections.TEMPLATES.value]
-        one = Template.Config.schema_extra['example']
+        one = TemplateInDb.Config.schema_extra['example']
         one['user'] = in_db.inserted_id
         await collection.insert_one(one)
+
         yield db
+
+
+@pytest.fixture(scope="function")
+async def client(db) -> Generator:
+
+    bd_test_client = AsyncIOMotorClient(settings.test_mongodb_url)
+
+    async def mock_session() -> Generator[ClientSession, None, None]:
+        """Get mongo session
+        """
+        try:
+            session = await bd_test_client.start_session()
+            yield session
+        finally:
+            await session.end_session()
+
+    app.dependency_overrides[get_session] = mock_session
+
+    async with AsyncClient(app=app, base_url="http://test") as c:
+        yield c
+
+    app.dependency_overrides = {}
+    bd_test_client.close()
+
+
+@pytest.fixture(scope="function")
+async def crud_user() -> CRUDUser:
+    """Get crud users
+    """
+    return CRUDUser(
+        schema=UserInDb,
+        col_name=Collections.USERS.value,
+        db_name=DB_NAME
+            )
 
 
 @pytest.fixture(scope="function")
