@@ -2,7 +2,6 @@ import pytest
 from typing import Callable
 from httpx import AsyncClient
 from fastapi import HTTPException
-from pymongo.client_session import ClientSession
 from app.config import settings
 from app.crud import CRUDUser, users, templates, CRUDTemplate
 from app.schemas import UserInDb, Template
@@ -91,28 +90,6 @@ class TestTemplates:
             return await crud_template.replace(args[0], args[1], args[2])
         monkeypatch.setattr(templates, "replace", mock_return)
 
-    async def test_check_user(
-        self,
-        mock_user: Callable,
-        db: ClientSession,
-            ) -> None:
-        """Test check user
-        """
-        login = UserInDb.Config.schema_extra['example']['login']
-        user = await templ.check_user(db, login)
-        assert user['login'] == login, 'wrong return'
-
-    async def test_check_user_raises_if_not_exist(
-        self,
-        mock_user: Callable,
-        db: ClientSession,
-            ) -> None:
-        """Test check user
-        """
-        with pytest.raises(HTTPException) as e:
-            await templ.check_user(db, 555)
-            assert 'User 555 not exist' in e.value.detail, 'wrong error'
-
     async def test_templates_create_returns_201(
         self,
         client: AsyncClient,
@@ -132,7 +109,8 @@ class TestTemplates:
     async def test_templates_get_returns_200(
         self,
         client: AsyncClient,
-        mock_check: Callable,
+        # mock_check: Callable,
+        mock_user: Callable,
         mock_get: Callable
             ) -> None:
         """Test get template

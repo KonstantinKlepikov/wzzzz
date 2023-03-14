@@ -20,6 +20,7 @@ class TestVacancyRequestData:
         assert scheme.schedule[0] == Schedule.REMOTE, 'wrong schedule'
         assert scheme.professional_role == data['professional_role'], 'wrong role'
         assert scheme.date_from == dt, 'wrong date'
+        assert scheme.search_field == data['search_field'], 'wrong search field'
         assert scheme.page == data['page'], 'wrong per page'
         assert scheme.per_page == data['per_page'], 'wrong per page'
         assert scheme.expirience == data['expirience'], 'wrong expirience'

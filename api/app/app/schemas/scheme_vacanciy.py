@@ -21,7 +21,6 @@ class VacancyId(BaseModel):
 class VacancyRequest(TemplateConstraints):
     """Request querie to hh.ru vacancy API
     """
-    search_field: list[str]
     page: conint(ge=0, le=100) = 0
     per_page: conint(gt=0, le=100) = 100
 

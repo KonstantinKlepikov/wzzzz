@@ -108,3 +108,48 @@ class TestCRUDVacancy:
 
         result = await crud_vacancy.delete(db, {'v_id': 555555})
         assert result.deleted_count == 0, 'wrong matched count'
+
+    async def test_cкud_vaсancy_get_many_by_ids(
+        self,
+        db: ClientSession,
+        crud_vacancy: CRUDVacancies
+            ) -> None:
+        """Test get many by ids
+        """
+        ids = [VacancyResponseInDb.Config.schema_extra['example']['v_id'], 555555]
+        result = await crud_vacancy.get_many_by_ids(db, ids)
+
+        assert isinstance(result, list), 'wromg result rype'
+        assert len(result) == 1, 'wrong result len'
+        assert result[0]['v_id'] == VacancyResponseInDb.Config.schema_extra['example']['v_id'], \
+            'wrong result object'
+
+    async def test_cкud_vaсancy_create_many(
+        self,
+        db: ClientSession,
+        crud_vacancy: CRUDVacancies
+            ) -> None:
+        """Test create many
+        """
+        vacancies = [
+            VacancyResponseInDb(v_id=555555),
+            VacancyResponseInDb(v_id=666666),
+                ]
+        result = await crud_vacancy.create_many(db, vacancies)
+
+        assert isinstance(result, list), 'wromg result rype'
+        assert len(result) == 2, 'wrong result len'
+
+    async def test_crud_vaсancy_create_many_error_if_double(
+        self,
+        db: ClientSession,
+        crud_vacancy: CRUDVacancies
+            ) -> None:
+        """Test create many dublicate error
+        """
+        vacancies = [
+            VacancyResponseInDb(**VacancyResponseInDb.Config.schema_extra['example']),
+                ]
+        with pytest.raises(DuplicateKeyError) as e:
+            await crud_vacancy.create_many(db, vacancies)
+            assert 'duplicate key error collection' in e.value.detail, 'wrong error'
