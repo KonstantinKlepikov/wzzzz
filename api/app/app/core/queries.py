@@ -159,11 +159,12 @@ class HhruQueries:
         Returns:
             dict[str, dict[int, VacancyRaw]]: transformed data
         """
-        ids = [i['id'] for r in result for i in r['items']]
+        ids = [int(i['id']) for r in result for i in r['items']]
+
         result_in_db = await vacancies.get_many_by_ids(db, ids)
 
         in_db = {
-            i['id']: self._simple_to_dict(i)
+            i['v_id']: self._simple_to_dict(i)
             for i in result_in_db
                 }
 
@@ -171,7 +172,7 @@ class HhruQueries:
             i['id']: self._simple_to_dict(i)
             for r in result
             for i in r['items']
-            if i['id'] not in in_db.keys()
+            if int(i['id']) not in in_db.keys()
                 }
 
         return {'in_db': in_db, 'not_in_db': not_in_db}
@@ -216,12 +217,19 @@ class HhruQueries:
             sem=semaphore
                 )
         simple = await self._make_simple_requests(entry, semaphore)
-        trensformed_simple = await self._make_simple_result(db, simple)
+        simple_result = await self._make_simple_result(db, simple)
 
-        deeper = await self._make_deeper_requests(trensformed_simple['not_in_db'], semaphore)
-        transformed_deeper =  self._make_deeper_result(deeper)
+        if simple_result['not_in_db']:
+            deeper = await self._make_deeper_requests(simple_result['not_in_db'], semaphore)
+            deeper_result =  self._make_deeper_result(deeper)
 
-        return {
-            'in_db': trensformed_simple['in_db'],
-            'not_in_db': self._update(trensformed_simple['not_in_db'], transformed_deeper)
-                }
+            return {
+                'in_db': simple_result['in_db'],
+                'not_in_db': self._update(simple_result['not_in_db'], deeper_result)
+                    }
+        else:
+
+            return {
+                'in_db': simple_result['in_db'],
+                'not_in_db': {}
+                    }

@@ -144,12 +144,11 @@ async def change_template(
         template (Template): new template constraints
     """
     user = await check_user(db, login)
-    t = template.dict()
-    t['user'] = str(user['_id'])
+    t = TemplateInDb(user=str(user['_id']), **template.dict())
     result = await templates.replace(
         db,
         {'name': template.name, 'user': str(user['_id'])},
-        TemplateInDb(**t)
+        t
             )
     if result.modified_count == 0:
         raise HTTPException(

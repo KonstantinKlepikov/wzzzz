@@ -109,8 +109,7 @@ class TestTemplates:
     async def test_templates_get_returns_200(
         self,
         client: AsyncClient,
-        # mock_check: Callable,
-        mock_user: Callable,
+        mock_check: Callable,
         mock_get: Callable
             ) -> None:
         """Test get template

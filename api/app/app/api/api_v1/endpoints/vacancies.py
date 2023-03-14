@@ -6,22 +6,22 @@ from app.schemas import (
     VacancyRequest,
     Vacancies,
         )
-from app.crud import templates
+from app.crud import templates, vacancies, VacancyResponseInDb
 from app.config import settings
 
 
 router = APIRouter()
 
 
-@router.post(
-    "/",
+@router.get(
+    "/new",
     status_code=status.HTTP_200_OK,
     summary='Request for vacancies data',
     response_description="OK. Requested data.",
     response_model=Vacancies,
     responses=settings.ERRORS
         )
-async def vacancies(
+async def ask_for_new_vacancies(
     login: int,
     template_name: str,
     db: ClientSession = Depends(get_session)
@@ -30,15 +30,33 @@ async def vacancies(
     """
     user = await check_user(db, login)
     template = await templates.get(db, {'name': template_name, 'user': str(user['_id'])})
+
     if template:
         params = VacancyRequest(**template)
         queries = HhruQueries(SessionMaker, "https://api.hh.ru/vacancies", params)
-        vacancies = await queries.vacancies_query(db)
+        all_v = await queries.vacancies_query(db)
 
-        print(vacancies)
+        if all_v['not_in_db']:
 
-        return Vacancies(vacancies=vacancies['not_in_db'])
+            await vacancies.create_many(
+                db,
+                [
+                    VacancyResponseInDb(v_id=key, **val)
+                    for key, val
+                    in all_v['not_in_db'].items()
+                        ]
+                    )
+            return Vacancies(vacancies=all_v['not_in_db'])
+
+        else:
+
+            raise HTTPException(
+                status_code=409,
+                detail="New vacancy not found."
+                    )
+
     else:
+
         raise HTTPException(
             status_code=409,
             detail="Template not found."
