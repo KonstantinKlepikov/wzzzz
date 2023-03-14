@@ -65,7 +65,7 @@ async def db() -> Generator:
         # fill template
         collection = db[Collections.TEMPLATES.value]
         one = TemplateInDb.Config.schema_extra['example']
-        one['user'] = in_db.inserted_id
+        one['user'] = str(in_db.inserted_id)
         await collection.insert_one(one)
 
         yield db

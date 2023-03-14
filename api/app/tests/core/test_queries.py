@@ -3,6 +3,7 @@ import json
 from typing import Any
 from aiohttp import web
 from aiohttp.test_utils import TestClient
+from pymongo.client_session import ClientSession
 from app.core import HhruQueries
 from app.schemas import VacancyRequest
 
@@ -122,20 +123,22 @@ class TestHhruQueries:
         assert item['professional_roles'] == ['1', ], 'wrong roles'
         assert item['key_skills'] == ['2', '3'], 'wrong skills'
 
-    def test_make_simple_result(
+    async def test_make_simple_result(
         self,
         hhruqueries: HhruQueries,
-        simple_data: dict[str, Any]
+        simple_data: dict[str, Any],
+        db: ClientSession
             ) -> None:
         """Test make_simple_result
         """
         data = [{'items': [simple_data, ]}, ]
-        result = hhruqueries._make_simple_result(data)
-        assert isinstance(result, dict), 'wrong result type'
-        assert len(result) == 1, 'wrong len result'
-        assert simple_data['id'] in result.keys(), 'wrong key'
-        assert result[simple_data['id']]['url'] == simple_data['url'], \
-            'wrong transform'
+        result = await hhruqueries._make_simple_result(db, data)
+        assert isinstance(result, dict), 'wrong type'
+        assert len(result) == 2, 'wrong number of objects'
+        assert len(result['in_db']) == 0, 'wrong in db'
+        assert len(result['not_in_db']) == 1, 'wrong not in db'
+        assert result['not_in_db'][simple_data['id']]['url'] == simple_data['url'], \
+            'wrong parsing'
 
     def test_make_deeper_result(
         self,
@@ -151,7 +154,6 @@ class TestHhruQueries:
         assert len(result) == 1, 'wrong result len'
         assert '12345' in result.keys(), 'wrong result keys'
         assert result['12345']['key_skills'] == ['2', '3'], 'wrong skills'
-
 
     @pytest.mark.skip('# TODO: test me')
     def test_update(self, hhruqueries: HhruQueries) -> None:

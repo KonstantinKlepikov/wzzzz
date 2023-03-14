@@ -16,6 +16,7 @@ class TemplateConstraints(BaseModel):
     professional_role: list[int] = []
     date_from: datetime = datetime.utcnow() - timedelta(weeks=12)
     text: Optional[str] = None
+    search_field: list[str] = []
 
     class Config:
 
@@ -28,6 +29,7 @@ class TemplateConstraints(BaseModel):
                 'professional_role': [25, 96],
                 'date_from': '2022-06-01T10:20:30',
                 'text': 'game* OR гейм*',
+                'search_field': ['description', ],
                     }
                 }
 
@@ -77,6 +79,7 @@ class Template(TemplateName, TemplateConstraints):
                     'professional_role': [25, 96],
                     'date_from': '2022-06-01T10:20:30',
                     'text': 'game* OR гейм*',
+                    'search_field': ['description', ],
                         }
                     }
 
@@ -114,6 +117,7 @@ class TemplateInDb(Template):
                     'professional_role': [25, 96],
                     'date_from': '2022-06-01T10:20:30',
                     'text': 'game* OR гейм*',
+                    'search_field': ['description', ],
                     'user': '123456781234567812345678'
                         }
                     }

@@ -1,6 +1,6 @@
-from typing import Optional, Any
 from fastapi import APIRouter, status, Depends, HTTPException
 from pymongo.client_session import ClientSession
+from pymongo.errors import DuplicateKeyError
 from bson.objectid import ObjectId
 from app.db import get_session
 from app.schemas import (
@@ -9,32 +9,11 @@ from app.schemas import (
     Template
         )
 from app.config import settings
-from app.crud import templates, users
+from app.crud import templates
+from app.core import check_user
 
 
 router = APIRouter()
-
-
-async def check_user(
-    db: ClientSession,
-    login: int
-        ) -> Optional[dict[str, Any]]:
-    """Check is user in db or raise exception
-
-    Args:
-        db: ClientSession
-        login (int): user login
-
-    Returns:
-        Optional[dict[str, Any]]: db query result
-    """
-    user = await users.get(db, {'login': login})
-    if user:
-        return user
-    raise HTTPException(
-        status_code=409,
-        detail=f"User {login} not exist."
-            )
 
 
 @router.post(
@@ -52,10 +31,16 @@ async def create_template(
     """Create empty template with given name
     """
     user = await check_user(db, login)
-    await templates.create(db, obj_in=TemplateInDb(
-        user=ObjectId(user['_id']),
-        name=template_name
-            ))
+    try:
+        await templates.create(db, obj_in=TemplateInDb(
+            user=ObjectId(user['_id']),
+            name=template_name
+                ))
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Template with name {template_name} is exist."
+                )
 
 
 @router.get(
@@ -78,8 +63,7 @@ async def get_template(
         template_name (str):name of template
     """
     user = await check_user(db, login)
-
-    result = await templates.get(db, {'name': template_name, 'user': user['_id']})
+    result = await templates.get(db, {'name': template_name, 'user': str(user['_id'])})
 
     if result:
         return Template(**result)
@@ -109,7 +93,7 @@ async def get_templates(
         login (str): user login
     """
     user = await check_user(db, login)
-    result = await templates.get_names(db, {'user': user['_id']})
+    result = await templates.get_names(db, {'user': str(user['_id'])})
     return TemplatesNames(names=result)
 
 
@@ -132,7 +116,7 @@ async def delete_template(
         template_name (str): name of template
     """
     user = await check_user(db, login)
-    result = await templates.delete(db, {'name': template_name, 'user': user['_id']})
+    result = await templates.delete(db, {'name': template_name, 'user': str(user['_id'])})
     if result.deleted_count == 0:
         raise HTTPException(
             status_code=409,
@@ -160,10 +144,11 @@ async def change_template(
         template (Template): new template constraints
     """
     user = await check_user(db, login)
+    t = TemplateInDb(user=str(user['_id']), **template.dict())
     result = await templates.replace(
         db,
-        {'name': template.name, 'user': user['_id']},
-        template
+        {'name': template.name, 'user': str(user['_id'])},
+        t
             )
     if result.modified_count == 0:
         raise HTTPException(

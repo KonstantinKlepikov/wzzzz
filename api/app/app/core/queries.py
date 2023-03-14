@@ -2,10 +2,12 @@ import json
 import asyncio
 from asyncio import Semaphore
 from copy import copy
+from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
 from app.schemas import VacancyRequest
+from app.crud import vacancies
 
 
 VacancyRaw: TypeAlias = dict[str, Any]
@@ -23,8 +25,8 @@ class HhruQueries:
             ) -> None:
         self.session = session
         self.url = url
-        self.params = json.loads(params.json())
-        # TODO: fixme. Here form dict returns dt, but need srt
+        self.params = json.loads(params.json(exclude_none=True))
+        # TODO: fixme. Here form dict returns dt, but need str
 
     @staticmethod
     def _field_to_list(x: Optional[list[VacancyRaw] | VacancyRaw]) -> list[Any]:
@@ -143,23 +145,37 @@ class HhruQueries:
         await asyncio.wait(tasks)
         return [task.result() for task in tasks]
 
-    def _make_simple_result(
+    async def _make_simple_result(
         self,
-        result: list[VacancyRaw]
-            ) -> dict[int, VacancyRaw]:
+        db: ClientSession,
+        result: list[VacancyRaw],
+            ) -> dict[str, dict[int, VacancyRaw]]:
         """Make simple result from list of transformed response data
 
         Args:
+            db (ClientSession): session
             result (list[VacancyRaw]): transformed response data
 
         Returns:
-            dict[int, VacancyRaw]: transformed data
+            dict[str, dict[int, VacancyRaw]]: transformed data
         """
-        return {
+        ids = [int(i['id']) for r in result for i in r['items']]
+
+        result_in_db = await vacancies.get_many_by_ids(db, ids)
+
+        in_db = {
+            i['v_id']: self._simple_to_dict(i)
+            for i in result_in_db
+                }
+
+        not_in_db = {
             i['id']: self._simple_to_dict(i)
             for r in result
             for i in r['items']
+            if int(i['id']) not in in_db.keys()
                 }
+
+        return {'in_db': in_db, 'not_in_db': not_in_db}
 
     def _make_deeper_result(
         self,
@@ -185,11 +201,14 @@ class HhruQueries:
                 simple[key].update(deeper[key])
         return simple
 
-    async def vacancies_query(self) -> VacancyRaw:
+    async def vacancies_query(self, db: ClientSession,) -> dict[str, VacancyRaw]:
         """Request for vacancies
 
+        Args:
+            db (ClientSession): session
+
         Returns:
-            VacancyRaw:: transformed response data
+            dict(str, VacancyRaw): transformed response data
         """
         semaphore = Semaphore(10)
         entry = await self.session.get_query(
@@ -198,8 +217,19 @@ class HhruQueries:
             sem=semaphore
                 )
         simple = await self._make_simple_requests(entry, semaphore)
-        simple = self._make_simple_result(simple)
-        deeper = await self._make_deeper_requests(simple, semaphore)
-        deeper = self._make_deeper_result(deeper)
+        simple_result = await self._make_simple_result(db, simple)
 
-        return self._update(simple, deeper)
+        if simple_result['not_in_db']:
+            deeper = await self._make_deeper_requests(simple_result['not_in_db'], semaphore)
+            deeper_result =  self._make_deeper_result(deeper)
+
+            return {
+                'in_db': simple_result['in_db'],
+                'not_in_db': self._update(simple_result['not_in_db'], deeper_result)
+                    }
+        else:
+
+            return {
+                'in_db': simple_result['in_db'],
+                'not_in_db': {}
+                    }

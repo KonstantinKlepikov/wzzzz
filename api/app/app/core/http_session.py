@@ -50,7 +50,7 @@ class SessionMaker:
             if response.status == 400:
                 raise HTTPException(
                     status_code=400,
-                    detail="Request parameters error"
+                    detail=f"Request parameters error. Parameters: {response.url}"
                         )
 
             if response.status == 404:
