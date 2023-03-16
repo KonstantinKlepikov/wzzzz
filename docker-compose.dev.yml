@@ -55,10 +55,13 @@ services:
       - wzzzz-dev-network
 
   wzzzz-bot:
+    ports:
+      - "8002:8000"
+    env_file: .env
     build:
       args:
         INSTALL_DEV: ${INSTALL_DEV-true}
-    command: bash -c "while true; do sleep 1; done"  # Infinite loop to keep container live doing nothing
+    # command: bash -c "while true; do sleep 1; done"  # Infinite loop to keep container live doing nothing
     networks:
       - wzzzz-dev-network
 
