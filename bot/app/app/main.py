@@ -1,17 +1,13 @@
-import os
 import logging
 from aiogram import Bot, Dispatcher, executor, types
+from app.core.api_queries import QuerieMaker
+from app.config import settings
 
 
-API_TOKEN = os.environ['API_TOKEN']
-
-
-# Configure logging
 logging.basicConfig(level=logging.INFO)
-
-# Initialize bot and dispatcher
-bot = Bot(token=API_TOKEN)
+bot = Bot(token=settings.API_TOKEN)
 dp = Dispatcher(bot)
+q = QuerieMaker(bot=bot)
 
 
 @dp.message_handler(commands=['start', 'help'])
@@ -31,8 +27,12 @@ async def send_welcome(message: types.Message) -> None:
 @dp.message_handler()
 async def echo(message: types.Message) -> None:
 
+    result = await q.get_user(user_id=message.from_user.id)
+
     await message.answer(
-        f'Я идентифицировал тебя как {message.from_user.username} с id={message.from_user.id}'
+        f'Я идентифицировал тебя как {message.from_user.username} \
+        \nс id={message.from_user.id}. \
+        \nApi answers: {result["detail"]}'
         )
 
 

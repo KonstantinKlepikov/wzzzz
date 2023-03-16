@@ -9,6 +9,7 @@ python = "3.10.6"
 passlib = "^1.7.4"
 toml = "^0.10.2"
 aiogram = "2.25.1"
+pydantic = "^1.10.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=4.6"
