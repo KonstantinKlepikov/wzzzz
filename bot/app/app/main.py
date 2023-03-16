@@ -1,6 +1,7 @@
 import logging
 from aiogram import Bot, Dispatcher, executor, types
 from app.core.api_queries import QuerieMaker
+from app.schemas.scheme_errors import UserNotExistError, UserExistError
 from app.config import settings
 
 
@@ -16,24 +17,38 @@ async def send_welcome(message: types.Message) -> None:
     This handler will be called when user sends `/start` or `/help` command
     """
     await message.reply(
-        "Привет! \
-        \nЯ wzzzz_bot! \
-        \nЯ помогу тебе подыскать вакансии на hh.ru. \
-        \nПока что я ничего не умею, но скоро научусь. \
-        \nПопробуй поговорить со мной."
+        "Hello! \
+        \nI'm wzzzz_bot! \
+        \nI can help you finde vacancy on hh.ru. \
+        \nTalk with me."
         )
+
+    user_id = message.from_user.id
+
+    try:
+
+        result = await q.get_user(user_id)
+        await message.reply(
+            f'You are {message.from_user.username} \
+            \nId in db: id={result["user_id"]}'
+                )
+
+    except UserNotExistError as e:
+        await message.reply(f"{e.message}")
+
+        try:
+
+            result = await q.create_user(user_id)
+            await message.reply(f"Created user with id={user_id}")
+
+        except UserExistError as e:
+            await message.reply(f"{e.message}")
 
 
 @dp.message_handler()
 async def echo(message: types.Message) -> None:
 
-    result = await q.get_user(user_id=message.from_user.id)
-
-    await message.answer(
-        f'Я идентифицировал тебя как {message.from_user.username} \
-        \nс id={message.from_user.id}. \
-        \nApi answers: {result["detail"]}'
-        )
+    await message.answer(message.text)
 
 
 if __name__ == '__main__':

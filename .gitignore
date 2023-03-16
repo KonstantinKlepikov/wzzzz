@@ -148,6 +148,3 @@ cython_debug/
 
 # docker stack
 docker-stack.yml
-
-# prototypes
-_bot.py

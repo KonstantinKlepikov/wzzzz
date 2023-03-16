@@ -220,8 +220,10 @@ class HhruQueries:
         simple_result = await self._make_simple_result(db, simple)
 
         if simple_result['not_in_db']:
-            deeper = await self._make_deeper_requests(simple_result['not_in_db'], semaphore)
-            deeper_result =  self._make_deeper_result(deeper)
+            deeper = await self._make_deeper_requests(
+                simple_result['not_in_db'], semaphore
+                    )
+            deeper_result = self._make_deeper_result(deeper)
 
             return {
                 'in_db': simple_result['in_db'],

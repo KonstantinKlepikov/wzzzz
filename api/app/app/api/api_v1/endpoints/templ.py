@@ -116,7 +116,9 @@ async def delete_template(
         template_name (str): name of template
     """
     user = await check_user(db, user_id)
-    result = await templates.delete(db, {'name': template_name, 'user': str(user['_id'])})
+    result = await templates.delete(
+        db, {'name': template_name, 'user': str(user['_id'])}
+            )
     if result.deleted_count == 0:
         raise HTTPException(
             status_code=404,

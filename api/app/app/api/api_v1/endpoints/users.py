@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, status, Depends, HTTPException
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
@@ -44,10 +45,10 @@ async def create_user(
     responses=settings.ERRORS,
     response_model=User,
         )
-async def create_user(
+async def get_user_by_id(
     user_id: int,
     db: ClientSession = Depends(get_session)
-        ) -> None:
+        ) -> Optional[User]:
     """Get user by given id given user id
     """
     user = await users.get(db, {'user_id': user_id})
