@@ -1,5 +1,6 @@
 import logging
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, Dispatcher, executor
+from aiogram.types import Message
 from app.core.api_queries import QuerieMaker
 from app.schemas.scheme_errors import UserNotExistError, UserExistError
 from app.config import settings
@@ -8,18 +9,18 @@ from app.config import settings
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=settings.API_TOKEN)
 dp = Dispatcher(bot)
-q = QuerieMaker(bot=bot)
+q = QuerieMaker(bot)
 
 
-@dp.message_handler(commands=['start', 'help'])
-async def send_welcome(message: types.Message) -> None:
+@dp.message_handler(commands=['start',])
+async def send_welcome(message: Message) -> None:
     """
-    This handler will be called when user sends `/start` or `/help` command
+    This handler will be called when user sends `/start` command
     """
     await message.reply(
         "Hello! \
         \nI'm wzzzz_bot! \
-        \nI can help you finde vacancy on hh.ru. \
+        \nI can help you find vacancy on hh.ru. \
         \nTalk with me."
         )
 
@@ -38,7 +39,7 @@ async def send_welcome(message: types.Message) -> None:
 
         try:
 
-            result = await q.create_user(user_id)
+            await q.create_user(user_id)
             await message.reply(f"Created user with id={user_id}")
 
         except UserExistError as e:
@@ -46,7 +47,7 @@ async def send_welcome(message: types.Message) -> None:
 
 
 @dp.message_handler()
-async def echo(message: types.Message) -> None:
+async def echo(message: Message) -> None:
 
     await message.answer(message.text)
 
