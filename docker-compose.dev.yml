@@ -46,6 +46,8 @@ services:
   wzzzz-api:
     ports:
       - "8001:8000"
+    expose:
+      - "8000"
     env_file: .env
     build:
       args:
@@ -61,7 +63,6 @@ services:
     build:
       args:
         INSTALL_DEV: ${INSTALL_DEV-true}
-    # command: bash -c "while true; do sleep 1; done"  # Infinite loop to keep container live doing nothing
     networks:
       - wzzzz-dev-network
 
