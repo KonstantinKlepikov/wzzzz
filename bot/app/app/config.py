@@ -1,7 +1,4 @@
-import toml
 from pydantic import BaseSettings
-from typing import Optional, Type
-
 
 
 class Settings(BaseSettings):
