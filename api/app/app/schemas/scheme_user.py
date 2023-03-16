@@ -1,20 +1,25 @@
 from pydantic import BaseModel
 
 
-class UserLogin(BaseModel):
-    """User login
+class UserId(BaseModel):
+    """User id
     """
-    login: int
+    user_id: int
 
     class Config:
 
         schema_extra = {
                 "example": {
-                    'login': 88005553535
+                    'user_id': 88005553535
                         }
                     }
 
 
-class UserInDb(UserLogin):
-    """User and his templates
+class User(UserId):
+    """User
+    """
+
+
+class UserInDb(User):
+    """User in bd
     """

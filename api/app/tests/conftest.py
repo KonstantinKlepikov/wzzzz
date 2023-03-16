@@ -49,7 +49,7 @@ async def db() -> Generator:
                         unique=True
                             )
             if collection == Collections.USERS.value:
-                await db[collection].create_index('login', unique=True)
+                await db[collection].create_index('user_id', unique=True)
 
         # fill vacancies
         collection = db[Collections.VACANCIES.value]

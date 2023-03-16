@@ -6,21 +6,21 @@ from app.crud import users
 
 async def check_user(
     db: ClientSession,
-    login: int
+    user_id: int
         ) -> Optional[dict[str, Any]]:
     """Check is user in db or raise exception
 
     Args:
         db: ClientSession
-        login (int): user login
+        user_id (int): user_id
 
     Returns:
         Optional[dict[str, Any]]: db query result
     """
-    user = await users.get(db, {'login': login})
+    user = await users.get(db, {'user_id': user_id})
     if user:
         return user
     raise HTTPException(
         status_code=409,
-        detail=f"User {login} not exist."
+        detail=f"User {user_id} not exist."
             )

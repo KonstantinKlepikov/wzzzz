@@ -33,11 +33,11 @@ class TestTemplates:
         """Mock check user
         """
         async def mock_return(*args, **kwargs) -> Callable:
-            user = await crud_user.get(args[0], {'login': args[1]})
+            user = await crud_user.get(args[0], {'user_id': args[1]})
             if user:
                 return user
             raise HTTPException(
-                status_code=409,
+                status_code=404,
                 detail=f"User {args[1]} not exist."
                     )
         monkeypatch.setattr(templ, "check_user", mock_return)
@@ -100,7 +100,7 @@ class TestTemplates:
         response = await client.post(
             f"{settings.api_v1_str}/templates/create_empty",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': 'big_template'
                     }
                 )
@@ -118,14 +118,14 @@ class TestTemplates:
         response = await client.get(
             f"{settings.api_v1_str}/templates/get",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': templ_n
                     }
                 )
         assert response.status_code == 200, f'{response.content=}'
         assert response.json()['name'] == templ_n, 'wrong template'
 
-    async def test_templates_get_raises_409(
+    async def test_templates_get_raises_404(
         self,
         client: AsyncClient,
         mock_check: Callable,
@@ -136,11 +136,11 @@ class TestTemplates:
         response = await client.get(
             f"{settings.api_v1_str}/templates/get",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': 'not_existed'
                     }
                 )
-        assert response.status_code == 409, f'{response.content=}'
+        assert response.status_code == 404, f'{response.content=}'
         assert response.json()['detail'] == 'Template not found.', 'wrong error'
 
     async def test_get_list_of_templates_returns_200(
@@ -155,7 +155,7 @@ class TestTemplates:
         response = await client.get(
             f"{settings.api_v1_str}/templates/get_names",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                     }
                 )
         assert response.status_code == 200, f'{response.content=}'
@@ -175,13 +175,13 @@ class TestTemplates:
         response = await client.delete(
             f"{settings.api_v1_str}/templates/delete",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': templ_n
                     }
                 )
         assert response.status_code == 200, f'{response.content=}'
 
-    async def test_delete_template_raises_409(
+    async def test_delete_template_raises_404(
         self,
         client: AsyncClient,
         mock_check: Callable,
@@ -192,11 +192,11 @@ class TestTemplates:
         response = await client.delete(
             f"{settings.api_v1_str}/templates/delete",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': 'not_existed'
                     }
                 )
-        assert response.status_code == 409, f'{response.content=}'
+        assert response.status_code == 404, f'{response.content=}'
         assert response.json()['detail'] == 'Template not found.', 'wrong error'
 
     async def test_replace_template_returns_200(
@@ -213,7 +213,7 @@ class TestTemplates:
         response = await client.patch(
             f"{settings.api_v1_str}/templates/replace",
             params={
-                'login': UserInDb.Config.schema_extra['example']['login'],
+                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                        },
             data=templ
                 )

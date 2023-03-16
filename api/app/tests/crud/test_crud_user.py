@@ -8,7 +8,7 @@ class TestCRUDUser:
     """Test crud user
     """
 
-    async def test_crud_user_get_user_by_login(
+    async def test_crud_user_get_user_by_user_id(
         self,
         db: ClientSession,
         crud_user: CRUDUser
@@ -16,6 +16,6 @@ class TestCRUDUser:
         """Test crud vacancy get by id
         """
         data = UserInDb.Config.schema_extra['example']
-        user = await crud_user.get(db, {'login': data['login']})
+        user = await crud_user.get(db, {'user_id': data['user_id']})
         assert isinstance(user, dict), 'wrong result type'
-        assert user['login'] == data['login'], 'wrong data'
+        assert user['user_id'] == data['user_id'], 'wrong data'

@@ -41,7 +41,7 @@ async def create_collections() -> None:
                             )
             if collection == Collections.USERS.value:
                 await client[settings.db_name][collection] \
-                    .create_index('login', unique=True)
+                    .create_index('user_id', unique=True)
         except CollectionInvalid:
             continue
 

@@ -30,9 +30,9 @@ class TestCheck:
             ) -> None:
         """Test check user
         """
-        login = UserInDb.Config.schema_extra['example']['login']
-        user = await templ.check_user(db, login)
-        assert user['login'] == login, 'wrong return'
+        user_id = UserInDb.Config.schema_extra['example']['user_id']
+        user = await templ.check_user(db, user_id)
+        assert user['user_id'] == user_id, 'wrong return'
 
 
     async def test_check_user_raises_if_not_exist(

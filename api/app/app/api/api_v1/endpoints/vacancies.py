@@ -22,13 +22,13 @@ router = APIRouter()
     responses=settings.ERRORS
         )
 async def ask_for_new_vacancies(
-    login: int,
+    user_id: int,
     template_name: str,
     db: ClientSession = Depends(get_session)
         ) -> Vacancies:
     """Request for vacancies data
     """
-    user = await check_user(db, login)
+    user = await check_user(db, user_id)
     template = await templates.get(db, {'name': template_name, 'user': str(user['_id'])})
 
     if template:
@@ -51,13 +51,13 @@ async def ask_for_new_vacancies(
         else:
 
             raise HTTPException(
-                status_code=409,
+                status_code=404,
                 detail="New vacancy not found."
                     )
 
     else:
 
         raise HTTPException(
-            status_code=409,
+            status_code=404,
             detail="Template not found."
                 )
