@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+
+  wzzzz-mongo-dev:
+    image: mongo
+    container_name: wzzzz-mongo-dev
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DEV_ROOT_USERNAME?Variable not set}
+      MONGO_INITDB_ROOT_PASSWORD: ${DEV_ROOT_PASSWORD?Variable not set}
+      MONGO_INITDB_DATABASE: dev-db
+    volumes:
+      - wzzzz-mongo-dev-data:/data/db
+    networks:
+      - wzzzz-dev-network
+
+  wzzzz-mongo-express-dev:
+    image: mongo-express
+    container_name: wzzzz-mongo-express
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${ADMINUSERNAME?Variable not set}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${ADMINPASSWORD?Variable not set}
+      ME_CONFIG_MONGODB_URL: mongodb://${DEV_ROOT_USERNAME?Variable not set}:${DEV_ROOT_PASSWORD?Variable not set}@wzzzz-mongo-dev:27017/
+    networks:
+      - wzzzz-dev-network
+
+  wzzzz-mongo-test:
+    image: mongo
+    container_name: wzzzz-mongo-test
+    restart: always
+    command: mongod --port 27021
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${TEST_ROOT_USERNAME?Variable not set}
+      MONGO_INITDB_ROOT_PASSWORD: ${TEST_ROOT_PASSWORD?Variable not set}
+      MONGO_INITDB_DATABASE: test-db
+    networks:
+      - wzzzz-dev-network
+
+  wzzzz-api:
+    ports:
+      - "8001:8000"
+    env_file: .env
+    build:
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+
+    networks:
+      - wzzzz-dev-network
+
+  wzzzz-bot:
+    ports:
+      - "8002:8000"
+    env_file: .env
+    build:
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+    # command: bash -c "while true; do sleep 1; done"  # Infinite loop to keep container live doing nothing
+    networks:
+      - wzzzz-dev-network
+
+volumes:
+  wzzzz-mongo-dev-data:
+    driver: local
+
+networks:
+  wzzzz-dev-network:

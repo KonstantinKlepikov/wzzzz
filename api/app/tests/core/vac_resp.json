@@ -1,0 +1,99 @@
+{
+    "per_page": 1,
+    "items": [
+      {
+        "salary": {
+          "to": null,
+          "from": 30000,
+          "currency": "RUR",
+          "gross": true
+        },
+        "name": "Секретарь",
+        "insider_interview": {
+            "id": "12345",
+            "url": "https://hh.ru/interview/12345?employerId=777"
+        },
+        "area": {
+          "url": "https://api.hh.ru/areas/1",
+          "id": "1",
+          "name": "Москва"
+        },
+        "url": "https://api.hh.ru/vacancies/8331228",
+        "published_at": "2013-07-08T16:17:21+0400",
+        "relations": [ ],
+        "employer": {
+          "logo_urls": {
+            "90": "https://hh.ru/employer-logo/289027.png",
+            "240": "https://hh.ru/employer-logo/289169.png",
+            "original": "https://hh.ru/file/2352807.png"
+          },
+          "name": "HeadHunter",
+          "url": "https://api.hh.ru/employers/1455",
+          "alternate_url": "https://hh.ru/employer/1455",
+          "id": "1455",
+          "trusted": true
+        },
+        "contacts": {
+            "name": "Имя",
+            "email": "user@example.com",
+            "phones": [
+                {
+                    "country": "7",
+                    "city": "985",
+                    "number": "000-00-00",
+                    "comment": null
+                }
+            ]
+        },
+        "response_letter_required": true,
+        "address": {
+          "city": "Москва",
+          "street": "улица Годовикова",
+          "building": "9с10",
+          "description": "на проходной потребуется паспорт",
+          "lat": 55.807794,
+          "lng": 37.638699,
+          "metro_stations": [
+            {
+              "station_id": "6.8",
+              "station_name": "Алексеевская",
+              "line_id": "6",
+              "line_name": "Калужско-Рижская",
+              "lat": 55.807794,
+              "lng": 37.638699
+            }
+          ]
+        },
+        "sort_point_distance": 226.001293,
+        "alternate_url": "https://hh.ru/vacancy/8331228",
+        "apply_alternate_url": "https://hh.ru/applicant/vacancy_response?vacancyId=8331228",
+        "department": {
+          "id": "HH-1455-TECH",
+          "name": "HeadHunter::Технический департамент"
+        },
+        "type": {
+          "id": "open",
+          "name": "Открытая"
+        },
+        "id": "8331228",
+        "has_test": true,
+        "response_url": null,
+        "snippet": {
+            "requirement": "Высшее образование. Опыт работы в качестве <highlighttext>секретаря</highlighttext>, офис-менеджера. Знание делопроизводства, документооборота. Коммуникативные навыки.",
+            "responsibility": "Документооборот (регистрация, отправка, контроль исполнения писем, ведение протоколов, отчетность). Распределение корреспонденции. Прием и распределение телефонных звонков."
+        },
+        "schedule": {
+          "id": "fullDay",
+          "name": "Полный день"
+        },
+        "counters": {
+          "responses": 0
+        }
+      }
+    ],
+    "page": 0,
+    "pages": 13,
+    "found": 13,
+    "clusters": null,
+    "arguments": null
+  }

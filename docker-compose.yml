@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+
+  wzzzz-api:
+    image: wzzzz-api
+    container_name: wzzzz-api
+    build:
+      context: ./api
+      dockerfile: api.dockerfile
+    volumes:
+      - ./api/app:/app
+
+  wzzzz-bot:
+    image: wzzzz-bot
+    container_name: wzzzz-bot
+    build:
+      context: ./bot
+      dockerfile: bot.dockerfile
+    depends_on:
+      - wzzzz-api
+    volumes:
+      - ./bot/app:/app
