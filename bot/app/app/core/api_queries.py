@@ -1,8 +1,11 @@
-from typing import Any
-from aiohttp import ClientSession
+from typing import Any, Optional, TypeAlias
+from aiohttp import ClientSession, ClientResponse
 from aiogram import Bot
-from app.schemas.scheme_errors import UserNotExistError, UserExistError
+from app.schemas.scheme_errors import HttpError
 from app.config import settings
+
+
+Result: TypeAlias = dict[str, Any]
 
 
 class QuerieMaker:
@@ -11,17 +14,39 @@ class QuerieMaker:
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
-    async def session(self) -> ClientSession:
-        return await self.bot.get_session()
+    async def _get_response(
+        self,
+        status: int,
+        response: ClientResponse
+            ) -> Optional[Result]:
+        """Get response
 
-    async def get_user(self, user_id: int) -> dict[str, Any]:
+        Args:
+            status (int): status code for right response
+            response (ClientResponse): response object
+
+        Raises:
+            HttpError: raises if status code wrong
+
+        Returns:
+            Optional[Result]: result
+        """
+        result = await response.json()
+        if response.status == status:
+            return result
+        raise HttpError(str(result.get('detail')))
+
+    # async def session(self) -> ClientSession:
+    #     return await self.bot.get_session()
+
+    async def get_user(self, user_id: int) -> Optional[Result]:
         """Get user
 
         Args:
             user_id (int): user id
 
         Returns:
-            dict[str, Any]: user from db
+            Optional[Result]: result of query
         """
         session = await self.bot.get_session()
 
@@ -30,17 +55,17 @@ class QuerieMaker:
             params={'user_id': user_id}
                 ) as response:
 
-            if response.status == 200:
-                return await response.json()
+            result = await self._get_response(200, response)
+            return result
 
-            elif response.status == 404:
-                raise UserNotExistError(user_id)
-
-    async def create_user(self, user_id: int) -> None:
+    async def create_user(self, user_id: int) -> Optional[Result]:
         """Create user
 
         Args:
             user_id (int): user id
+
+        Returns:
+            Optional[Result]: result of query
         """
         session = await self.bot.get_session()
 
@@ -49,8 +74,50 @@ class QuerieMaker:
             params={'user_id': user_id}
                 ) as response:
 
-            if response.status == 201:
-                return await response.json()
+            result = await self._get_response(201, response)
+            return result
 
-            elif response.status == 409:
-                raise UserExistError(user_id)
+    async def get_templates_names(self, user_id: int) -> Optional[Result]:
+        """Get names of templates
+
+        Args:
+            user_id (int): user id
+
+        Returns:
+            Optional[Result]: result of query
+        """
+
+        session = await self.bot.get_session()
+
+        async with session.get(
+            f'{settings.api_v1_str}/templates/get_names',
+            params={'user_id': user_id}
+                ) as response:
+
+            result = await self._get_response(200, response)
+            return result
+
+    async def create_template(
+        self,
+        user_id: int,
+        template_name: str
+            ) -> Optional[Result]:
+        """Create template
+
+        Args:
+            user_id (int): user id
+            template_name (str): template name
+
+        Returns:
+            Optional[Result]: result of query
+        """
+
+        session = await self.bot.get_session()
+
+        async with session.post(
+            f'{settings.api_v1_str}/templates/create_empty',
+            params={'user_id': user_id, 'template_name': template_name}
+                ) as response:
+
+            result = await self._get_response(201, response)
+            return result
