@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from datetime import timedelta, datetime
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
@@ -37,7 +37,7 @@ class TemplateConstraints(BaseModel):
 class TemplateName(BaseModel):
     """Template name
     """
-    name: str
+    name: constr(max_length=20, regex="^[A-Za-z0-9_-]*$")
 
     class Config:
 
