@@ -57,9 +57,10 @@ class TemplatesNames(BaseModel):
 
         schema_extra = {
                 "example": {
-                    'names': {
-                        'name': 'my_template'
-                            }
+                    'names': [
+                        {'name': 'my_template'},
+                        {'name': 'another'},
+                            ]
                         }
                     }
 
