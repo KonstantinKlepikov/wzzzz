@@ -15,6 +15,22 @@ router = Router()
 user_data = {}
 
 
+@router.message(Command('templates'))
+async def get_templates_names(message: Message, qm: QuerieMaker) -> None:
+    """Show available user templates names
+    """
+    user_id = message.from_user.id
+    try:
+        result = await qm.get_templates_names(user_id)
+        if result['names']:
+            names = '\n'.join(t['name'] for t in result['names'])
+            await message.answer(f'Available templates:\n{names}')
+        else:
+            await message.answer('Templates not found. Add with /create template_name')
+    except HttpError as e:
+        await message.answer(e.message)
+
+
 @router.message(Command('get_vacancies'))
 async def get_vacancies(message: Message, qm: QuerieMaker) -> None:
     """Show user templates names and add interfase
@@ -66,7 +82,7 @@ async def callbacks_template_finish_fab(callback: CallbackQuery):
 
 
 @router.message(Command('create'))
-async def create_template(
+async def create(
     message: Message,
     command: CommandObject,
     qm: QuerieMaker
@@ -86,3 +102,54 @@ async def create_template(
             '\n<i>(no more than 20 characters, only ascII letters or numbers)</i>',
             parse_mode="HTML"
                 )
+
+
+@router.message(Command('get'))
+async def get(
+    message: Message,
+    command: CommandObject,
+    qm: QuerieMaker
+        ) -> None:
+    """Get template by name
+    # TODO: make humans readable strings
+    """
+    user_id = message.from_user.id
+    if command.args:
+        try:
+            template = await qm.get_template(user_id, command.args)
+            await message.answer(
+                f'Query template:'
+                f'\nname={template["name"]}'
+                    )
+        except HttpError as e:
+            await message.answer(e.message)
+    else:
+        await message.answer(
+            'Use /get template_name'
+            '\n<i>(to get available templates names use /templates)</i>',
+            parse_mode="HTML"
+                )
+
+
+@router.message(Command('delete'))
+async def delete(
+    message: Message,
+    command: CommandObject,
+    qm: QuerieMaker
+        ) -> None:
+    """Delete template
+    """
+    user_id = message.from_user.id
+    if command.args:
+        try:
+            await qm.delete_template(user_id, command.args)
+            await message.answer(f'Is deleted template: \n{command.args}')
+        except HttpError as e:
+            await message.answer(e.message)
+    else:
+        await message.answer('Use /delete template_name')
+
+
+async def replace():
+    """_summary_
+    """
