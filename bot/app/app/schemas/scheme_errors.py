@@ -1,14 +1,6 @@
-class UserNotExistError(ValueError):
-    """User not exist.
+class HttpError(ValueError):
+    """Http error result
     """
-    def __init__(self, user_id: int) -> None:
-        self.message = f'User with {user_id} not exist.'
-        super().__init__(self.message)
-
-
-class UserExistError(ValueError):
-    """User exist.
-    """
-    def __init__(self, user_id: int) -> None:
-        self.message = f'User with {user_id} exist and cant be created.'
+    def __init__(self, message: str) -> None:
+        self.message = message
         super().__init__(self.message)

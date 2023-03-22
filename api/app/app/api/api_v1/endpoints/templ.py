@@ -1,9 +1,11 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from typing import Annotated
+from fastapi import APIRouter, status, Depends, HTTPException, Query
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from bson.objectid import ObjectId
 from app.db import get_session
 from app.schemas import (
+    TemplateName,
     TemplatesNames,
     TemplateInDb,
     Template
@@ -25,7 +27,7 @@ router = APIRouter()
         )
 async def create_template(
     user_id: int,
-    template_name: str,
+    template_name: Annotated[str, Query(max_length=20, regex="^[A-Za-z0-9_-]*$")],
     db: ClientSession = Depends(get_session)
         ) -> None:
     """Create empty template with given name
@@ -53,7 +55,7 @@ async def create_template(
         )
 async def get_template(
     user_id: int,
-    template_name: str,
+    template_name: Annotated[str, Query(max_length=20, regex="^[A-Za-z0-9_-]*$")],
     db: ClientSession = Depends(get_session)
         ) -> Template:
     """Get template by template_name
@@ -106,7 +108,7 @@ async def get_templates(
         )
 async def delete_template(
     user_id: int,
-    template_name: str,
+    template_name: Annotated[str, Query(max_length=20, regex="^[A-Za-z0-9_-]*$")],
     db: ClientSession = Depends(get_session)
         ) -> None:
     """Delete template by template_name
