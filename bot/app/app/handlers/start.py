@@ -1,18 +1,26 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
+from aiogram_dialog import DialogManager, StartMode
 from app.schemas.scheme_errors import HttpError
 from app.middleware.api_queries import QuerieMaker
+from app.keyboards.start import StartGrp
 
 
 router = Router()
 
 
 @router.message(Command('start'))
-async def start_work(message: Message, qm: QuerieMaker) -> None:
+async def start_work(
+    message: Message,
+    qm: QuerieMaker,
+    dialog_manager: DialogManager
+        ) -> None:
     """
     This handler will be called when user sends `/start` command
     """
+    await dialog_manager.start(StartGrp.start, mode=StartMode.RESET_STACK)
+
     user_id = message.from_user.id
     try:
         result = await qm.get_user(user_id)
