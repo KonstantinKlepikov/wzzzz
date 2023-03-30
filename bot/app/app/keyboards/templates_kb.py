@@ -29,7 +29,7 @@ def get_templates_keyboard_fab(templates: str):
         text='👌 query for vacancies',
         callback_data=TemplatesCallbackFactory(
             action="finish",
-            templates=templates,
+            templates=templates,# from aiogram.fsm.state import State, StatesGroup
                 )
             )
     builder.adjust(3)
