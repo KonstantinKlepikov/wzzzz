@@ -32,8 +32,9 @@ async def main():
     # dialogues
     main_dialog = Dialog(
         start.start_window,
-        templates.template_window,
-        )
+        templates.templates_window,
+        templates.template_window
+            )
     registry = DialogRegistry()
     registry.register(main_dialog)
     registry.setup_dp(dp)

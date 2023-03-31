@@ -21,10 +21,7 @@ start_window = Window(
             ),
     Column(
         Button(Const("all templates"), id="all_templates", on_click=get_templates_names),
-        # Button(Const("get vacancies by template"), id="get_vacancies"),
         Button(Const("create new template"), id="create_new_template"),
-        # Button(Const("display template fields"), id="get"),
-        # Button(Const("delete template"), id="delete"),
         Button(Const("info"), id="info"),
             ),
     Cancel(Const('exit')),
@@ -43,15 +40,16 @@ async def start_work(
     """
     user_id = message.from_user.id
     try:
-        result = await qm.get_user(user_id)
-        await message.answer(f'Your login with id: {result["user_id"]}')
+        await qm.get_user(user_id)
+        # result = await qm.get_user(user_id)
+        # await message.answer(f'Your login with id: {result["user_id"]}')
 
     except HttpError as e:
         await message.answer(e.message)
 
         try:
             await qm.create_user(user_id)
-            await message.answer(f"You registred and login with id: {user_id}")
+            # await message.answer(f"You registred and login with id: {user_id}")
         except HttpError as e:
             await message.answer(e.message)
 
