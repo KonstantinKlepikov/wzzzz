@@ -8,6 +8,7 @@ from app.schemas.scheme_errors import HttpError
 from app.schemas.dialog_states import StartGrp
 from app.middleware.api_queries import QuerieMaker
 from app.handlers.templates import get_templates_names
+from app.handlers.add_template import create_new_template
 
 
 router = Router()
@@ -21,7 +22,7 @@ start_window = Window(
             ),
     Column(
         Button(Const("all templates"), id="all_templates", on_click=get_templates_names),
-        Button(Const("create new template"), id="create_new_template"),
+        Button(Const("create new template"), id="create_new_template", on_click=create_new_template),
         Button(Const("info"), id="info"),
             ),
     Cancel(Const('exit')),
