@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode, Window
 from aiogram_dialog.widgets.text import Multi, Const
-from aiogram_dialog.widgets.kbd import Button, Column, Cancel
+from aiogram_dialog.widgets.kbd import Button, Column, Cancel, Url
 from app.schemas.scheme_errors import HttpError
 from app.schemas.dialog_states import StartGrp
 from app.middleware.api_queries import QuerieMaker
@@ -16,16 +16,27 @@ router = Router()
 
 start_window = Window(
     Multi(
-        Const('Hello! This bot help you find vacancy on hh.ru'),
-        Const('Create and use query templates to get vacancies in .csv format'),
+        Const('wzzzz помогает искать вакансии программиста на hh.ru'),
+        Const('Создавайте шаблоны запроса и используйте их для поиска.'),
         sep='\n'
             ),
     Column(
-        Button(Const("all templates"), id="all_templates", on_click=get_templates_names),
-        Button(Const("create new template"), id="create_new_template", on_click=create_new_template),
-        Button(Const("info"), id="info"),
+        Button(
+            Const("мои шаблоны"),
+            id="all_templates",
+            on_click=get_templates_names
+                ),
+        Button(
+            Const("создать новый шаблон"),
+            id="create_new_template",
+            on_click=create_new_template
+                ),
+        Url(
+            Const("справка по языку запросов"),
+            Const("https://hh.ru/article/1175")
+                ),
             ),
-    Cancel(Const('exit')),
+    Cancel(Const('выйти из меню')),
     state=StartGrp.main,
         )
 

@@ -1,35 +1,56 @@
 from typing import Optional
-from pydantic import BaseModel, constr
+from enum import Enum
+from pydantic import BaseModel, constr, validator
 from datetime import timedelta, datetime
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from app.schemas.constraint import Employment, Schedule, Expirience
+from app.schemas.constraint import (
+    Employment,
+    Schedule,
+    Expirience,
+    Area,
+    Professional,
+    SearchField,
+        )
+
+
+def must_be_a_list(v: list) -> list[str | int]:
+    if v and isinstance(v[0], Enum):
+        return [a.value for a in v]
+    return v
 
 
 class TemplateConstraints(BaseModel):
     """Vacancy constraints scheme
     """
-    area: list[int] = []
-    expirience: Optional[Expirience] = None
-    employment: list[Employment] = []
-    schedule: list[Schedule] = []
-    professional_role: list[int] = []
+    area: list[Area] = Area.get_values()
+    expirience: list[Expirience] = Expirience.get_values()
+    employment: list[Employment] = [Employment.FULL, Employment.PART, ]
+    schedule: list[Schedule] = [Schedule.REMOTE, ]
+    professional_role: list[Professional] = Professional.get_values()
     date_from: datetime = datetime.utcnow() - timedelta(weeks=12)
     text: Optional[str] = None
-    search_field: list[str] = []
+    search_field: list[SearchField] = SearchField.get_values()
+
+    _area = validator('area', allow_reuse=True)(must_be_a_list)
+    _expirience = validator('expirience', allow_reuse=True)(must_be_a_list)
+    _employment = validator('employment', allow_reuse=True)(must_be_a_list)
+    _professional_role = validator('professional_role', allow_reuse=True)(must_be_a_list)
+    _schedule = validator('schedule', allow_reuse=True)(must_be_a_list)
+    _search_field = validator('search_field', allow_reuse=True)(must_be_a_list)
 
     class Config:
 
         schema_extra = {
             "example": {
-                'area': [113, 40, 1001],
-                'expirience': 'noExperience',
-                'employment': ['full', 'part', ],
-                'schedule': ['remote', ],
-                'professional_role': [25, 96],
+                'area': Area.get_names(),
+                'expirience': Expirience.get_names(),
+                'employment': [Employment.FULL, Employment.PART, ],
+                'schedule': [Schedule.REMOTE, ],
+                'professional_role': Professional.get_names(),
                 'date_from': '2022-06-01T10:20:30',
                 'text': 'game* OR гейм*',
-                'search_field': ['description', ],
+                'search_field': SearchField.get_names(),
                     }
                 }
 
@@ -73,14 +94,14 @@ class Template(TemplateName, TemplateConstraints):
         schema_extra = {
                 "example": {
                     'name': 'my_template',
-                    'area': [113, 40, 1001],
-                    'expirience': 'noExperience',
-                    'employment': ['full', 'part', ],
-                    'schedule': ['remote', ],
-                    'professional_role': [25, 96],
+                    'area': Area.get_names(),
+                    'expirience': Expirience.get_names(),
+                    'employment': [Employment.FULL, Employment.PART, ],
+                    'schedule': [Schedule.REMOTE, ],
+                    'professional_role': Professional.get_names(),
                     'date_from': '2022-06-01T10:20:30',
                     'text': 'game* OR гейм*',
-                    'search_field': ['description', ],
+                    'search_field': SearchField.get_names(),
                         }
                     }
 
@@ -111,14 +132,14 @@ class TemplateInDb(Template):
         schema_extra = {
                 "example": {
                     'name': 'my_template',
-                    'area': [113, 40, 1001],
-                    'expirience': 'noExperience',
-                    'employment': ['full', 'part', ],
-                    'schedule': ['remote', ],
-                    'professional_role': [25, 96],
+                    'area': Area.get_values(),
+                    'expirience': Expirience.get_names(),
+                    'employment': [Employment.FULL.value, Employment.PART.value, ],
+                    'schedule': [Schedule.REMOTE, ],
+                    'professional_role': Professional.get_values(),
                     'date_from': '2022-06-01T10:20:30',
                     'text': 'game* OR гейм*',
-                    'search_field': ['description', ],
+                    'search_field': SearchField.get_names(),
                     'user': '123456781234567812345678'
                         }
                     }

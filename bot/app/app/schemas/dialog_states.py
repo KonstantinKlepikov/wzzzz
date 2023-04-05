@@ -1,3 +1,4 @@
+import re
 from aiogram.fsm.state import State, StatesGroup
 
 
@@ -11,7 +12,7 @@ class StartGrp(StatesGroup):
 
 
 # button ids for templates kb
-button_names = [
+BUTTON_NAMES = [
     'one',
     'two',
     'three',
@@ -23,3 +24,6 @@ button_names = [
     'nine',
     'ten'
         ]
+
+
+PATTERN = re.compile('^[A-Za-z0-9_-]*$')

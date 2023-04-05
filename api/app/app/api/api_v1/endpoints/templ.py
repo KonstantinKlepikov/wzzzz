@@ -5,7 +5,6 @@ from pymongo.errors import DuplicateKeyError
 from bson.objectid import ObjectId
 from app.db import get_session
 from app.schemas import (
-    TemplateName,
     TemplatesNames,
     TemplateInDb,
     Template

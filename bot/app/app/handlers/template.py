@@ -1,8 +1,8 @@
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Window, DialogManager
-from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel
+from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel, Url
 from aiogram_dialog.widgets.text import Const, Format
-from app.schemas.dialog_states import StartGrp, button_names
+from app.schemas.dialog_states import StartGrp, BUTTON_NAMES
 from app.schemas.scheme_errors import HttpError
 
 
@@ -18,21 +18,29 @@ async def delete_template(
     if template:
         try:
             await dialog_manager.middleware_data["qm"].delete_template(user_id, template['name'])
-            await c.answer(f'Is deleted template: {template["name"]}')
+            await c.answer(f'Удален шаблон с именем: {template["name"]}')
+            await dialog_manager.switch_to(StartGrp.main)
         except HttpError as e:
             await c.answer(e.message)
     else:
-        c.answer(f'You must choose template to delete.')
+        c.answer(f'Неверное имя - шаблон с таким именем не существует.')
 
 
 async def get_template_fields(**kwargs) -> str:
     """Get template fields
     """
     template = kwargs['dialog_manager'].dialog_data['template']
-    result = 'Template fields' \
-            f'\nname: {template.get("name") or "-"}' \
-            f'\nexpirience: {template.get("expirience") or "-"}' \
-            f'\ntext: {template.get("text") or "-"}'
+    result = 'Поля шаблона:' \
+            f'\nимя: {template.get("name") or "-"}' \
+            f'\nопыт: {template.get("expirience") or "-"}' \
+            f'\nтекст запроса: {template.get("text") or "-"}' \
+            '\n\nВ дополнение к этому ищутся вакансии:' \
+            '\n- только для удаленной работы' \
+            '\n- не старше 2-х месяцев от текущей даты'\
+            '\n- доступные в России, Казахстане и Грузии' \
+            '\n- с полной или частичной занятостью' \
+            '\n- программисты, тестировщики, девопсы и датасаентисты'
+
     return {'text': result}
 
 
@@ -40,12 +48,16 @@ async def get_template_fields(**kwargs) -> str:
 template_window = Window(
     Format('{text}'),
     Column(
-        Button(Const('query for vacancies'), id='query_for_vacancies'),
-        Button(Const('change template fields'), id='change_template_fields'),
-        Button(Const('delete template'), id='delete_template', on_click=delete_template),
+        Button(Const('запросить вакансии'), id='query_for_vacancies'), # TODO:
+        Button(Const('изменить поля шаблона'), id='change_template_fields'), # TODO:
+        Button(Const('удалить шаблон'), id='delete_template', on_click=delete_template),
             ),
-    Back(Const('back to list of templates')),
-    Cancel(Const('exit')),
+    Url(
+        Const("справка по языку запросов"),
+        Const("https://hh.ru/article/1175")
+            ),
+    Back(Const('назад')),
+    Cancel(Const('выйти из меню')),
     state=StartGrp.template,
     getter=get_template_fields
         )
@@ -62,7 +74,7 @@ async def get_template_fields(
     try:
         template = await dialog_manager.middleware_data["qm"].get_template(
             user_id,
-            dialog_manager.dialog_data['names'][button_names.index(button.widget_id)]['name']
+            dialog_manager.dialog_data['templates_kb_names'][BUTTON_NAMES.index(button.widget_id)]
                 )
         dialog_manager.dialog_data['template'] = template
         await dialog_manager.switch_to(StartGrp.template)
