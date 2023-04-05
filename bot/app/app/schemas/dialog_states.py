@@ -1,5 +1,7 @@
 import re
 from aiogram.fsm.state import State, StatesGroup
+from aiogram_dialog.widgets.text import Const
+from aiogram_dialog.widgets.kbd import Url
 
 
 class StartGrp(StatesGroup):
@@ -24,6 +26,8 @@ BUTTON_NAMES = [
     'nine',
     'ten'
         ]
-
-
 PATTERN = re.compile('^[A-Za-z0-9_-]*$')
+QUERY_INFO =  Url(
+    Const("справка по языку запросов"),
+    Const("https://hh.ru/article/1175")
+        )

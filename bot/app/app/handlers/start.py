@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode, Window
 from aiogram_dialog.widgets.text import Multi, Const
-from aiogram_dialog.widgets.kbd import Button, Column, Cancel, Url
+from aiogram_dialog.widgets.kbd import Button, Column, Cancel
 from app.schemas.scheme_errors import HttpError
 from app.schemas.dialog_states import StartGrp
 from app.middleware.api_queries import QuerieMaker
@@ -31,10 +31,6 @@ start_window = Window(
             id="create_new_template",
             on_click=create_new_template
                 ),
-        Url(
-            Const("справка по языку запросов"),
-            Const("https://hh.ru/article/1175")
-                ),
             ),
     Cancel(Const('выйти из меню')),
     state=StartGrp.main,
@@ -55,14 +51,14 @@ async def start_work(
         await qm.get_user(user_id)
         # result = await qm.get_user(user_id)
         # await message.answer(f'Your login with id: {result["user_id"]}')
+        await dialog_manager.start(StartGrp.main, mode=StartMode.RESET_STACK)
 
     except HttpError as e:
-        await message.answer(e.message)
+        # await message.answer(e.message)
 
         try:
             await qm.create_user(user_id)
             # await message.answer(f"You registred and login with id: {user_id}")
+            await dialog_manager.start(StartGrp.main, mode=StartMode.RESET_STACK)
         except HttpError as e:
             await message.answer(e.message)
-
-    await dialog_manager.start(StartGrp.main, mode=StartMode.RESET_STACK)

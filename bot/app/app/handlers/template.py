@@ -2,7 +2,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel, Url
 from aiogram_dialog.widgets.text import Const, Format
-from app.schemas.dialog_states import StartGrp, BUTTON_NAMES
+from app.schemas.dialog_states import StartGrp, BUTTON_NAMES, QUERY_INFO
 from app.schemas.scheme_errors import HttpError
 
 
@@ -48,14 +48,11 @@ async def get_template_fields(**kwargs) -> str:
 template_window = Window(
     Format('{text}'),
     Column(
-        Button(Const('запросить вакансии'), id='query_for_vacancies'), # TODO:
-        Button(Const('изменить поля шаблона'), id='change_template_fields'), # TODO:
+        Button(Const('запросить вакансии (не реализовано)'), id='query_for_vacancies'), # TODO:
+        Button(Const('изменить поля шаблона (не реализовано)'), id='change_template_fields'), # TODO:
         Button(Const('удалить шаблон'), id='delete_template', on_click=delete_template),
             ),
-    Url(
-        Const("справка по языку запросов"),
-        Const("https://hh.ru/article/1175")
-            ),
+    QUERY_INFO,
     Back(Const('назад')),
     Cancel(Const('выйти из меню')),
     state=StartGrp.template,

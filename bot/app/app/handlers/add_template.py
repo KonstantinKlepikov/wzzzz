@@ -1,14 +1,15 @@
 import operator
+from typing import Any
 from aiogram.types import CallbackQuery, Message
-from aiogram_dialog import Window, DialogManager
+from aiogram_dialog import Window, DialogManager, ChatEvent
 from aiogram_dialog.widgets.text import Const, Format
-from aiogram_dialog.widgets.kbd import Button, Cancel, Multiselect, Url
+from aiogram_dialog.widgets.kbd import Button, Cancel, Multiselect, Select, ManagedMultiSelectAdapter
 from aiogram_dialog.widgets.input import MessageInput
-from app.schemas.dialog_states import StartGrp, PATTERN
+from app.schemas.dialog_states import StartGrp, PATTERN, QUERY_INFO
 from app.schemas.scheme_errors import HttpError
 
 
-async def get_expirience(**kwargs):
+async def get_buttons(**kwargs):
     """Expirience choices
     # TODO: import and use constraints from api
     """
@@ -18,9 +19,24 @@ async def get_expirience(**kwargs):
         ("3-6 ears", 'between3And6'),
         ("6+ ears", 'moreThan6'),
             ]
+    q = [
+        ("ищем питониста", 'python* OR Python* OR питон OR python'),
+        ("ищем разработчика игр", 'game* OR Game* OR гейм OR Гейм*'),
+            ]
     return {
         "expirience": expirience,
+        "text_q": q,
             }
+
+
+async def multiselect_changed(
+    event: ChatEvent,
+    select: ManagedMultiSelectAdapter,
+    dialog_manager: DialogManager,
+    *args,
+    **kwargs
+        ) -> None:
+    dialog_manager.dialog_data["expirience_input"] = select.get_checked()
 
 
 async def create_temaplate(
@@ -32,10 +48,14 @@ async def create_temaplate(
     """
     user_id = message.from_user.id
     template = dialog_manager.dialog_data["name_input"]
-    print(template)
-    # TODO: add template fields
+    params = {
+        "name": template,
+        "expirience": dialog_manager.dialog_data["expirience_input"],
+        "text": dialog_manager.dialog_data["text_input"],
+            }
     try:
         await dialog_manager.middleware_data["qm"].create_template(user_id, template)
+        await dialog_manager.middleware_data["qm"].replace_template(user_id, params)
         await message.answer(
             f'Is created template: {dialog_manager.dialog_data["name_input"]}'
                 )
@@ -45,7 +65,7 @@ async def create_temaplate(
         await message.answer(e.message)
 
 
-# choise expirience and create template
+# choose expirience and create template
 create_template_window = Window(
     Const(
         'Обязательно укажите опыт программирования (используйте пункты меню). '
@@ -55,19 +75,16 @@ create_template_window = Window(
     Multiselect(
         Format("✓ {item[0]}"),
         Format("{item[0]}"),
-        id="expirience",
+        id="expirience_input",
         item_id_getter=operator.itemgetter(1),
         items="expirience",
         min_selected=1,
+        on_state_changed=multiselect_changed
             ),
-    Button(Const('создать'), id='create_template', on_click=create_temaplate),
-    Url(
-        Const("справка по языку запросов"),
-        Const("https://hh.ru/article/1175")
-            ),
+    Button(Const('создать шаблон'), id='create_template', on_click=create_temaplate),
     Cancel(Const('выйти из меню')),
     state=StartGrp.create_template,
-    getter=get_expirience
+    getter=get_buttons
         )
 
 
@@ -85,20 +102,36 @@ async def query_text_handler(
         await message.reply('Вы используете недопустимую строку запроса.')
 
 
+async def query_text_calback(
+    c: CallbackQuery,
+    widget: Any,
+    dialog_manager: DialogManager,
+    item_id: str) -> None:
+    """Define query text
+    """
+    dialog_manager.dialog_data["text_input"] = item_id
+    await dialog_manager.switch_to(StartGrp.create_template)
+
+
 define_text = Window(
     Const(
-        'Теперь задайте строку запроса (используйте текстовый ввод мессенжера). '
+        'Теперь задайте строку запроса (используйте текстовый ввод мессенжера или выберите готовую). '
         'Строка запроса используется для фильтрации по текстовому полю и названию вакансий. '
         'К примеру, если задать "game* OR гейм", то будут фильтроваться '
         'вакансии, содержащие в тексте либо в названии одно из указанных слов. '
             ),
-    MessageInput(query_text_handler),
-    Url(
-        Const("справка по языку запросов"),
-        Const("https://hh.ru/article/1175")
+    Select(
+        Format("{item[0]}"),
+        id="text_query",
+        item_id_getter=operator.itemgetter(1),
+        items="text_q",
+        on_click=query_text_calback
             ),
+    MessageInput(query_text_handler),
+    QUERY_INFO,
     Cancel(Const('выйти из меню')),
     state=StartGrp.define_text,
+    getter=get_buttons
 )
 
 
@@ -128,10 +161,6 @@ define_name = Window(
         'до 9 и знак нижнего подчеркивания.'
             ),
     MessageInput(name_handler),
-    Url(
-        Const("справка по языку запросов"),
-        Const("https://hh.ru/article/1175")
-            ),
     Cancel(Const('выйти из меню')),
     state=StartGrp.define_name,
         )

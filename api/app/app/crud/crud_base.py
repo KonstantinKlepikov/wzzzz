@@ -95,6 +95,26 @@ class CRUDBase(Generic[SchemaDbType]):
         return await db.client[self.db_name][self.col_name] \
             .replace_one(q, obj_in.dict())
 
+    async def update(
+        self,
+        db: ClientSession,
+        q: dict[str, Any],
+        obj_in: dict[str, Any]
+            ) -> UpdateResult:
+        """Replace one existed document
+        # TODO: test me and use me
+
+        Args:
+            db (ClientSession): session
+            q: (dict[str, Any]): query filter
+            obj_in (dict[str, Any]): data to update
+
+        Returns:
+            UpdateResult: result of update
+        """
+        return await db.client[self.db_name][self.col_name] \
+            .replace_one(q, {'$set': obj_in})
+
     async def delete(
         self,
         db: ClientSession,

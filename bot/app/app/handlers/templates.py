@@ -1,7 +1,7 @@
 from typing import Union
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Window, DialogManager
-from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel, Url
+from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel
 from aiogram_dialog.widgets.text import Const, Format
 from app.schemas.dialog_states import StartGrp, BUTTON_NAMES
 from app.schemas.scheme_errors import HttpError
@@ -38,10 +38,6 @@ templates_window = Window(
     Column(
         *buttons
     ),
-    Url(
-        Const("справка по языку запросов"),
-        Const("https://hh.ru/article/1175")
-            ),
     Back(Const('назад')),
     Cancel(Const('выйти из меню')),
     state=StartGrp.templates,
