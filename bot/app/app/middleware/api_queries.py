@@ -34,7 +34,7 @@ class QuerieMaker:
         result = await response.json()
         if response.status == status:
             return result
-        raise HttpError(str(result.get('detail')))
+        raise HttpError(str(response.status) + ': ' +str(result.get('detail')))
 
     async def get_user(self, user_id: int) -> Optional[Result]:
         """Get user
@@ -104,6 +104,29 @@ class QuerieMaker:
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(201, response)
+
+
+    async def replace_template(
+        self,
+        user_id: int,
+        params_to_replace: dict[str, Any],
+            ) -> Optional[Result]:
+        """Change template
+
+        Args:
+            user_id (int): user id
+            params (dict[str, Any]): changed params
+
+        Returns:
+            Optional[Result]: result of query
+        """
+        async with self.session as session:
+            async with session._session.patch(
+                f'{settings.api_v1_str}/templates/replace',
+                params={'user_id': user_id},
+                json=params_to_replace,
+                    ) as response:
+                return await self._get_response(200, response)
 
     async def get_template(
         self,

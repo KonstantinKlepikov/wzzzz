@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.config import settings
 from app.crud import CRUDUser, users, templates, CRUDTemplate
 from app.schemas import UserInDb, Template
+from app.schemas.constraint import Area
 from app.api.api_v1.endpoints import templ
 
 
@@ -208,7 +209,7 @@ class TestTemplates:
         """Test replace template
         """
         templ = Template.Config.schema_extra['example']
-        templ['area'] = []
+        templ['area'] = [Area.KAZAKHSTAN, ]
         templ = Template(**templ).json()
         response = await client.patch(
             f"{settings.api_v1_str}/templates/replace",

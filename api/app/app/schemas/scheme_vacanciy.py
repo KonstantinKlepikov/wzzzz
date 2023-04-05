@@ -2,6 +2,14 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, NonNegativeInt, HttpUrl, conint
 from app.schemas.scheme_templates import TemplateConstraints
+from app.schemas.constraint import (
+    Area,
+    Expirience,
+    Employment,
+    Professional,
+    Schedule,
+    SearchField,
+        )
 
 
 class VacancyId(BaseModel):
@@ -28,13 +36,13 @@ class VacancyRequest(TemplateConstraints):
 
         schema_extra = {
                 "example": {
-                    'area': [113, 40, 1001],
+                    'area': Area.get_values(),
                     'text': 'game* OR гейм*',
-                    'search_field': ['description', ],
-                    'expirience': 'noExperience',
-                    'employment': ['full', 'part', ],
-                    'schedule': ['remote', ],
-                    'professional_role': [25, 96],
+                    'search_field': SearchField.get_names(),
+                    'expirience': Expirience.get_names(),
+                    'employment': [Employment.FULL, Employment.PART, ],
+                    'schedule': [Schedule.REMOTE, ],
+                    'professional_role': Professional.get_values(),
                     'date_from': '2022-06-01T10:20:30',
                     'page': 0,
                     'per_page': 100,
