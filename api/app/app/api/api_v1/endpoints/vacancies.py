@@ -29,7 +29,9 @@ async def ask_for_new_vacancies(
     """Request for vacancies data
     """
     user = await check_user(db, user_id)
-    template = await templates.get(db, {'name': template_name, 'user': str(user['_id'])})
+    template = await templates.get(
+        db, {'name': template_name, 'user': str(user['_id'])}
+            )
 
     if template:
         params = VacancyRequest(**template)

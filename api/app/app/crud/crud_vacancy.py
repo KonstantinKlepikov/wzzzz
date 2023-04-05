@@ -32,7 +32,6 @@ class CRUDVacancies(CRUDBase[VacancyResponseInDb]):
         await asyncio.wait(tasks)
         return [task.result() for task in tasks if task.result()]
 
-
     async def create_many(
         self,
         db: ClientSession,

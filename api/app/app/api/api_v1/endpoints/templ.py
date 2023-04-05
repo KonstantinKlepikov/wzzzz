@@ -1,4 +1,5 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from typing import Annotated
+from fastapi import APIRouter, status, Depends, HTTPException, Query
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from bson.objectid import ObjectId
@@ -25,7 +26,7 @@ router = APIRouter()
         )
 async def create_template(
     user_id: int,
-    template_name: str,
+    template_name: Annotated[str, Query(max_length=20, regex="^[A-Za-z0-9_-]*$")],
     db: ClientSession = Depends(get_session)
         ) -> None:
     """Create empty template with given name
@@ -53,7 +54,7 @@ async def create_template(
         )
 async def get_template(
     user_id: int,
-    template_name: str,
+    template_name: Annotated[str, Query(max_length=20, regex="^[A-Za-z0-9_-]*$")],
     db: ClientSession = Depends(get_session)
         ) -> Template:
     """Get template by template_name
@@ -106,7 +107,7 @@ async def get_templates(
         )
 async def delete_template(
     user_id: int,
-    template_name: str,
+    template_name: Annotated[str, Query(max_length=20, regex="^[A-Za-z0-9_-]*$")],
     db: ClientSession = Depends(get_session)
         ) -> None:
     """Delete template by template_name
@@ -116,7 +117,9 @@ async def delete_template(
         template_name (str): name of template
     """
     user = await check_user(db, user_id)
-    result = await templates.delete(db, {'name': template_name, 'user': str(user['_id'])})
+    result = await templates.delete(
+        db, {'name': template_name, 'user': str(user['_id'])}
+            )
     if result.deleted_count == 0:
         raise HTTPException(
             status_code=404,
