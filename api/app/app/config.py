@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     db_name: str
     test_mongodb_url: Optional[str] = None
     access_token_expires_minites: Optional[int] = None
+    expyred_by_seconds: int = 5256000
 
     # open-api settings
     title: str = poetry_data['name']

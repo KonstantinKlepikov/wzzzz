@@ -86,6 +86,7 @@ class VacancyResponse(BaseModel):
 class VacancyResponseInDb(VacancyId, VacancyResponse):
     """Vacancy in db
     """
+    ts: datetime = datetime.utcnow()
 
     class Config:
 
@@ -103,6 +104,7 @@ class VacancyResponseInDb(VacancyId, VacancyResponse):
                     ],
                 'employer': 'Lexicom',
                 'alternate_url': 'https://hh.ru/vacancy/76294246',
+                'ts': '2022-06-01T10:20:30',
                     }
                 }
 
