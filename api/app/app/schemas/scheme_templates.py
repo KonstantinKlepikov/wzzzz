@@ -28,7 +28,7 @@ class TemplateConstraints(BaseModel):
     employment: list[Employment] = [Employment.FULL, Employment.PART, ]
     schedule: list[Schedule] = [Schedule.REMOTE, ]
     professional_role: list[Professional] = Professional.get_values()
-    date_from: datetime = datetime.utcnow() - timedelta(weeks=12)
+    date_from: datetime = datetime.utcnow() - timedelta(weeks=8)
     text: Optional[str] = None
     search_field: list[SearchField] = SearchField.get_values()
 
