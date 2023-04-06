@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram_dialog import DialogRegistry, Dialog
 # from aiogram.fsm.storage.redis import RedisStorage
 import redis.asyncio as redis
-from app.handlers import start, templ, templates, template, add_template
+from app.handlers import start, templates, template, add_template
 from app.middleware.session import SessionMiddleware
 from app.middleware.api_queries import QuerieMaker
 from app.config import settings
@@ -22,7 +22,6 @@ async def main():
 
     dp.include_routers(
         start.router,
-        templ.router,
             )
 
     dp.message.middleware(qm_middlewire)
