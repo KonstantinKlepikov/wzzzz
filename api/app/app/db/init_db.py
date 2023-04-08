@@ -1,6 +1,6 @@
 from typing import Generator
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo import ASCENDING
+from pymongo import ASCENDING, IndexModel
 from pymongo.client_session import ClientSession
 from pymongo.errors import CollectionInvalid
 from fastapi.logger import logger as fastAPI_logger
@@ -31,17 +31,25 @@ async def create_collections() -> None:
         try:
             await client[settings.db_name].create_collection(collection)
             if collection == Collections.VACANCIES:
-                await client[settings.db_name][collection] \
-                    .create_index('v_id', unique=True)
+                index1 = IndexModel('v_id', unique=True)
+                index2 = IndexModel('ts', expireAfterSeconds=settings.expyred_by_seconds)
+                # await client[settings.db_name][collection].create_index(
+                #     'v_id',
+                #     unique=True,
+                #         )
+                await client[settings.db_name][collection].create_indexes(
+                    [index1, index2]
+                        )
             if collection == Collections.TEMPLATES.value:
-                await client[settings.db_name][collection] \
-                    .create_index(
-                        [('name', ASCENDING), ('user', ASCENDING), ],
-                        unique=True
-                            )
+                await client[settings.db_name][collection].create_index(
+                    [('name', ASCENDING), ('user', ASCENDING), ],
+                    unique=True
+                        )
             if collection == Collections.USERS.value:
-                await client[settings.db_name][collection] \
-                    .create_index('user_id', unique=True)
+                await client[settings.db_name][collection].create_index(
+                    'user_id',
+                    unique=True
+                        )
         except CollectionInvalid:
             continue
 

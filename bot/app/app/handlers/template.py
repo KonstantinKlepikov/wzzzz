@@ -1,6 +1,6 @@
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Window, DialogManager
-from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel, Url
+from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel
 from aiogram_dialog.widgets.text import Const, Format
 from app.schemas.dialog_states import StartGrp, BUTTON_NAMES, QUERY_INFO
 from app.schemas.scheme_errors import HttpError
