@@ -56,20 +56,20 @@ services:
     networks:
       - wzzzz-dev-api-network
 
-  # wzzzz-flower:
-  #   image: mher/flower
-  #   env_file:
-  #     - .env
-  #   command:
-  #     - "--broker=amqp://guest@queue:5672//"
-  #     # For the "Broker" tab to work in the flower UI, uncomment the following command argument,
-  #     # and change the queue service's image as well
-  #     # - "--broker_api=http://guest:guest@queue:15672/api//"
-  #   depends_on:
-  #     - wzzzz-mongo-dev
-  #     - wzzzz-redis-dev
-  #   networks:
-  #     - wzzzz-dev-api-network
+  wzzzz-flower:
+    image: mher/flower
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL_DEV}
+      - FLOWER_PORT=5555
+    ports:
+      - "5556:5555"
+    depends_on:
+      - wzzzz-redis-dev
+      - wzzzz-celery-worker
+    networks:
+      - wzzzz-dev-api-network
 
   wzzzz-mongo-test:
     image: mongo
