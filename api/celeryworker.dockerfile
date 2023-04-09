@@ -6,24 +6,26 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+WORKDIR /app/
+
 RUN apt-get update && apt-get install -y git curl && \
     curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.2.0 POETRY_HOME=/opt/poetry python && \
     cd /usr/local/bin && \
     ln -s /opt/poetry/bin/poetry && \
     poetry config virtualenvs.create false
 
-# Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./app /app
-COPY ./api-start.sh /api-start.sh
+COPY ./worker-start.sh /worker-start.sh
 WORKDIR /app
 ENV PYTHONPATH=/app
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install && mypy --install-types --non-interactive ; else poetry install --without dev ; fi"
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
 
-# COPY ./app/api-start.sh /api-start.sh
+# running celery as root
+ENV C_FORCE_ROOT=1
 
-RUN chmod +x /api-start.sh
+RUN chmod +x /worker-start.sh
 
-CMD ["bash", "/api-start.sh"]
+CMD ["bash", "/worker-start.sh"]

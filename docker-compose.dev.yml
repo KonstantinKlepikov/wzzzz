@@ -12,6 +12,7 @@ services:
       - wzzzz-redis-dev-data:/bitnami/redis/data
     networks:
       - wzzzz-dev-bot-network
+      - wzzzz-dev-api-network
 
   wzzzz-mongo-dev:
     image: mongo
@@ -40,6 +41,33 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://${DEV_ROOT_USERNAME?Variable not set}:${DEV_ROOT_PASSWORD?Variable not set}@wzzzz-mongo-dev:27017/
     depends_on:
       - wzzzz-mongo-dev
+    networks:
+      - wzzzz-dev-api-network
+
+  wzzzz-celery-worker:
+    depends_on:
+      - wzzzz-mongo-dev
+      - wzzzz-redis-dev
+    env_file:
+      - .env
+    build:
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+    networks:
+      - wzzzz-dev-api-network
+
+  wzzzz-flower:
+    image: mher/flower
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL_DEV}
+      - FLOWER_PORT=5555
+    ports:
+      - "5556:5555"
+    depends_on:
+      - wzzzz-redis-dev
+      - wzzzz-celery-worker
     networks:
       - wzzzz-dev-api-network
 
