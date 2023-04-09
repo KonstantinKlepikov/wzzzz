@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     test_mongodb_url: Optional[str] = None
     access_token_expires_minites: Optional[int] = None
     expyred_by_seconds: int = 5256000
+    CELERY_BROKER_URL_DEV: Optional[str] = None
 
     # open-api settings
     title: str = poetry_data['name']

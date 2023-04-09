@@ -2,6 +2,12 @@ version: '3.8'
 
 services:
 
+  wzzzz-celery-worker:
+    image: wzzzz-celery-worker
+    build:
+      context: ./api
+      dockerfile: celeryworker.dockerfile
+
   wzzzz-api:
     image: wzzzz-api
     container_name: wzzzz-api
