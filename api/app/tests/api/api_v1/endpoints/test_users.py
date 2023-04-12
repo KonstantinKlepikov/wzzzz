@@ -44,7 +44,7 @@ class TestUsers:
         """Test create user
         """
         response = await client.post(
-            f"{settings.api_v1_str}/users/create",
+            f"{settings.API_V1}/users/create",
             params={'user_id': 45456897}
                 )
 
@@ -59,7 +59,7 @@ class TestUsers:
         """
         user_id = UserInDb.Config.schema_extra['example']['user_id']
         response = await client.post(
-            f"{settings.api_v1_str}/users/create",
+            f"{settings.API_V1}/users/create",
             params={'user_id': user_id}
                 )
 
@@ -74,7 +74,7 @@ class TestUsers:
         """Test get user by id
         """
         response = await client.get(
-            f"{settings.api_v1_str}/users/get_by_id",
+            f"{settings.API_V1}/users/get_by_id",
             params={'user_id': 88005553535}
                 )
 
@@ -89,10 +89,10 @@ class TestUsers:
         """Test get user raises if not exist user
         """
         response = await client.get(
-            f"{settings.api_v1_str}/users/get_by_id",
+            f"{settings.API_V1}/users/get_by_id",
             params={'user_id': 555666}
                 )
 
         assert response.status_code == 404, f'{response.content=}'
-        assert response.json()['detail'] == f'User 555666 not exist.', \
+        assert response.json()['detail'] == 'User 555666 not exist.', \
             'wrong error'

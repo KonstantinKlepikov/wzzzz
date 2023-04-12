@@ -2,7 +2,6 @@ import pytest
 import asyncio
 import json
 from typing import Any, Callable
-from aiohttp import web
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
 from app.core import HhruQueries, HhruQueriesDb, parse_vacancy
@@ -181,6 +180,7 @@ class TestHhruQueries:
 
 class TestHhruQueriesDb:
     """Test HhruqueriesDb
+    # TODO: test me'
     """
 
 
@@ -228,4 +228,3 @@ async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) ->
     assert list(j_data['vacancies'].keys())[0] == str(list(
         Vacancies.Config.schema_extra['example']['vacancies'].keys()
             )[0]), 'wrong data'
-

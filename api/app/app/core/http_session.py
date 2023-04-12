@@ -20,10 +20,10 @@ class SessionMaker:
         """
         if cls.aiohttp_client is None:
             headers = settings.get_hhru_auth() if settings.HHRU_API_TOKEN else {}
-            timeout = ClientTimeout(total=settings.timeout_aiohttp)
+            timeout = ClientTimeout(total=settings.TIMEOUT_AIOHTTP)
             connector = TCPConnector(
                 family=AF_INET,
-                limit_per_host=settings.size_pool_http
+                limit_per_host=settings.SIZE_POOL_HTTP
                     )
             cls.aiohttp_client = ClientSession(
                 timeout=timeout,
@@ -87,7 +87,7 @@ class SessionMaker:
                     url=url,
                     params=params,
                         )
-                await sleep(settings.query_sleep)
+                await sleep(settings.QUERY_SLEEP)
         else:
             result = await cls._get(
                 client=client,

@@ -1,4 +1,3 @@
-import asyncio
 from redis.asyncio import Redis
 from fastapi import APIRouter, status, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -25,7 +24,7 @@ router = APIRouter()
     response_model=Vacancies,
     responses=settings.ERRORS
         )
-async def ask_for_new_vacancies(
+async def ask_for_new_vacancies_with_asyncio(
     user_id: int,
     template_name: str,
     db: ClientSession = Depends(get_session)
@@ -76,7 +75,7 @@ async def ask_for_new_vacancies(
     response_description="Accepted to request hh.ru for vacancies",
     responses=settings.ERRORS
         )
-async def ask_for_new_vacancies(
+async def ask_for_new_vacancies_with_redis(
     user_id: int,
     template_name: str,
     background_tasks: BackgroundTasks,
@@ -103,13 +102,14 @@ async def ask_for_new_vacancies(
 
 
 @router.get(
-    "/Get_new_vacancies_with_celery",
+    "/get_new_vacancies_with_celery",
     status_code=status.HTTP_201_CREATED,
     summary='Request for vacancies data',
     response_description="OK. Requested data.",
-    responses=settings.ERRORS
+    responses=settings.ERRORS,
+    deprecated=True
         )
-async def ask_hhru_api_and_stroe_to_db_result(
+async def ask_for_new_vacancies_with_celery(
     user_id: int,
     template_name: str,
     db: ClientSession = Depends(get_session)
@@ -124,7 +124,9 @@ async def ask_hhru_api_and_stroe_to_db_result(
     if template:
         params = VacancyRequest(**template).dict()
         task = get_vacancy("https://api.hh.ru/vacancies", params)
-        return JSONResponse(status_code=201, content={"status": 200, "message": f"You post {task}"})
+        return JSONResponse(
+            status_code=201, content={"status": 200, "message": f"You post {task}"}
+                )
 
     else:
         raise HTTPException(

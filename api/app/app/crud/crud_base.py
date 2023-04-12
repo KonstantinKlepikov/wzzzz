@@ -14,7 +14,7 @@ class CRUDBase(Generic[SchemaDbType]):
         self,
         schema: Type[SchemaReturnType],
         col_name: str,
-        db_name: str = settings.db_name
+        db_name: str = settings.DB_NAME
             ):
         """
         CRUD object with default methods to Create,

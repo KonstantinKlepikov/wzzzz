@@ -1,6 +1,6 @@
-from app.tasks.worker import save_to_db
+from app.tasks.worker import get_vacancy
 
 
-def test_one():
+def test_get_vacancy():
 
-    assert save_to_db.delay('a').get(timeout=1) == None
+    assert get_vacancy(api_url='a', params={'b': 'c'}) == 'Abcdz', 'wrong result'

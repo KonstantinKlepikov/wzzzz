@@ -268,7 +268,9 @@ class HhruQueriesDb(HhruQueries):
                 simple_result['not_in_db'], semaphore
                     )
             deeper_result = self._make_deeper_result(deeper)
-            self.result['not_in_db'] = self._update(simple_result['not_in_db'], deeper_result)
+            self.result['not_in_db'] = self._update(
+                simple_result['not_in_db'], deeper_result
+                    )
 
     async def save_to_db(self, db: ClientSession) -> None:
         """Save vacancies to db

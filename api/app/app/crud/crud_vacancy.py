@@ -55,5 +55,5 @@ class CRUDVacancies(CRUDBase[VacancyResponseInDb]):
 vacancies = CRUDVacancies(
     schema=VacancyResponseInDb,
     col_name=Collections.VACANCIES.value,
-    db_name=settings.db_name,
+    db_name=settings.DB_NAME,
         )

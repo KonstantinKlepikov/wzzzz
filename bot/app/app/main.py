@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram_dialog import DialogRegistry, Dialog
 # from aiogram.fsm.storage.redis import RedisStorage
-import redis.asyncio as redis
+# import redis.asyncio as redis
 from app.handlers import start, templates, template, add_template
 from app.middleware.session import SessionMiddleware
 from app.middleware.api_queries import QuerieMaker
@@ -17,7 +17,7 @@ async def main():
     dp = Dispatcher()
     qm = QuerieMaker(bot)
     qm_middlewire = SessionMiddleware(qm)
-    # r = redis.Redis(host=settings.REDIS_URL_DEV, port=6379, db=0)
+    # r = redis.Redis(host=settings.REDIS_URL, port=6379, db=0)
     # storage = RedisStorage(r)
 
     dp.include_routers(

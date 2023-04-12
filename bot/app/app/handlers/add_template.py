@@ -3,7 +3,13 @@ from typing import Any
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import Window, DialogManager, ChatEvent
 from aiogram_dialog.widgets.text import Const, Format
-from aiogram_dialog.widgets.kbd import Button, Cancel, Multiselect, Select, ManagedMultiSelectAdapter
+from aiogram_dialog.widgets.kbd import (
+    Button,
+    Cancel,
+    Multiselect,
+    Select,
+    ManagedMultiSelectAdapter,
+        )
 from aiogram_dialog.widgets.input import MessageInput
 from app.schemas.dialog_states import StartGrp, PATTERN, QUERY_INFO
 from app.schemas.scheme_errors import HttpError
@@ -106,7 +112,8 @@ async def query_text_calback(
     c: CallbackQuery,
     widget: Any,
     dialog_manager: DialogManager,
-    item_id: str) -> None:
+    item_id: str
+        ) -> None:
     """Define query text
     """
     dialog_manager.dialog_data["text_input"] = item_id
@@ -115,8 +122,10 @@ async def query_text_calback(
 
 define_text = Window(
     Const(
-        'Теперь задайте строку запроса (используйте текстовый ввод мессенжера или выберите готовую). '
-        'Строка запроса используется для фильтрации по текстовому полю и названию вакансий. '
+        'Теперь задайте строку запроса '
+        '(используйте текстовый ввод мессенжера или выберите готовую). '
+        'Строка запроса используется для фильтрации по текстовому '
+        'полю и названию вакансий. '
         'К примеру, если задать "game* OR гейм", то будут фильтроваться '
         'вакансии, содержащие в тексте либо в названии одно из указанных слов. '
             ),
@@ -149,7 +158,7 @@ async def name_handler(
         await dialog_manager.switch_to(StartGrp.define_text)
     else:
         await message.reply(
-            'Вы пытаетесь использовать недопустимое имя ' \
+            'Вы пытаетесь использовать недопустимое имя '
             'шаблона или шаблон с таким именем уже создан.'
                 )
 
@@ -179,12 +188,14 @@ async def create_new_template(
         if result['names'] and len(result['names']) > 10:
 
             await c.answer(
-                'Сожалеем, но бот не поддерживает больше 10 шаблонов. ' \
+                'Сожалеем, но бот не поддерживает больше 10 шаблонов. '
                 'Удалите или измените один из имеющихся.'
                     )
         else:
 
-            dialog_manager.dialog_data['template_kb_names'] = [n['name'] for n in result['names']]
+            dialog_manager.dialog_data['template_kb_names'] = [
+                n['name'] for n in result['names']
+                    ]
             await dialog_manager.switch_to(StartGrp.define_name)
 
     except HttpError as e:

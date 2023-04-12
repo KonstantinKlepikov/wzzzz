@@ -1,5 +1,4 @@
 from aiohttp.test_utils import TestClient
-from yarl import URL
 from app.core import SessionMaker
 from app.schemas import VacancyRequest
 

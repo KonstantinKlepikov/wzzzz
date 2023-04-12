@@ -6,7 +6,7 @@ from app.config import settings
 
 class RedisConnection:
     def __init__(self):
-        self.db = Redis(host=settings.REDIS_URL_DEV, port=6379, db=0)
+        self.db = Redis(host=settings.REDIS_URL, port=6379, db=0)
 
     async def __aenter__(self):
         return self.db
