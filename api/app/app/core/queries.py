@@ -1,12 +1,13 @@
 import json
 import asyncio
 from asyncio import Semaphore
+from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
-from app.schemas import VacancyRequest
+from app.schemas import VacancyRequest, VacancyResponseInDb, Vacancies
 from app.crud import vacancies
 
 
@@ -14,7 +15,7 @@ VacancyRaw: TypeAlias = dict[str, Any]
 
 
 class HhruQueries:
-    """Make queries to hhru apy
+    """Make queries to hhru api
     """
 
     def __init__(
@@ -235,3 +236,82 @@ class HhruQueries:
                 'in_db': simple_result['in_db'],
                 'not_in_db': {}
                     }
+
+
+class HhruQueriesDb(HhruQueries):
+
+    def __init__(self, session: SessionMaker, url: str, params: VacancyRequest) -> None:
+        super().__init__(session, url, params)
+        self.result: dict[str, VacancyRaw] = {'in_db': {}, 'not_in_db': {}}
+
+    async def vacancies_query(self, db: ClientSession,) -> None:
+        """Request for vacancies
+
+        Args:
+            db (ClientSession): session
+
+        Returns:
+            dict(str, VacancyRaw): transformed response data
+        """
+        semaphore = Semaphore(10)
+        entry = await self.session.get_query(
+            url=self.url,
+            params=self.params,
+            sem=semaphore
+                )
+        simple = await self._make_simple_requests(entry, semaphore)
+        simple_result = await self._make_simple_result(db, simple)
+
+        self.result['in_db'] = simple_result['in_db']
+        if simple_result['not_in_db']:
+            deeper = await self._make_deeper_requests(
+                simple_result['not_in_db'], semaphore
+                    )
+            deeper_result = self._make_deeper_result(deeper)
+            self.result['not_in_db'] = self._update(simple_result['not_in_db'], deeper_result)
+
+    async def save_to_db(self, db: ClientSession) -> None:
+        """Save vacancies to db
+
+        Args:
+            db (ClientSession): database session
+        """
+        if self.result['not_in_db']:
+
+            await vacancies.create_many(
+                db,
+                [
+                    VacancyResponseInDb(v_id=key, **val)
+                    for key, val
+                    in self.result['not_in_db'].items()
+                        ]
+                    )
+
+
+async def parse_vacancy(
+    queries: HhruQueriesDb,
+    db: ClientSession,
+    redis_db: Redis
+        ) -> None:
+    """Get vacancy by api, parse it, save to db and add to redis pubsub
+
+    Args:
+        queries (HhruQueriesDb): hhru query instance
+        db (ClientSession): mongo session
+        redis_db (Redis): redis connection
+    """
+    await queries.vacancies_query(db)
+    await queries.save_to_db(db)
+    m = Vacancies(vacancies=queries.result['not_in_db']).json()
+    await redis_db.publish('vacancies', m)
+
+    # async with redis_db.pubsub() as pubsub:
+    #     await pubsub.subscribe('vacancies')
+    #     while True:
+    #         message = await pubsub.get_message(ignore_subscribe_messages=True)
+    #         if message:
+    #             print(message)
+    #             break
+    #         await asyncio.sleep(0.001)
+
+    #         await redis_db.publish('vacancies', m)

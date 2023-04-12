@@ -33,10 +33,6 @@ async def create_collections() -> None:
             if collection == Collections.VACANCIES:
                 index1 = IndexModel('v_id', unique=True)
                 index2 = IndexModel('ts', expireAfterSeconds=settings.expyred_by_seconds)
-                # await client[settings.db_name][collection].create_index(
-                #     'v_id',
-                #     unique=True,
-                #         )
                 await client[settings.db_name][collection].create_indexes(
                     [index1, index2]
                         )

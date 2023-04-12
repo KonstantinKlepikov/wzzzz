@@ -1,11 +1,13 @@
 import pytest
+import asyncio
 import json
-from typing import Any
+from typing import Any, Callable
 from aiohttp import web
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
-from app.core import HhruQueries
-from app.schemas import VacancyRequest
+from app.core import HhruQueries, HhruQueriesDb, parse_vacancy
+from app.schemas import VacancyRequest, Vacancies
+from app.db.init_redis import RedisConnection
 
 
 @pytest.fixture
@@ -18,6 +20,7 @@ def hhruqueries(session: TestClient) -> HhruQueries:
         VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
         )
     return q
+
 
 @pytest.fixture
 def simple_data() -> dict[str, Any]:
@@ -174,3 +177,55 @@ class TestHhruQueries:
     async def test_vacancies_query(self, hhruqueries: HhruQueries) -> None:
         """Test vacancies_query
         """
+
+
+class TestHhruQueriesDb:
+    """Test HhruqueriesDb
+    """
+
+
+@pytest.fixture(scope="function")
+def mock_query(monkeypatch) -> Callable:
+    """Mock hhru query
+    """
+    async def mock_return(*args, **kwargs) -> Callable:
+        return None
+
+    monkeypatch.setattr(HhruQueriesDb, "vacancies_query", mock_return)
+    monkeypatch.setattr(HhruQueriesDb, "save_to_db", mock_return)
+
+
+@pytest.fixture
+def hhruqueriesdb(session: TestClient, mock_query: Callable) -> HhruQueriesDb:
+    """Make queries class
+    """
+    q = HhruQueriesDb(
+        session,
+        "https://api.hh.ru/vacancies",
+        VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
+        )
+    q.result['not_in_db'] = Vacancies.Config.schema_extra['example']['vacancies']
+    return q
+
+
+async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) -> None:
+    """Test parse vacancy pubsub
+    """
+    async with RedisConnection() as conn:
+        async with conn.pubsub() as pubsub:
+            await pubsub.subscribe('vacancies')
+            await parse_vacancy(hhruqueriesdb, db, conn)
+
+            while True:
+                message = await pubsub.get_message(ignore_subscribe_messages=True)
+                if message:
+                    break
+                await asyncio.sleep(0.001)
+    assert isinstance(message, dict), 'wrong type'
+    assert message['type'] == 'message', 'wrong type of message'
+    assert message['channel'].decode("utf-8") == 'vacancies', 'wrong channel'
+    j_data = json.loads(message['data'].decode("utf-8"))
+    assert list(j_data['vacancies'].keys())[0] == str(list(
+        Vacancies.Config.schema_extra['example']['vacancies'].keys()
+            )[0]), 'wrong data'
+
