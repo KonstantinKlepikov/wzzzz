@@ -211,10 +211,12 @@ def hhruqueriesdb(session: TestClient, mock_query: Callable) -> HhruQueriesDb:
 async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) -> None:
     """Test parse vacancy pubsub
     """
+    user_id = list(Vacancies.Config.schema_extra['example']['vacancies'].keys())[0]
+
     async with RedisConnection() as conn:
         async with conn.pubsub() as pubsub:
-            await pubsub.subscribe('vacancies')
-            await parse_vacancy(hhruqueriesdb, db, conn)
+            await pubsub.subscribe(str(user_id))
+            await parse_vacancy(user_id, hhruqueriesdb, db, conn)
 
             while True:
                 message = await pubsub.get_message(ignore_subscribe_messages=True)
@@ -223,8 +225,6 @@ async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) ->
                 await asyncio.sleep(0.001)
     assert isinstance(message, dict), 'wrong type'
     assert message['type'] == 'message', 'wrong type of message'
-    assert message['channel'].decode("utf-8") == 'vacancies', 'wrong channel'
+    assert message['channel'].decode("utf-8") == str(user_id), 'wrong channel'
     j_data = json.loads(message['data'].decode("utf-8"))
-    assert list(j_data['vacancies'].keys())[0] == str(list(
-        Vacancies.Config.schema_extra['example']['vacancies'].keys()
-            )[0]), 'wrong data'
+    assert str(user_id) in j_data['vacancies'].keys(), 'wrong data'

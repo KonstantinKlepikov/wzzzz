@@ -92,7 +92,7 @@ async def ask_for_new_vacancies_with_redis(
     if template:
         params = VacancyRequest(**template)
         queries = HhruQueriesDb(SessionMaker, "https://api.hh.ru/vacancies", params)
-        background_tasks.add_task(parse_vacancy, queries, db, redis_db)
+        background_tasks.add_task(parse_vacancy, user_id, queries, db, redis_db)
 
     else:
         raise HTTPException(

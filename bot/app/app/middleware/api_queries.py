@@ -168,3 +168,24 @@ class QuerieMaker:
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(200, response)
+
+    async def get_vacancies(
+        self,
+        user_id: int,
+        template_name: str
+            ) -> Optional[Result]:
+        """Get vacancies with template
+
+        Args:
+            user_id (int): user id
+            template_name (str): template name
+
+        Returns:
+            Optional[Result]: result of query
+        """
+        async with self.session as session:
+            async with session._session.get(
+                f'{settings.API_V1}/vacancies/get_new_vacancies_with_redis',
+                params={'user_id': user_id, 'template_name': template_name}
+                    ) as response:
+                return await self._get_response(202, response)

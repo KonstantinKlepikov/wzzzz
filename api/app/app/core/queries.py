@@ -291,6 +291,7 @@ class HhruQueriesDb(HhruQueries):
 
 
 async def parse_vacancy(
+    user_id: int,
     queries: HhruQueriesDb,
     db: ClientSession,
     redis_db: Redis
@@ -305,15 +306,4 @@ async def parse_vacancy(
     await queries.vacancies_query(db)
     await queries.save_to_db(db)
     m = Vacancies(vacancies=queries.result['not_in_db']).json()
-    await redis_db.publish('vacancies', m)
-
-    # async with redis_db.pubsub() as pubsub:
-    #     await pubsub.subscribe('vacancies')
-    #     while True:
-    #         message = await pubsub.get_message(ignore_subscribe_messages=True)
-    #         if message:
-    #             print(message)
-    #             break
-    #         await asyncio.sleep(0.001)
-
-    #         await redis_db.publish('vacancies', m)
+    await redis_db.publish(str(user_id), m)

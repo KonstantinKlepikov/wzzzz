@@ -1,9 +1,44 @@
+import asyncio
+from redis.asyncio import Redis
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel
 from aiogram_dialog.widgets.text import Const, Format
+from app.db.init_redis import RedisConnection
 from app.schemas.dialog_states import StartGrp, BUTTON_NAMES, QUERY_INFO
 from app.schemas.scheme_errors import HttpError
+
+
+async def query_with_template(
+    c: CallbackQuery,
+    button: Button,
+    dialog_manager: DialogManager
+        ) -> None:
+    """Query vacancies
+    """
+    user_id = c.from_user.id
+    template = dialog_manager.dialog_data.get('template')
+    if template:
+        async with RedisConnection() as redis_db:
+            async with redis_db.pubsub() as pubsub:
+                await pubsub.subscribe(str(user_id))
+                try:
+                    await dialog_manager.middleware_data["qm"].get_vacancies(
+                        user_id, template['name']
+                            )
+                    await c.answer(
+                        'Запрошены новые вакансии. Пришлем csv после обработки запроса.'
+                            )
+                    while True:
+                        message = await pubsub.get_message(ignore_subscribe_messages=True)
+                        if message:
+                            print(message)  # TODO: get csv
+                            break
+                        await asyncio.sleep(0.001)  # TODO: make exit if to long request
+                except HttpError as e:
+                    await c.answer(e.message)
+    else:
+        c.answer('Шаблон с таким именем не существует.')
 
 
 async def delete_template(
@@ -25,7 +60,7 @@ async def delete_template(
         except HttpError as e:
             await c.answer(e.message)
     else:
-        c.answer('Неверное имя - шаблон с таким именем не существует.')
+        c.answer('Шаблон с таким именем не существует.')
 
 
 async def get_template_fields(**kwargs) -> str:
@@ -51,9 +86,10 @@ template_window = Window(
     Format('{text}'),
     Column(
         Button(
-            Const('запросить вакансии (не реализовано)'),
-            id='query_for_vacancies'
-                ),  # TODO:
+            Const('запросить вакансии'),
+            id='query_for_vacancies',
+            on_click=query_with_template
+                ),
         Button(
             Const('изменить поля шаблона (не реализовано)'),
             id='change_template_fields'
