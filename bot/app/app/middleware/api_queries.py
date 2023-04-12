@@ -34,7 +34,7 @@ class QuerieMaker:
         result = await response.json()
         if response.status == status:
             return result
-        raise HttpError(str(response.status) + ': ' +str(result.get('detail')))
+        raise HttpError(str(response.status) + ': ' + str(result.get('detail')))
 
     async def get_user(self, user_id: int) -> Optional[Result]:
         """Get user
@@ -47,7 +47,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.api_v1_str}/users/get_by_id',
+                f'{settings.API_V1}/users/get_by_id',
                 params={'user_id': user_id}
                     ) as response:
                 return await self._get_response(200, response)
@@ -63,7 +63,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.post(
-                f'{settings.api_v1_str}/users/create',
+                f'{settings.API_V1}/users/create',
                 params={'user_id': user_id}
                     ) as response:
                 return await self._get_response(201, response)
@@ -79,7 +79,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.api_v1_str}/templates/get_names',
+                f'{settings.API_V1}/templates/get_names',
                 params={'user_id': user_id}
                     ) as response:
                 return await self._get_response(200, response)
@@ -100,11 +100,10 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.post(
-                f'{settings.api_v1_str}/templates/create_empty',
+                f'{settings.API_V1}/templates/create_empty',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(201, response)
-
 
     async def replace_template(
         self,
@@ -122,7 +121,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.patch(
-                f'{settings.api_v1_str}/templates/replace',
+                f'{settings.API_V1}/templates/replace',
                 params={'user_id': user_id},
                 json=params_to_replace,
                     ) as response:
@@ -144,7 +143,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.api_v1_str}/templates/get',
+                f'{settings.API_V1}/templates/get',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(200, response)
@@ -165,7 +164,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.delete(
-                f'{settings.api_v1_str}/templates/delete',
+                f'{settings.API_V1}/templates/delete',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(200, response)

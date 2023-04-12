@@ -11,5 +11,5 @@ class CRUDUser(CRUDBase[UserInDb]):
 users = CRUDUser(
     schema=UserInDb,
     col_name=Collections.USERS.value,
-    db_name=settings.db_name,
+    db_name=settings.DB_NAME,
         )

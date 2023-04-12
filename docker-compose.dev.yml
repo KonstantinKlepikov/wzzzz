@@ -73,7 +73,7 @@ services:
     env_file:
       - .env
     environment:
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL_DEV}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
     depends_on:
       - wzzzz-redis-dev
     networks:

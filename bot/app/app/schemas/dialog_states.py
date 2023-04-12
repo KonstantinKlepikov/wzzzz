@@ -27,7 +27,7 @@ BUTTON_NAMES = [
     'ten'
         ]
 PATTERN = re.compile('^[A-Za-z0-9_-]*$')
-QUERY_INFO =  Url(
+QUERY_INFO = Url(
     Const("справка по языку запросов"),
     Const("https://hh.ru/article/1175")
         )

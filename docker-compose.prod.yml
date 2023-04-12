@@ -22,8 +22,8 @@ services:
 
   wzzzz-flower:
     environment:
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL_PROD}
-      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME_PROD}:${FLOWER_PASSWORD_PROD}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
     depends_on:
       - wzzzz-redis-prod
     networks:

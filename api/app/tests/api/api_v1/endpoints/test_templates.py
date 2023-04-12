@@ -99,7 +99,7 @@ class TestTemplates:
         """Test create template
         """
         response = await client.post(
-            f"{settings.api_v1_str}/templates/create_empty",
+            f"{settings.API_V1}/templates/create_empty",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': 'big_template'
@@ -117,7 +117,7 @@ class TestTemplates:
         """
         templ_n = Template.Config.schema_extra['example']['name']
         response = await client.get(
-            f"{settings.api_v1_str}/templates/get",
+            f"{settings.API_V1}/templates/get",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': templ_n
@@ -135,7 +135,7 @@ class TestTemplates:
         """Test get not existed template
         """
         response = await client.get(
-            f"{settings.api_v1_str}/templates/get",
+            f"{settings.API_V1}/templates/get",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': 'not_existed'
@@ -154,7 +154,7 @@ class TestTemplates:
         """
         templ_n = Template.Config.schema_extra['example']['name']
         response = await client.get(
-            f"{settings.api_v1_str}/templates/get_names",
+            f"{settings.API_V1}/templates/get_names",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                     }
@@ -174,7 +174,7 @@ class TestTemplates:
         """
         templ_n = Template.Config.schema_extra['example']['name']
         response = await client.delete(
-            f"{settings.api_v1_str}/templates/delete",
+            f"{settings.API_V1}/templates/delete",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': templ_n
@@ -191,7 +191,7 @@ class TestTemplates:
         """Test delete not existed template
         """
         response = await client.delete(
-            f"{settings.api_v1_str}/templates/delete",
+            f"{settings.API_V1}/templates/delete",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                 'template_name': 'not_existed'
@@ -212,7 +212,7 @@ class TestTemplates:
         templ['area'] = [Area.KAZAKHSTAN, ]
         templ = Template(**templ).json()
         response = await client.patch(
-            f"{settings.api_v1_str}/templates/replace",
+            f"{settings.API_V1}/templates/replace",
             params={
                 'user_id': UserInDb.Config.schema_extra['example']['user_id'],
                        },

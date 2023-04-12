@@ -1,4 +1,3 @@
-import pytest
 from pymongo.client_session import ClientSession
 from app.crud import CRUDUser
 from app.schemas import UserInDb

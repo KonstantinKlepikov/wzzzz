@@ -56,9 +56,13 @@ async def get_templates_names(
     try:
         result = await dialog_manager.middleware_data["qm"].get_templates_names(user_id)
         if result['names']:
-            dialog_manager.dialog_data['templates_kb_names'] = [n['name'] for n in result['names']]
+            dialog_manager.dialog_data['templates_kb_names'] = [
+                n['name'] for n in result['names']
+                    ]
             await dialog_manager.switch_to(StartGrp.templates)
         else:
-            await c.answer('Ни одного шаблона не найдено. Пожалуйста создайте новый шаблон.')
+            await c.answer(
+                'Ни одного шаблона не найдено. Пожалуйста создайте новый шаблон.'
+                    )
     except HttpError as e:
         await c.answer(e.message)

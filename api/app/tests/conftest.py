@@ -37,7 +37,7 @@ class BdTestContext:
 async def db() -> Generator:
     """Get mock mongodb
     """
-    async with BdTestContext(settings.test_mongodb_url, DB_NAME) as db:
+    async with BdTestContext(settings.TEST_MONGODB_URL, DB_NAME) as db:
 
         for collection in Collections.get_values():
             await db.create_collection(collection)
@@ -45,7 +45,7 @@ async def db() -> Generator:
                 await db[collection].create_index('v_id', unique=True)
             if collection == Collections.TEMPLATES.value:
                 await db[collection].create_index(
-                        [('name', ASCENDING), ('user', ASCENDING),],
+                        [('name', ASCENDING), ('user', ASCENDING), ],
                         unique=True
                             )
             if collection == Collections.USERS.value:
@@ -74,7 +74,7 @@ async def db() -> Generator:
 @pytest.fixture(scope="function")
 async def client(db) -> Generator:
 
-    bd_test_client = AsyncIOMotorClient(settings.test_mongodb_url)
+    bd_test_client = AsyncIOMotorClient(settings.TEST_MONGODB_URL)
 
     async def mock_session() -> Generator[ClientSession, None, None]:
         """Get mongo session

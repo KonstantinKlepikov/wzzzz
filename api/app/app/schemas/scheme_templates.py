@@ -35,7 +35,8 @@ class TemplateConstraints(BaseModel):
     _area = validator('area', allow_reuse=True)(must_be_a_list)
     _expirience = validator('expirience', allow_reuse=True)(must_be_a_list)
     _employment = validator('employment', allow_reuse=True)(must_be_a_list)
-    _professional_role = validator('professional_role', allow_reuse=True)(must_be_a_list)
+    _professional_role = validator(
+        'professional_role', allow_reuse=True)(must_be_a_list)
     _schedule = validator('schedule', allow_reuse=True)(must_be_a_list)
     _search_field = validator('search_field', allow_reuse=True)(must_be_a_list)
 
@@ -58,7 +59,7 @@ class TemplateConstraints(BaseModel):
 class TemplateName(BaseModel):
     """Template name
     """
-    name: constr(max_length=20, regex="^[A-Za-z0-9_-]*$")
+    name: constr(max_length=20, regex="^[A-Za-z0-9_-]*$")  # noqa: F722
 
     class Config:
 
