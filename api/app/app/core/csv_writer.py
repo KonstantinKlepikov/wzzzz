@@ -20,10 +20,11 @@ async def get_vacancy_csv(
     """
     writer = AsyncDictWriter(
         file,
-        Vacancy.__fields__.keys(),  # TODO: set headers to file
+        Vacancy.__fields__.keys(),
         restval="NULL",
         quoting=csv.QUOTE_ALL
             )
+    await writer.writeheader()
     await writer.writerows(data)
     await file.seek(0)
     return file

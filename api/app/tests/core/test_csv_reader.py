@@ -14,6 +14,8 @@ class TestCsv:
         async with TemporaryFile('w+') as f:
             result = await get_vacancy_csv(v.dict()['vacancies'], f)
             async for line in result:
+                if "area" in line:
+                    continue
                 assert Vacancy.Config.schema_extra['example']['area'] in line, \
                     'wrong result'
 
@@ -25,5 +27,7 @@ class TestCsv:
         async with TemporaryFile('w+') as f:
             result = await get_vacancy_csv(v.dict()['vacancies'], f)
             async for line in result:
+                if "area" in line:
+                    continue
                 assert Vacancy.Config.schema_extra['example']['area'] not in line, \
                     'wrong result'

@@ -33,13 +33,15 @@ from app.config import settings
 router = APIRouter()
 
 
+# FIXME: remove me
 @router.get(
     "/get_new_vacancies_with async_query",
     status_code=status.HTTP_200_OK,
     summary='Request for vacancies data',
     response_description="OK. Requested data.",
     response_model=Vacancies,
-    responses=settings.ERRORS
+    responses=settings.ERRORS,
+    deprecated=True,
         )
 async def ask_for_new_vacancies_with_asyncio(
     user_id: int,
@@ -85,8 +87,9 @@ async def ask_for_new_vacancies_with_asyncio(
                 )
 
 
+# TODO: test me
 @router.get(
-    "/get_new_vacancies_with_redis",
+    "/get",
     status_code=status.HTTP_202_ACCEPTED,
     summary='Request for vacancies data',
     response_description="Accepted to request hh.ru for vacancies",
@@ -99,7 +102,13 @@ async def ask_for_new_vacancies_with_redis(
     db: ClientSession = Depends(get_session),
     redis_db: Redis = Depends(get_redis_connection)
         ) -> Vacancies:
-    """Request for vacancies data
+    """Request for vacancies data. Call for this resource makes some operations:
+    1. call too hh.ru vacancy search api
+    2. save vacancy data in db
+    3. push a message with an vacancies ids to pub/sub channel of redis
+
+    To get result .csv file lesson redis with user_id as channel name and
+    use /get_csv resource with list of given ids
     """
     user = await check_user(db, user_id)
     template = await templates.get(
@@ -118,6 +127,7 @@ async def ask_for_new_vacancies_with_redis(
                 )
 
 
+# FIXME: remove me
 @router.get(
     "/get_new_vacancies_with_celery",
     status_code=status.HTTP_201_CREATED,
@@ -152,14 +162,15 @@ async def ask_for_new_vacancies_with_celery(
                 )
 
 
+# TODO: test me
 @router.get(
-    "/get_new_vacancies_csv",
+    "/get_csv",
     status_code=status.HTTP_200_OK,
-    summary='Request for new vacancies csv.',
-    response_description="OK. Requested data.",
+    summary='Request for vacancies csv.',
+    response_description="OK. Requested data",
     responses=settings.ERRORS,
         )
-async def get_new_vacancies_csv(
+async def get_vacancies_csv(
     redis_ids: list[int] = Query(),
     db: ClientSession = Depends(get_session),
         ) -> None:
