@@ -1,15 +1,32 @@
 from redis.asyncio import Redis
-from fastapi import APIRouter, status, Depends, HTTPException, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import (
+    APIRouter,
+    status,
+    Depends,
+    HTTPException,
+    BackgroundTasks,
+    Query,
+        )
+from fastapi.responses import JSONResponse,StreamingResponse
 from pymongo.client_session import ClientSession
-from app.core import SessionMaker, HhruQueries, HhruQueriesDb, check_user, parse_vacancy
+from aiofiles.tempfile import TemporaryFile
+from app.core import (
+    SessionMaker,
+    HhruQueries,
+    HhruQueriesDb,
+    check_user,
+    parse_vacancy,
+    get_vacancy_csv,
+        )
 from app.tasks.worker import get_vacancy
 from app.db import get_session, get_redis_connection
 from app.schemas import (
     VacancyRequest,
+    VacancyResponseInDb,
     Vacancies,
+    AllVacancies,
         )
-from app.crud import templates, vacancies, VacancyResponseInDb
+from app.crud import templates, vacancies
 from app.config import settings
 
 
@@ -132,4 +149,40 @@ async def ask_for_new_vacancies_with_celery(
         raise HTTPException(
             status_code=404,
             detail="Template not found."
+                )
+
+
+@router.get(
+    "/get_new_vacancies_csv",
+    status_code=status.HTTP_200_OK,
+    summary='Request for new vacancies csv.',
+    response_description="OK. Requested data.",
+    responses=settings.ERRORS,
+        )
+async def get_new_vacancies_csv(
+    redis_ids: list[int] = Query(),
+    db: ClientSession = Depends(get_session),
+        ) -> None:
+    """Request for .csv file of new vacancies
+    """
+    vac = await vacancies.get_many_by_ids(db, redis_ids)
+    vac = AllVacancies(vacancies=vac).dict()['vacancies']
+    if vac:
+        async def iterfile():
+            async with TemporaryFile('w+') as f:
+                result = await get_vacancy_csv(vac, f)
+                async for line in result:
+                    yield line
+
+        return StreamingResponse(
+            iterfile(),
+            media_type='text/csv',
+            headers={
+                "Content-Disposition": "attachment;filename=vacancies.csv"
+                    }
+                )
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail="Vacancies not found."
                 )

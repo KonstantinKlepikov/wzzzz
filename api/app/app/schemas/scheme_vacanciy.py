@@ -26,6 +26,20 @@ class VacancyId(BaseModel):
                     }
 
 
+class VacancyTs(BaseModel):
+    """Timestamp
+    """
+    ts: datetime = datetime.utcnow()
+
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'ts': '2022-06-01T10:20:30',
+                        }
+                    }
+
+
 class VacancyRequest(TemplateConstraints):
     """Request querie to hh.ru vacancy API
     """
@@ -83,10 +97,33 @@ class VacancyResponse(BaseModel):
                     }
 
 
-class VacancyResponseInDb(VacancyId, VacancyResponse):
+class Vacancy(VacancyId, VacancyResponse):
+    """Vacancy with id
+    """
+
+    class Config:
+
+        schema_extra = {
+            "example": {
+                'v_id': 123456,
+                'professional_roles': ['Middle Backend Python программист', ],
+                'area': 'Москва',
+                'experience': 'От 1 года до 3 лет',
+                'description':
+                    'Мы создаем системы искусственного интеллекта',
+                'key_skills': [
+                    'Python', 'MongoDB', 'Swagger', 'FastAPI',
+                    'Django Framework', 'REST', 'Git', 'SQL'
+                    ],
+                'employer': 'Lexicom',
+                'alternate_url': 'https://hh.ru/vacancy/76294246',
+                    }
+                }
+
+
+class VacancyResponseInDb(Vacancy, VacancyTs):
     """Vacancy in db
     """
-    ts: datetime = datetime.utcnow()
 
     class Config:
 
@@ -110,7 +147,7 @@ class VacancyResponseInDb(VacancyId, VacancyResponse):
 
 
 class Vacancies(BaseModel):
-    """Vacancies
+    """Vacancies as dict
     """
 
     vacancies: dict[NonNegativeInt, VacancyResponse]
@@ -136,5 +173,37 @@ class Vacancies(BaseModel):
                             'alternate_url': 'https://hh.ru/vacancy/76294246',
                                 },
                             }
+                        }
+                    }
+
+
+class AllVacancies(BaseModel):
+    """Vacancies as list
+    """
+
+    vacancies: list[Vacancy]
+
+    class Config:
+
+        schema_extra = {
+                "example": {
+                    'vacancies': [
+                        {
+                            'v_id': 123456,
+                            'professional_roles': [
+                                'Middle Backend Python программист',
+                                    ],
+                            'area': 'Москва',
+                            'experience': 'От 1 года до 3 лет',
+                            'description':
+                            'Мы создаем системы искусственного интеллекта',
+                            'key_skills': [
+                                'Python', 'MongoDB', 'Swagger', 'FastAPI',
+                                'Django Framework', 'REST', 'Git', 'SQL'
+                                ],
+                            'employer': 'Lexicom',
+                            'alternate_url': 'https://hh.ru/vacancy/76294246',
+                                },
+                            ]
                         }
                     }

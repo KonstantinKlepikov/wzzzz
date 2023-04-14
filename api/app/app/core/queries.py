@@ -7,7 +7,7 @@ from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
-from app.schemas import VacancyRequest, VacancyResponseInDb, Vacancies
+from app.schemas import VacancyRequest, VacancyResponseInDb, Vacancies, Vacancy
 from app.crud import vacancies
 
 
@@ -305,5 +305,5 @@ async def parse_vacancy(
     """
     await queries.vacancies_query(db)
     await queries.save_to_db(db)
-    m = Vacancies(vacancies=queries.result['not_in_db']).json()
+    m = ' '.join([str(key) for key in queries.result['not_in_db'].keys()])
     await redis_db.publish(str(user_id), m)

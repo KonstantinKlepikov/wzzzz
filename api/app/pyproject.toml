@@ -19,6 +19,8 @@ aiohttp = "^3.8.4"
 beautifulsoup4 = "^4.11.2"
 redis = "^4.5.4"
 celery = "^5.2.7"
+aiocsv = "^1.2.4"
+aiofiles = "^23.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=4.6"
