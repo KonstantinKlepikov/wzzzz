@@ -1,12 +1,26 @@
 import asyncio
-from redis.asyncio import Redis
-from aiogram.types import CallbackQuery
+# from redis.asyncio import Redis
+from aiogram.types import CallbackQuery, BufferedInputFile
 from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel
 from aiogram_dialog.widgets.text import Const, Format
 from app.db.init_redis import RedisConnection
 from app.schemas.dialog_states import StartGrp, BUTTON_NAMES, QUERY_INFO
 from app.schemas.scheme_errors import HttpError
+
+
+async def parse_vacancy_ids(data: bytes) -> list[int]:
+    """Parse redis message with ids
+
+    Args:
+        data (bytes): data string
+
+    Returns:
+        list[int]: vacancies ids
+    """
+    if data:
+        return [int(_id) for _id in data.decode('utf-8').split(' ')]
+    return []
 
 
 async def query_with_template(
@@ -32,7 +46,15 @@ async def query_with_template(
                     while True:
                         message = await pubsub.get_message(ignore_subscribe_messages=True)
                         if message:
-                            print(message)  # TODO: get csv
+                            redis_ids = await parse_vacancy_ids(message['data'])
+                            if redis_ids:
+                                result = await dialog_manager.middleware_data["qm"].get_vacancies_csv(
+                                    redis_ids
+                                        )
+                                csv_file = BufferedInputFile(result, filename="new_vacancies.csv")
+                                await c.message.answer_document(csv_file)
+                            else:
+                                await c.message.answer('Новые вакансии не найдены.')
                             break
                         await asyncio.sleep(0.001)  # TODO: make exit if to long request
                 except HttpError as e:
@@ -93,7 +115,7 @@ template_window = Window(
         Button(
             Const('изменить поля шаблона (не реализовано)'),
             id='change_template_fields'
-                ),  # TODO:
+                ),  # TODO: build this
         Button(
             Const('удалить шаблон'),
             id='delete_template',

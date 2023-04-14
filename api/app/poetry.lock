@@ -1,4 +1,20 @@
 [[package]]
+name = "aiocsv"
+version = "1.2.4"
+description = "Asynchronous CSV reading/writing"
+category = "main"
+optional = false
+python-versions = ">=3.6, <4"
+
+[[package]]
+name = "aiofiles"
+version = "23.1.0"
+description = "File support for asyncio."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[[package]]
 name = "aiohttp"
 version = "3.8.4"
 description = "Async http client/server framework (asyncio)"
@@ -1256,9 +1272,40 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.10.6"
-content-hash = "89070a76e738ff72ba135cf52d5d220d77375991599454a3cca6cb607bb64c8b"
+content-hash = "397e75092cff36a9403e09f043f5539e2ea5d0d3340cb1064f1708483061c1d8"
 
 [metadata.files]
+aiocsv = [
+    {file = "aiocsv-1.2.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:6143d3c1f9535b3bb64ab5a3426ca49419ef193b987dbbb15737d5972cc7b196"},
+    {file = "aiocsv-1.2.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2bbb0e2cbc3cf8c3f24da8fb0a9b3c697d98db1d63fffaa68b442fae0346a8ee"},
+    {file = "aiocsv-1.2.4-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:8c2e8705d2717b81a6cb86c767941f2511d4c1751b4f1a58f3b24a705b720c66"},
+    {file = "aiocsv-1.2.4-cp310-cp310-win_amd64.whl", hash = "sha256:4479fda6cd395008a22b3c04e8e960c110455324c2c2fc27157e9569698bc224"},
+    {file = "aiocsv-1.2.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:59ddcacdcf4d57e667dc75b3a0354ab0b1f5eabe9088a7e5fccab96dd400ef61"},
+    {file = "aiocsv-1.2.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4e32053cb29d28ce7c1b539bb040aafd5bee3934d409045f87de072baa4488e4"},
+    {file = "aiocsv-1.2.4-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:ee0b79ed8b8a3f11ec28ca61cb9074f40f4180b25f47a63074e81b93d0fe751a"},
+    {file = "aiocsv-1.2.4-cp311-cp311-win_amd64.whl", hash = "sha256:0184c46515957788bec90e4661b3e741209ba9e7c8c0db2b26019426d0ff6221"},
+    {file = "aiocsv-1.2.4-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:3a8956d0a60de25d4701e680ff9783eeb89721fec9ad26f3c764686e2b6d074e"},
+    {file = "aiocsv-1.2.4-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d865c4d3abf21c590c25c531f367aa61f1c20f520ec05eec1d8e5ee1c8393316"},
+    {file = "aiocsv-1.2.4-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:e717f15cca53b1288d5b6689cff4b798c848b40ba99a5def10d4694223530daf"},
+    {file = "aiocsv-1.2.4-cp36-cp36m-win_amd64.whl", hash = "sha256:b47dfc3ea2baee21baefa875188c6b65ae64fd84831fc796a049f88e91245f9a"},
+    {file = "aiocsv-1.2.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:239a5cd94c0936774b087c266dfb6688b93bc50839652f5b9dba94bd039cac57"},
+    {file = "aiocsv-1.2.4-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f490c9a9862888e934beb91492ebac8024fe43871a19eb17c64a952128525eb3"},
+    {file = "aiocsv-1.2.4-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:c6f9170a0235e770d6cd7acacd084ba6b7fc06a2ee9a5a8f18b445d5c2081618"},
+    {file = "aiocsv-1.2.4-cp37-cp37m-win_amd64.whl", hash = "sha256:c5ae550d35e65c965ffe90d7bebe802a3ab75ab7b7b1aac73dd3a26b5e46fa83"},
+    {file = "aiocsv-1.2.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:264e35c09c0dd735b41e43c2cccc05d19fc685b0ef828c5da56e2800e0ffefd9"},
+    {file = "aiocsv-1.2.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:82dfe16bd19dcfbbafeffb68a0e67577192c49ffe2e2d678f476fc761fcb7ded"},
+    {file = "aiocsv-1.2.4-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:3892ddcae649fa6dfa7dc2ced97131c6f2444b60fee97dd944cf9d43d1b51aa2"},
+    {file = "aiocsv-1.2.4-cp38-cp38-win_amd64.whl", hash = "sha256:4246180c5c9980f25c07627bf7f928ec7d58e0f119c9904add69b8f264763fcd"},
+    {file = "aiocsv-1.2.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:5554f0ad0725b44682b714f3cd039b092af1ca9219e20fc029b8c3db7c928ce6"},
+    {file = "aiocsv-1.2.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:02bd8f1ec4676894194043461c55d371b906ab9f16dd460606dccda74850de37"},
+    {file = "aiocsv-1.2.4-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:e088937657a99bcd346a22bc0948b29d4ffa1d60976dc1a37d4df8104a08f2ab"},
+    {file = "aiocsv-1.2.4-cp39-cp39-win_amd64.whl", hash = "sha256:d33222cef014d396400b26011c3456cc1abaf1b2ca344c2945969fbd48c5f9e8"},
+    {file = "aiocsv-1.2.4.tar.gz", hash = "sha256:f592cb62ef52471ca42a762e89d0a02fcde395067041a7d70972aefa722c0fcd"},
+]
+aiofiles = [
+    {file = "aiofiles-23.1.0-py3-none-any.whl", hash = "sha256:9312414ae06472eb6f1d163f555e466a23aed1c8f60c30cccf7121dba2e53eb2"},
+    {file = "aiofiles-23.1.0.tar.gz", hash = "sha256:edd247df9a19e0db16534d4baaf536d6609a43e1de5401d7a4c1c148753a1635"},
+]
 aiohttp = [
     {file = "aiohttp-3.8.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:5ce45967538fb747370308d3145aa68a074bdecb4f3a300869590f725ced69c1"},
     {file = "aiohttp-3.8.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b744c33b6f14ca26b7544e8d8aadff6b765a80ad6164fb1a430bbadd593dfb1a"},

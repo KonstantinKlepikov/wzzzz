@@ -211,7 +211,8 @@ def hhruqueriesdb(session: TestClient, mock_query: Callable) -> HhruQueriesDb:
 async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) -> None:
     """Test parse vacancy pubsub
     """
-    user_id = list(Vacancies.Config.schema_extra['example']['vacancies'].keys())[0]
+    user_id = 12345
+    vacancy_id = list(Vacancies.Config.schema_extra['example']['vacancies'].keys())[0]
 
     async with RedisConnection() as conn:
         async with conn.pubsub() as pubsub:
@@ -227,4 +228,4 @@ async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) ->
     assert message['type'] == 'message', 'wrong type of message'
     assert message['channel'].decode("utf-8") == str(user_id), 'wrong channel'
     j_data = json.loads(message['data'].decode("utf-8"))
-    assert str(user_id) in j_data['vacancies'].keys(), 'wrong data'
+    assert j_data == vacancy_id, 'wrong data'

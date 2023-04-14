@@ -31,10 +31,36 @@ class QuerieMaker:
         Returns:
             Optional[Result]: result
         """
-        result = await response.json()
+        # result = await response.json()
         if response.status == status:
+            result = await response.json()
             return result
-        raise HttpError(str(response.status) + ': ' + str(result.get('detail')))
+        # raise HttpError(str(response.status) + ': ' + str(result.get('detail')))
+        raise HttpError(str(response.status) + ' error')
+
+    async def _get_file_response(
+        self,
+        status: int,
+        response: ClientResponse
+            ) -> Optional[Result]:
+        """Get file response
+
+        Args:
+            status (int): status code for right response
+            response (ClientResponse): response object
+
+        Raises:
+            HttpError: raises if status code wrong
+
+        Returns:
+            Optional[Result]: result
+        """
+        # result = await response.read()
+        if response.status == status:
+            result = await response.read()
+            return result
+        # raise HttpError(str(response.status) + ': ' + str(result.get('detail')))
+        raise HttpError(str(response.status) + ' error')
 
     async def get_user(self, user_id: int) -> Optional[Result]:
         """Get user
@@ -185,7 +211,26 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.API_V1}/vacancies/get_new_vacancies_with_redis',
+                f'{settings.API_V1}/vacancies/get',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(202, response)
+
+    async def get_vacancies_csv(
+        self,
+        redis_ids: list[int]
+            ) -> Optional[Result]:
+        """Get vacancies with template
+
+        Args:
+            redis_ids (list[int]): ids of vacancies
+
+        Returns:
+            Optional[Result]: result of query
+        """
+        async with self.session as session:
+            async with session._session.get(
+                f'{settings.API_V1}/vacancies/get_csv',
+                params={'redis_ids': redis_ids}
+                    ) as response:
+                return await self._get_file_response(200, response)

@@ -9,8 +9,10 @@ from app.schemas.scheme_templates import (
 from app.schemas.scheme_vacanciy import (
     VacancyRequest,
     VacancyResponse,
+    Vacancy,
     VacancyResponseInDb,
     Vacancies,
+    AllVacancies,
         )
 
 from app.schemas.scheme_user import UserInDb, User
