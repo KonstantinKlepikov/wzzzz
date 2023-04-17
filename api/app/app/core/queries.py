@@ -7,16 +7,14 @@ from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
-from app.schemas import VacancyRequest, VacancyResponseInDb, Vacancies, Vacancy
+from app.schemas import VacancyRequest, VacancyResponseInDb
 from app.crud import vacancies
 
 
 VacancyRaw: TypeAlias = dict[str, Any]
 
 
-class HhruQueries:
-    """Make queries to hhru api
-    """
+class HhruQueriesDb:
 
     def __init__(
         self,
@@ -27,7 +25,7 @@ class HhruQueries:
         self.session = session
         self.url = url
         self.params = json.loads(params.json(exclude_none=True))
-        # TODO: fixme. Here form dict returns dt, but need str
+        self.result: dict[str, VacancyRaw] = {'in_db': {}, 'not_in_db': {}}
 
     @staticmethod
     def _field_to_list(x: Optional[list[VacancyRaw] | VacancyRaw]) -> list[Any]:
@@ -202,63 +200,18 @@ class HhruQueries:
                 simple[key].update(deeper[key])
         return simple
 
-    async def vacancies_query(self, db: ClientSession,) -> dict[str, VacancyRaw]:
+    async def vacancies_query(self, db: ClientSession, entry: VacancyRaw) -> None:
         """Request for vacancies
 
         Args:
             db (ClientSession): session
+            entry (VacancyRaw): raw entry response - this is
+                                response to get number of pages
 
         Returns:
             dict(str, VacancyRaw): transformed response data
         """
         semaphore = Semaphore(10)
-        entry = await self.session.get_query(
-            url=self.url,
-            params=self.params,
-            sem=semaphore
-                )
-        simple = await self._make_simple_requests(entry, semaphore)
-        simple_result = await self._make_simple_result(db, simple)
-
-        if simple_result['not_in_db']:
-            deeper = await self._make_deeper_requests(
-                simple_result['not_in_db'], semaphore
-                    )
-            deeper_result = self._make_deeper_result(deeper)
-
-            return {
-                'in_db': simple_result['in_db'],
-                'not_in_db': self._update(simple_result['not_in_db'], deeper_result)
-                    }
-        else:
-
-            return {
-                'in_db': simple_result['in_db'],
-                'not_in_db': {}
-                    }
-
-
-class HhruQueriesDb(HhruQueries):
-
-    def __init__(self, session: SessionMaker, url: str, params: VacancyRequest) -> None:
-        super().__init__(session, url, params)
-        self.result: dict[str, VacancyRaw] = {'in_db': {}, 'not_in_db': {}}
-
-    async def vacancies_query(self, db: ClientSession,) -> None:
-        """Request for vacancies
-
-        Args:
-            db (ClientSession): session
-
-        Returns:
-            dict(str, VacancyRaw): transformed response data
-        """
-        semaphore = Semaphore(10)
-        entry = await self.session.get_query(
-            url=self.url,
-            params=self.params,
-            sem=semaphore
-                )
         simple = await self._make_simple_requests(entry, semaphore)
         simple_result = await self._make_simple_result(db, simple)
 
@@ -290,9 +243,10 @@ class HhruQueriesDb(HhruQueries):
                     )
 
 
-async def parse_vacancy(
+async def get_parse_save_vacancy(
     user_id: int,
     queries: HhruQueriesDb,
+    entry: VacancyRaw,
     db: ClientSession,
     redis_db: Redis
         ) -> None:
@@ -300,10 +254,12 @@ async def parse_vacancy(
 
     Args:
         queries (HhruQueriesDb): hhru query instance
+        entry (VacancyRaw): raw entry response - this is
+                            response to get number of pages
         db (ClientSession): mongo session
         redis_db (Redis): redis connection
     """
-    await queries.vacancies_query(db)
+    await queries.vacancies_query(db, entry)
     await queries.save_to_db(db)
     m = ' '.join([str(key) for key in queries.result['not_in_db'].keys()])
     await redis_db.publish(str(user_id), m)
