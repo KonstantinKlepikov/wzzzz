@@ -5,7 +5,7 @@ from typing import Any, Callable
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
 from app.core import HhruQueriesDb, get_parse_save_vacancy
-from app.schemas import VacancyRequest, Vacancies
+from app.schemas import VacancyRequest, Vacancies, Relevance
 from app.db.init_redis import RedisConnection
 
 
@@ -135,11 +135,13 @@ class TestHhruQueries:
         """
         data = [{'items': [simple_data, ]}, ]
         result = await hhruqueries._make_simple_result(db, data)
-        assert isinstance(result, dict), 'wrong type'
+        assert isinstance(result, tuple), 'wrong type'
         assert len(result) == 2, 'wrong number of objects'
-        assert len(result['in_db']) == 0, 'wrong in db'
-        assert len(result['not_in_db']) == 1, 'wrong not in db'
-        assert result['not_in_db'][simple_data['id']]['url'] == simple_data['url'], \
+        assert isinstance(result[0], list), 'wrong in db type'
+        assert len(result[0]) == 0, 'wrong in db'
+        assert isinstance(result[1], dict), 'wrong not in db type'
+        assert len(result[1]) == 1, 'wrong not in db len'
+        assert result[1][simple_data['id']]['url'] == simple_data['url'], \
             'wrong parsing'
 
     def test_make_deeper_result(
@@ -198,7 +200,7 @@ def hhruqueriesdb(session: TestClient, mock_query: Callable) -> HhruQueriesDb:
         "https://api.hh.ru/vacancies",
         VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
         )
-    q.result['not_in_db'] = Vacancies.Config.schema_extra['example']['vacancies']
+    q.result[1].update(Vacancies.Config.schema_extra['example']['vacancies'])
     return q
 
 
@@ -211,11 +213,19 @@ async def test_get_parse_save_vacancy(
     user_id = 12345
     vacancy_id = list(Vacancies.Config.schema_extra['example']['vacancies'].keys())[0]
     entry = Vacancies.Config.schema_extra['example']['vacancies']
+    relevance = Relevance.ALL
 
     async with RedisConnection() as conn:
         async with conn.pubsub() as pubsub:
             await pubsub.subscribe(str(user_id))
-            await get_parse_save_vacancy(user_id, hhruqueriesdb, entry, db, conn)
+            await get_parse_save_vacancy(
+                user_id,
+                hhruqueriesdb,
+                entry,
+                relevance,
+                db,
+                conn,
+                    )
 
             while True:
                 message = await pubsub.get_message(ignore_subscribe_messages=True)

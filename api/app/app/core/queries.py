@@ -1,13 +1,14 @@
 import json
 import asyncio
 from asyncio import Semaphore
+from itertools import chain
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
-from app.schemas import VacancyRequest, VacancyResponseInDb
+from app.schemas import VacancyRequest, VacancyResponseInDb, Relevance
 from app.crud import vacancies
 
 
@@ -25,7 +26,7 @@ class HhruQueriesDb:
         self.session = session
         self.url = url
         self.params = json.loads(params.json(exclude_none=True))
-        self.result: dict[str, VacancyRaw] = {'in_db': {}, 'not_in_db': {}}
+        self.result: tuple[list[int], VacancyRaw] = ([], {})
 
     @staticmethod
     def _field_to_list(x: Optional[list[VacancyRaw] | VacancyRaw]) -> list[Any]:
@@ -148,7 +149,7 @@ class HhruQueriesDb:
         self,
         db: ClientSession,
         result: list[VacancyRaw],
-            ) -> dict[str, dict[int, VacancyRaw]]:
+            ) -> tuple[list[int], VacancyRaw]:
         """Make simple result from list of transformed response data
 
         Args:
@@ -156,25 +157,19 @@ class HhruQueriesDb:
             result (list[VacancyRaw]): transformed response data
 
         Returns:
-            dict[str, dict[int, VacancyRaw]]: transformed data
+            tuple[list[int], VacancyRaw]: transformed data
         """
         ids = [int(i['id']) for r in result for i in r['items']]
-
-        result_in_db = await vacancies.get_many_by_ids(db, ids)
-
-        in_db = {
-            i['v_id']: self._simple_to_dict(i)
-            for i in result_in_db
-                }
+        in_db = [i['v_id'] for i in await vacancies.get_many_by_ids(db, ids)]
 
         not_in_db = {
             i['id']: self._simple_to_dict(i)
             for r in result
             for i in r['items']
-            if int(i['id']) not in in_db.keys()
+            if int(i['id']) not in in_db
                 }
 
-        return {'in_db': in_db, 'not_in_db': not_in_db}
+        return (in_db, not_in_db)
 
     def _make_deeper_result(
         self,
@@ -213,16 +208,15 @@ class HhruQueriesDb:
         """
         semaphore = Semaphore(10)
         simple = await self._make_simple_requests(entry, semaphore)
-        simple_result = await self._make_simple_result(db, simple)
+        self.result = await self._make_simple_result(db, simple)
 
-        self.result['in_db'] = simple_result['in_db']
-        if simple_result['not_in_db']:
+        if self.result[1]:
             deeper = await self._make_deeper_requests(
-                simple_result['not_in_db'], semaphore
+                self.result[1], semaphore
                     )
             deeper_result = self._make_deeper_result(deeper)
-            self.result['not_in_db'] = self._update(
-                simple_result['not_in_db'], deeper_result
+            self.result[1] = self._update(
+                self.result[1], deeper_result
                     )
 
     async def save_to_db(self, db: ClientSession) -> None:
@@ -231,14 +225,14 @@ class HhruQueriesDb:
         Args:
             db (ClientSession): database session
         """
-        if self.result['not_in_db']:
+        if self.result[1]:
 
             await vacancies.create_many(
                 db,
                 [
                     VacancyResponseInDb(v_id=key, **val)
                     for key, val
-                    in self.result['not_in_db'].items()
+                    in self.result[1].items()
                         ]
                     )
 
@@ -247,19 +241,29 @@ async def get_parse_save_vacancy(
     user_id: int,
     queries: HhruQueriesDb,
     entry: VacancyRaw,
+    relevance: Relevance,
     db: ClientSession,
     redis_db: Redis
         ) -> None:
     """Get vacancy by api, parse it, save to db and add to redis pubsub
 
     Args:
+        user_id (int): user id
         queries (HhruQueriesDb): hhru query instance
         entry (VacancyRaw): raw entry response - this is
                             response to get number of pages
+        relevance (Relevance): relevance of returned content
         db (ClientSession): mongo session
         redis_db (Redis): redis connection
     """
     await queries.vacancies_query(db, entry)
     await queries.save_to_db(db)
-    m = ' '.join([str(key) for key in queries.result['not_in_db'].keys()])
+    # TODO: test this case
+    if relevance == Relevance.NEW:
+        m = ' '.join([str(key) for key in queries.result[1].keys()])
+    if relevance == Relevance.ALL:
+        m = ' '.join([
+            str(key) for key
+            in chain(queries.result[0], queries.result[1].keys()) #  # NOTE: is that right for asyncio?
+                ])
     await redis_db.publish(str(user_id), m)

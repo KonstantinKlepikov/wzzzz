@@ -23,6 +23,7 @@ from app.schemas import (
     VacancyRequest,
     Vacancies,
     AllVacancies,
+    Relevance,
         )
 from app.crud import templates, vacancies
 from app.config import settings
@@ -44,7 +45,8 @@ async def ask_for_new_vacancies_with_redis(
     template_name: str,
     background_tasks: BackgroundTasks,
     db: ClientSession = Depends(get_session),
-    redis_db: Redis = Depends(get_redis_connection)
+    redis_db: Redis = Depends(get_redis_connection),
+    relevance: Relevance = Relevance.ALL,
         ) -> Vacancies:
     """Request for vacancies data. Call for this resource makes some operations:
     1. call hh.ru vacancy search api
@@ -68,6 +70,7 @@ async def ask_for_new_vacancies_with_redis(
             user_id,
             queries,
             entry,
+            relevance,
             db,
             redis_db
                 )

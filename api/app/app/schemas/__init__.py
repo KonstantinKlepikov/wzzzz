@@ -22,4 +22,5 @@ from app.schemas.constraint import (
     Employment,
     Schedule,
     Collections,
+    Relevance,
         )
