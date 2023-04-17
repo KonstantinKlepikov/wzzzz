@@ -32,13 +32,15 @@ async def query_with_template(
     """
     user_id = c.from_user.id
     template = dialog_manager.dialog_data.get('template')
+    # TODO: rewrite me - im ambiculous
     if template:
         async with RedisConnection() as redis_db:
             async with redis_db.pubsub() as pubsub:
                 await pubsub.subscribe(str(user_id))
                 try:
+                    relevance = 'all' if button.widget_id == 'query_for_vacancies' else 'new'
                     await dialog_manager.middleware_data["qm"].get_vacancies(
-                        user_id, template['name']
+                        user_id, template['name'], relevance
                             )
                     await c.answer(
                         'Запрошены новые вакансии. Пришлем csv после обработки запроса.'
@@ -51,7 +53,7 @@ async def query_with_template(
                                 result = await dialog_manager.middleware_data["qm"].get_vacancies_csv(
                                     redis_ids
                                         )
-                                csv_file = BufferedInputFile(result, filename="new_vacancies.csv")
+                                csv_file = BufferedInputFile(result, filename="vacancies.csv")
                                 await c.message.answer_document(csv_file)
                             else:
                                 await c.message.answer('Новые вакансии не найдены.')
@@ -108,8 +110,13 @@ template_window = Window(
     Format('{text}'),
     Column(
         Button(
-            Const('запросить вакансии'),
+            Const('запросить все вакансии по шаблону'),
             id='query_for_vacancies',
+            on_click=query_with_template
+                ),
+        Button(
+            Const('только отсутствующие в БД'),
+            id='query_for_new_vacancies',
             on_click=query_with_template
                 ),
         Button(

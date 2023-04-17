@@ -1,7 +1,7 @@
 from typing import Any
 from celery import chain
 from app.core.celery_app import celery_app
-from app.core import HhruQueries, SessionMaker
+from app.core import HhruQueriesDb, SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest
 
 
@@ -10,7 +10,7 @@ def get_pages(api_url: str, params: dict[str, Any]):
     """Here we get firts page by query
     """
     params = VacancyRequest(**params)
-    queries = HhruQueries(SessionMaker, api_url, params)
+    queries = HhruQueriesDb(SessionMaker, api_url, params)
 
     return 'abcde'
 

@@ -4,16 +4,16 @@ import json
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
-from app.core import HhruQueries, HhruQueriesDb, parse_vacancy
-from app.schemas import VacancyRequest, Vacancies
+from app.core import HhruQueriesDb, get_parse_save_vacancy
+from app.schemas import VacancyRequest, Vacancies, Relevance
 from app.db.init_redis import RedisConnection
 
 
 @pytest.fixture
-def hhruqueries(session: TestClient) -> HhruQueries:
+def hhruqueries(session: TestClient) -> HhruQueriesDb:
     """Make queries class
     """
-    q = HhruQueries(
+    q = HhruQueriesDb(
         session,
         "https://api.hh.ru/vacancies",
         VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
@@ -49,10 +49,10 @@ def deeper_data() -> dict[str, Any]:
 
 
 class TestHhruQueries:
-    """Test Hhruqueries
+    """Test HhruqueriesDb
     """
 
-    def test_field_to_list(self, hhruqueries: HhruQueries) -> None:
+    def test_field_to_list(self, hhruqueries: HhruQueriesDb) -> None:
         """Test field_to_list
         """
         data = [
@@ -69,7 +69,7 @@ class TestHhruQueries:
         assert hhruqueries._field_to_list('some') == ['some', ], \
             'wrong another result'
 
-    def test_field_to_value(self, hhruqueries: HhruQueries) -> None:
+    def test_field_to_value(self, hhruqueries: HhruQueriesDb) -> None:
         """Test field_to_value
         """
         data = {'name': '1', 'profarea_name': 'a'}
@@ -78,7 +78,7 @@ class TestHhruQueries:
         assert hhruqueries._field_to_value(None) is None, \
             'wrong empty result'
 
-    def test_html_to_value(self, hhruqueries: HhruQueries) -> None:
+    def test_html_to_value(self, hhruqueries: HhruQueriesDb) -> None:
         """Test html_to_value
         """
         data = '<p><strong>this is</strong> fine'
@@ -89,7 +89,7 @@ class TestHhruQueries:
 
     def test_simple_to_dict(
         self,
-        hhruqueries: HhruQueries,
+        hhruqueries: HhruQueriesDb,
         simple_data: dict[str, Any]
             ) -> None:
         """Test simple_to_dict
@@ -103,7 +103,7 @@ class TestHhruQueries:
 
     def test_deeper_to_dict(
         self,
-        hhruqueries: HhruQueries,
+        hhruqueries: HhruQueriesDb,
             ) -> None:
         """Test deeper_to_dict
         """
@@ -127,7 +127,7 @@ class TestHhruQueries:
 
     async def test_make_simple_result(
         self,
-        hhruqueries: HhruQueries,
+        hhruqueries: HhruQueriesDb,
         simple_data: dict[str, Any],
         db: ClientSession
             ) -> None:
@@ -135,16 +135,18 @@ class TestHhruQueries:
         """
         data = [{'items': [simple_data, ]}, ]
         result = await hhruqueries._make_simple_result(db, data)
-        assert isinstance(result, dict), 'wrong type'
+        assert isinstance(result, tuple), 'wrong type'
         assert len(result) == 2, 'wrong number of objects'
-        assert len(result['in_db']) == 0, 'wrong in db'
-        assert len(result['not_in_db']) == 1, 'wrong not in db'
-        assert result['not_in_db'][simple_data['id']]['url'] == simple_data['url'], \
+        assert isinstance(result[0], list), 'wrong in db type'
+        assert len(result[0]) == 0, 'wrong in db'
+        assert isinstance(result[1], dict), 'wrong not in db type'
+        assert len(result[1]) == 1, 'wrong not in db len'
+        assert result[1][simple_data['id']]['url'] == simple_data['url'], \
             'wrong parsing'
 
     def test_make_deeper_result(
         self,
-        hhruqueries: HhruQueries,
+        hhruqueries: HhruQueriesDb,
         deeper_data: dict[str, Any]
             ) -> None:
         """Test make_deeper_result
@@ -158,30 +160,24 @@ class TestHhruQueries:
         assert result['12345']['key_skills'] == ['2', '3'], 'wrong skills'
 
     @pytest.mark.skip('# TODO: test me')
-    def test_update(self, hhruqueries: HhruQueries) -> None:
+    def test_update(self, hhruqueries: HhruQueriesDb) -> None:
         """Test _update
         """
 
     @pytest.mark.skip('# TODO: test me')
-    async def test_make_simple_requests(self, hhruqueries: HhruQueries) -> None:
+    async def test_make_simple_requests(self, hhruqueries: HhruQueriesDb) -> None:
         """Test _make_simple_requests
         """
 
     @pytest.mark.skip('# TODO: test me')
-    async def test_make_deeper_requests(self, hhruqueries: HhruQueries) -> None:
+    async def test_make_deeper_requests(self, hhruqueries: HhruQueriesDb) -> None:
         """Test _make_simple_requests
         """
 
     @pytest.mark.skip('# TODO: test me')
-    async def test_vacancies_query(self, hhruqueries: HhruQueries) -> None:
+    async def test_vacancies_query(self, hhruqueries: HhruQueriesDb) -> None:
         """Test vacancies_query
         """
-
-
-class TestHhruQueriesDb:
-    """Test HhruqueriesDb
-    # TODO: test me'
-    """
 
 
 @pytest.fixture(scope="function")
@@ -204,20 +200,32 @@ def hhruqueriesdb(session: TestClient, mock_query: Callable) -> HhruQueriesDb:
         "https://api.hh.ru/vacancies",
         VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
         )
-    q.result['not_in_db'] = Vacancies.Config.schema_extra['example']['vacancies']
+    q.result[1].update(Vacancies.Config.schema_extra['example']['vacancies'])
     return q
 
 
-async def test_parse_vacancy(hhruqueriesdb: HhruQueriesDb, db: ClientSession) -> None:
+async def test_get_parse_save_vacancy(
+    hhruqueriesdb: HhruQueriesDb,
+    db: ClientSession
+        ) -> None:
     """Test parse vacancy pubsub
     """
     user_id = 12345
     vacancy_id = list(Vacancies.Config.schema_extra['example']['vacancies'].keys())[0]
+    entry = Vacancies.Config.schema_extra['example']['vacancies']
+    relevance = Relevance.ALL
 
     async with RedisConnection() as conn:
         async with conn.pubsub() as pubsub:
             await pubsub.subscribe(str(user_id))
-            await parse_vacancy(user_id, hhruqueriesdb, db, conn)
+            await get_parse_save_vacancy(
+                user_id,
+                hhruqueriesdb,
+                entry,
+                relevance,
+                db,
+                conn,
+                    )
 
             while True:
                 message = await pubsub.get_message(ignore_subscribe_messages=True)

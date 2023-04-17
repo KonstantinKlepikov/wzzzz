@@ -31,11 +31,9 @@ class QuerieMaker:
         Returns:
             Optional[Result]: result
         """
-        # result = await response.json()
         if response.status == status:
             result = await response.json()
             return result
-        # raise HttpError(str(response.status) + ': ' + str(result.get('detail')))
         raise HttpError(str(response.status) + ' error')
 
     async def _get_file_response(
@@ -55,11 +53,9 @@ class QuerieMaker:
         Returns:
             Optional[Result]: result
         """
-        # result = await response.read()
         if response.status == status:
             result = await response.read()
             return result
-        # raise HttpError(str(response.status) + ': ' + str(result.get('detail')))
         raise HttpError(str(response.status) + ' error')
 
     async def get_user(self, user_id: int) -> Optional[Result]:
@@ -198,7 +194,8 @@ class QuerieMaker:
     async def get_vacancies(
         self,
         user_id: int,
-        template_name: str
+        template_name: str,
+        relevance: str,
             ) -> Optional[Result]:
         """Get vacancies with template
 
@@ -212,7 +209,11 @@ class QuerieMaker:
         async with self.session as session:
             async with session._session.get(
                 f'{settings.API_V1}/vacancies/get',
-                params={'user_id': user_id, 'template_name': template_name}
+                params={
+                    'user_id': user_id,
+                    'template_name': template_name,
+                    'relevance': relevance,
+                        }
                     ) as response:
                 return await self._get_response(202, response)
 

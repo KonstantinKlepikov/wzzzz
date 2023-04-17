@@ -72,3 +72,10 @@ class Collections(BaseStrEnum):
     VACANCIES = 'vacancies'
     TEMPLATES = 'templates'
     USERS = 'users'
+
+
+class Relevance(BaseStrEnum):
+    """Relevance of vacancies returned by request
+    """
+    ALL = 'all'
+    NEW = 'new'
