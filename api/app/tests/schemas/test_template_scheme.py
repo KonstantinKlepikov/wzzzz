@@ -16,19 +16,19 @@ class TestTemplateSchenes:
         with pytest.raises(
             ValidationError,
             match='limit_value=20'
-            ):
+                ):
             Template(**data)
 
         data['name'] = 'return (this==$Data)'
         with pytest.raises(
             ValidationError,
             match='string does not match regex'
-            ):
+                ):
             Template(**data)
 
         data['name'] = 'это не ascii'
         with pytest.raises(
             ValidationError,
             match='string does not match regex'
-            ):
+                ):
             Template(**data)

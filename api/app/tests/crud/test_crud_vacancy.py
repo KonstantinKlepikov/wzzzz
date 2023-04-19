@@ -121,7 +121,8 @@ class TestCRUDVacancy:
 
         assert isinstance(result, list), 'wromg result rype'
         assert len(result) == 1, 'wrong result len'
-        assert result[0]['v_id'] == VacancyResponseInDb.Config.schema_extra['example']['v_id'], \
+        assert result[0]['v_id'] == \
+            VacancyResponseInDb.Config.schema_extra['example']['v_id'], \
             'wrong result object'
 
     async def test_cкud_vaсancy_create_many(

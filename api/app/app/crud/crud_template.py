@@ -32,5 +32,5 @@ class CRUDTemplate(CRUDBase[TemplateConstraints]):
 templates = CRUDTemplate(
     schema=TemplateConstraints,
     col_name=Collections.TEMPLATES.value,
-    db_name=settings.db_name,
+    db_name=settings.DB_NAME,
         )

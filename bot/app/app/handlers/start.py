@@ -53,7 +53,8 @@ async def start_work(
         # await message.answer(f'Your login with id: {result["user_id"]}')
         await dialog_manager.start(StartGrp.main, mode=StartMode.RESET_STACK)
 
-    except HttpError as e:
+    # except HttpError as e:
+    except HttpError:
         # await message.answer(e.message)
 
         try:

@@ -1,5 +1,5 @@
 import toml
-from pydantic import BaseSettings
+from pydantic import BaseSettings, SecretStr
 from typing import Optional, Type
 from app.schemas.scheme_error import (
     HttpErrorMessage,
@@ -16,13 +16,22 @@ poetry_data = toml.load('pyproject.toml')['tool']['poetry']
 
 class Settings(BaseSettings):
     # api vars
-    api_v1_str: str = "/api/v1"
+    API_V1: str = "/api/v1"
 
     # db settings
-    mongodb_url: str
-    db_name: str
-    test_mongodb_url: Optional[str] = None
-    access_token_expires_minites: Optional[int] = None
+    MONGODB_URL: str
+    DB_NAME: str
+    ACCES_TOKEN_EXPIRES_MINUTES: Optional[int] = None
+    EXPIRED_BY_SECONDS: int = 5256000
+    CELERY_BROKER_URL: Optional[str] = None
+    REDIS_URL: str = None
+
+    # hhru settings
+    HHRU_API_TOKEN: SecretStr = None
+    HHRU_CLIENT_EMAIL: Optional[str] = None
+
+    # def settings
+    TEST_MONGODB_URL: Optional[str] = None
 
     # open-api settings
     title: str = poetry_data['name']
@@ -49,9 +58,17 @@ class Settings(BaseSettings):
         429: {'model': HttpError429}
             }
 
-    size_pool_http: int = 100
-    timeout_aiohttp: int = 2
-    query_sleep: float = 0.05
+    SIZE_POOL_HTTP: int = 100
+    TIMEOUT_AIOHTTP: int = 2
+    QUERY_SLEEP: float = 0.05
+
+    def get_hhru_auth(self):
+        """Get auth headers for api query
+        """
+        return {
+            'Authorization': f"Bearer {self.HHRU_API_TOKEN.get_secret_value()}",
+            'User-Agent': f'wzzzz/1.0 ({self.HHRU_CLIENT_EMAIL})',
+                }
 
 
 settings = Settings()

@@ -31,10 +31,32 @@ class QuerieMaker:
         Returns:
             Optional[Result]: result
         """
-        result = await response.json()
         if response.status == status:
+            result = await response.json()
             return result
-        raise HttpError(str(response.status) + ': ' +str(result.get('detail')))
+        raise HttpError(str(response.status) + ' error')
+
+    async def _get_file_response(
+        self,
+        status: int,
+        response: ClientResponse
+            ) -> Optional[Result]:
+        """Get file response
+
+        Args:
+            status (int): status code for right response
+            response (ClientResponse): response object
+
+        Raises:
+            HttpError: raises if status code wrong
+
+        Returns:
+            Optional[Result]: result
+        """
+        if response.status == status:
+            result = await response.read()
+            return result
+        raise HttpError(str(response.status) + ' error')
 
     async def get_user(self, user_id: int) -> Optional[Result]:
         """Get user
@@ -47,7 +69,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.api_v1_str}/users/get_by_id',
+                f'{settings.API_V1}/users/get_by_id',
                 params={'user_id': user_id}
                     ) as response:
                 return await self._get_response(200, response)
@@ -63,7 +85,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.post(
-                f'{settings.api_v1_str}/users/create',
+                f'{settings.API_V1}/users/create',
                 params={'user_id': user_id}
                     ) as response:
                 return await self._get_response(201, response)
@@ -79,7 +101,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.api_v1_str}/templates/get_names',
+                f'{settings.API_V1}/templates/get_names',
                 params={'user_id': user_id}
                     ) as response:
                 return await self._get_response(200, response)
@@ -100,11 +122,10 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.post(
-                f'{settings.api_v1_str}/templates/create_empty',
+                f'{settings.API_V1}/templates/create_empty',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(201, response)
-
 
     async def replace_template(
         self,
@@ -122,7 +143,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.patch(
-                f'{settings.api_v1_str}/templates/replace',
+                f'{settings.API_V1}/templates/replace',
                 params={'user_id': user_id},
                 json=params_to_replace,
                     ) as response:
@@ -144,7 +165,7 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.get(
-                f'{settings.api_v1_str}/templates/get',
+                f'{settings.API_V1}/templates/get',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(200, response)
@@ -165,7 +186,52 @@ class QuerieMaker:
         """
         async with self.session as session:
             async with session._session.delete(
-                f'{settings.api_v1_str}/templates/delete',
+                f'{settings.API_V1}/templates/delete',
                 params={'user_id': user_id, 'template_name': template_name}
                     ) as response:
                 return await self._get_response(200, response)
+
+    async def get_vacancies(
+        self,
+        user_id: int,
+        template_name: str,
+        relevance: str,
+            ) -> Optional[Result]:
+        """Get vacancies with template
+
+        Args:
+            user_id (int): user id
+            template_name (str): template name
+
+        Returns:
+            Optional[Result]: result of query
+        """
+        async with self.session as session:
+            async with session._session.get(
+                f'{settings.API_V1}/vacancies/get',
+                params={
+                    'user_id': user_id,
+                    'template_name': template_name,
+                    'relevance': relevance,
+                        }
+                    ) as response:
+                return await self._get_response(202, response)
+
+    async def get_vacancies_csv(
+        self,
+        redis_ids: list[int]
+            ) -> Optional[Result]:
+        """Get vacancies with template
+
+        Args:
+            redis_ids (list[int]): ids of vacancies
+
+        Returns:
+            Optional[Result]: result of query
+        """
+        async with self.session as session:
+            async with session._session.get(
+                f'{settings.API_V1}/vacancies/get_csv',
+                params={'redis_ids': redis_ids}
+                    ) as response:
+                return await self._get_file_response(200, response)

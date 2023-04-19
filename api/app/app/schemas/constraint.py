@@ -9,7 +9,7 @@ class BaseEnum(Enum):
         return value in cls._value2member_map_
 
     @classmethod
-    def get_values(cls) -> list[str| int]:
+    def get_values(cls) -> list[str | int]:
         return [e.value for e in cls]
 
     @classmethod
@@ -20,6 +20,7 @@ class BaseEnum(Enum):
 class BaseStrEnum(str, BaseEnum):
     """Base class for enumeration
     """
+
 
 class Area(BaseEnum):
     """https://github.com/hhru/api/blob/master/docs/areas.md
@@ -71,3 +72,10 @@ class Collections(BaseStrEnum):
     VACANCIES = 'vacancies'
     TEMPLATES = 'templates'
     USERS = 'users'
+
+
+class Relevance(BaseStrEnum):
+    """Relevance of vacancies returned by request
+    """
+    ALL = 'all'
+    NEW = 'new'

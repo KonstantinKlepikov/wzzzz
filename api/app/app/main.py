@@ -19,7 +19,7 @@ async def aio_on_shutdown() -> None:
 
 app = FastAPI(
     title=settings.title,
-    openapi_url=f"{settings.api_v1_str}/openapi.json",
+    openapi_url=f"{settings.API_V1}/openapi.json",
     description=settings.descriprion,
     version=settings.version,
     openapi_tags=settings.openapi_tags,
@@ -38,4 +38,4 @@ app.add_middleware(
 )
 
 
-app.include_router(api_router, prefix=settings.api_v1_str)
+app.include_router(api_router, prefix=settings.API_V1)

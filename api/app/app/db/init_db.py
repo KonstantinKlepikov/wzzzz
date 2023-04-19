@@ -1,6 +1,6 @@
 from typing import Generator
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo import ASCENDING
+from pymongo import ASCENDING, IndexModel
 from pymongo.client_session import ClientSession
 from pymongo.errors import CollectionInvalid
 from fastapi.logger import logger as fastAPI_logger
@@ -21,7 +21,7 @@ def get_client(mongodb_url: str) -> AsyncIOMotorClient:
     return AsyncIOMotorClient(mongodb_url)
 
 
-client = get_client(settings.mongodb_url)
+client = get_client(settings.MONGODB_URL)
 
 
 async def create_collections() -> None:
@@ -29,19 +29,25 @@ async def create_collections() -> None:
     """
     for collection in Collections.get_values():
         try:
-            await client[settings.db_name].create_collection(collection)
+            await client[settings.DB_NAME].create_collection(collection)
             if collection == Collections.VACANCIES:
-                await client[settings.db_name][collection] \
-                    .create_index('v_id', unique=True)
+                index1 = IndexModel('v_id', unique=True)
+                index2 = IndexModel(
+                    'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
+                        )
+                await client[settings.DB_NAME][collection].create_indexes(
+                    [index1, index2]
+                        )
             if collection == Collections.TEMPLATES.value:
-                await client[settings.db_name][collection] \
-                    .create_index(
-                        [('name', ASCENDING), ('user', ASCENDING), ],
-                        unique=True
-                            )
+                await client[settings.DB_NAME][collection].create_index(
+                    [('name', ASCENDING), ('user', ASCENDING), ],
+                    unique=True
+                        )
             if collection == Collections.USERS.value:
-                await client[settings.db_name][collection] \
-                    .create_index('user_id', unique=True)
+                await client[settings.DB_NAME][collection].create_index(
+                    'user_id',
+                    unique=True
+                        )
         except CollectionInvalid:
             continue
 

@@ -34,7 +34,6 @@ class TestCheck:
         user = await templ.check_user(db, user_id)
         assert user['user_id'] == user_id, 'wrong return'
 
-
     async def test_check_user_raises_if_not_exist(
         self,
         mock_user: Callable,
