@@ -23,7 +23,7 @@ jobs:
         id: bump_version
         uses: anothrNick/github-tag-action@1.61.0
         env:
-          GITHUB_TOKEN: ${{ secrets.ROOT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # https://github.com/heinrichreimer/action-github-changelog-generator
       - name: Generate release changelog
