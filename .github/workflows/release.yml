@@ -21,19 +21,9 @@ jobs:
       # https://github.com/anothrNick/github-tag-action
       - name: Bump version and push tag
         id: bump_version
-        # uses: anothrNick/github-tag-action@1.61.0
-        uses: anothrNick/github-tag-action@master
+        uses: anothrNick/github-tag-action@1.61.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BRANCHES: main,master
-          INITIAL_VERSION : 0.0.0
-
-      # # https://github.com/mathieudutour/github-tag-action
-      # - name: Bump version and push tag
-      #   id: tag_version
-      #   uses: mathieudutour/github-tag-action@v6.1
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ROOT_GITHUB_TOKEN }}
 
       # https://github.com/heinrichreimer/action-github-changelog-generator
       - name: Generate release changelog
@@ -77,9 +67,3 @@ jobs:
           body: ${{ steps.generate_release_changelog.outputs.changelog }}
           draft: false
           prerelease: false
-        # with:
-        #   tag_name: ${{ steps.tag_version.outputs.new_tag }}
-        #   name: Release ${{ steps.tag_version.outputs.new_tag }}
-        #   body: ${{ steps.generate_release_changelog.outputs.changelog }}
-        #   draft: false
-        #   prerelease: false
