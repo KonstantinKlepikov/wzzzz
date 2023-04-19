@@ -10,7 +10,6 @@
 - [api swagger docs](http://localhost:8001/docs/)
 - [api redoc](http://localhost:8001/redoc/)
 - [mongoDB admin panel](http://localhost:8082/)
-- [flower](http://localhost:5556/)
 
 ### Test inside api or bot container
 

@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     DB_NAME: str
     ACCES_TOKEN_EXPIRES_MINUTES: Optional[int] = None
     EXPIRED_BY_SECONDS: int = 5256000
-    CELERY_BROKER_URL: Optional[str] = None
+    # CELERY_BROKER_URL: Optional[str] = None
     REDIS_URL: str = None
 
     # hhru settings
