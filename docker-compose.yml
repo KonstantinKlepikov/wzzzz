@@ -2,23 +2,6 @@ version: '3.8'
 
 services:
 
-  wzzzz-celery-worker:
-    image: wzzzz-celery-worker
-    container_name: wzzzz-celery-worker
-    build:
-      context: ./api
-      dockerfile: celeryworker.dockerfile
-
-  wzzzz-flower:
-    image: mher/flower
-    container_name: wzzzz-flower
-    environment:
-      - FLOWER_PORT=5555
-    ports:
-      - "5556:5555"
-    depends_on:
-      - wzzzz-celery-worker
-
   wzzzz-api:
     image: wzzzz-api
     container_name: wzzzz-api

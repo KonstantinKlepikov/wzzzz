@@ -14,21 +14,6 @@ services:
       - wzzzz-prod-bot-network
       - wzzzz-prod-api-network
 
-  wzzzz-celery-worker:
-    depends_on:
-      - wzzzz-redis-prod
-    networks:
-      - wzzzz-prod-api-network
-
-  wzzzz-flower:
-    environment:
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
-    depends_on:
-      - wzzzz-redis-prod
-    networks:
-      - wzzzz-prod-api-network
-
   wzzzz-api:
     networks:
       - wzzzz-prod-api-network

@@ -7,7 +7,7 @@ from fastapi import (
     BackgroundTasks,
     Query,
         )
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from pymongo.client_session import ClientSession
 from aiofiles.tempfile import TemporaryFile
 from app.core import (
@@ -17,7 +17,6 @@ from app.core import (
     get_parse_save_vacancy,
     get_vacancy_csv,
         )
-from app.tasks.worker import get_vacancy
 from app.db import get_session, get_redis_connection
 from app.schemas import (
     VacancyRequest,
@@ -73,41 +72,6 @@ async def ask_for_new_vacancies_with_redis(
             relevance,
             db,
             redis_db
-                )
-
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail="Template not found."
-                )
-
-
-# FIXME: rewrite me
-@router.get(
-    "/get_new_vacancies_with_celery",
-    status_code=status.HTTP_201_CREATED,
-    summary='Request for vacancies data',
-    response_description="OK. Requested data.",
-    responses=settings.ERRORS,
-    deprecated=True
-        )
-async def ask_for_new_vacancies_with_celery(
-    user_id: int,
-    template_name: str,
-    db: ClientSession = Depends(get_session)
-        ) -> Vacancies:
-    """Request for vacancies data and store it to db
-    """
-    user = await check_user(db, user_id)
-    template = await templates.get(
-        db, {'name': template_name, 'user': str(user['_id'])}
-            )
-
-    if template:
-        params = VacancyRequest(**template).dict()
-        task = get_vacancy("https://api.hh.ru/vacancies", params)
-        return JSONResponse(
-            status_code=201, content={"status": 200, "message": f"You post {task}"}
                 )
 
     else:
