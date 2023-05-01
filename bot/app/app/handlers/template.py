@@ -1,5 +1,4 @@
 import asyncio
-# from redis.asyncio import Redis
 from aiogram.types import CallbackQuery, BufferedInputFile
 from aiogram_dialog import Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button, Back, Column, Cancel
@@ -32,7 +31,7 @@ async def query_with_template(
     """
     user_id = c.from_user.id
     template = dialog_manager.dialog_data.get('template')
-    # TODO: rewrite me - im ambiculous
+    # FIXME: rewrite me - im cumbersome
     if template:
         async with RedisConnection() as redis_db:
             async with redis_db.pubsub() as pubsub:
@@ -58,7 +57,7 @@ async def query_with_template(
                             else:
                                 await c.message.answer('Новые вакансии не найдены.')
                             break
-                        await asyncio.sleep(0.001)  # TODO: make exit if to long request
+                        await asyncio.sleep(0.001)  # TODO: make exit if to long request (?)
                 except HttpError as e:
                     await c.answer(e.message)
     else:

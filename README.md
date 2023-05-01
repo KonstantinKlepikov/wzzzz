@@ -19,7 +19,7 @@ use `python -m IPython` to check code
 
 `mypy --install-types`
 
-`mypy app` and `flake8 app` inside container
+`mypy app` and `flake8 app`
 
 ## Links
 
@@ -29,3 +29,46 @@ use `python -m IPython` to check code
 - [aiohttp](https://konstantinklepikov.github.io/myknowlegebase/notes/aiohttp.html)
 - [fastapi aiohttp example](https://github.com/raphaelauv/fastAPI-aiohttp-example/blob/master/src/fastAPI_aiohttp/fastAPI.py)
 - [mongo motor](https://konstantinklepikov.github.io/myknowlegebase/notes/mongomotor.html)
+
+## Scheme of services
+
+![scheme](scheme.png "scheme")
+
+## For using services define .env file with variables
+
+You must use telegram and hh.ru official API accounts.
+
+```sh
+# mongo dev
+DEV_ROOT_USERNAME=
+DEV_ROOT_PASSWORD=
+# mongo admin panel
+ADMINUSERNAME=
+ADMINPASSWORD=
+MONGODB_URL=mongodb://${DEV_ROOT_USERNAME}:${DEV_ROOT_PASSWORD}@wzzzz-mongo-dev:27017/
+DB_NAME=dev-db
+
+TEST_ROOT_USERNAME=mongo-test
+TEST_ROOT_PASSWORD=123456789
+TEST_MONGODB_URL=mongodb://${TEST_ROOT_USERNAME}:${TEST_ROOT_PASSWORD}@wzzzz-mongo-test:27021/
+
+# telegram api token
+TG_API_TOKEN=
+
+# hh.ru secrets
+CLIENT_ID=
+CLIENT_SECRET=
+HHRU_API_TOKEN=
+HHRU_CLIENT_EMAIL=
+
+# redis
+REDIS_URL=wzzzz-redis-dev
+```
+
+## Still oppened problems
+
+- [72](https://github.com/KonstantinKlepikov/wzzzz/issues/72) rewrite query for db ids (get ids from chunk asynchronously) and rewrite cumbersome csv getter for bot
+- [71](https://github.com/KonstantinKlepikov/wzzzz/issues/71) test all stack
+- [70](https://github.com/KonstantinKlepikov/wzzzz/issues/70) switch redis to aiohttp pub/sub
+- [39](https://github.com/KonstantinKlepikov/wzzzz/issues/39) add change template resource to api and bot
+- [15](https://github.com/KonstantinKlepikov/wzzzz/issues/15) get vacancy by id

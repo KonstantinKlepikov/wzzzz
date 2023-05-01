@@ -264,6 +264,7 @@ async def get_parse_save_vacancy(
     if relevance == Relevance.ALL:
         m = ' '.join([
             str(key) for key
-            in chain(queries.result[0], queries.result[1].keys()) #  # NOTE: is that right for asyncio?
+            # NOTE: is that right for asyncio?
+            in chain(queries.result[0], queries.result[1].keys())
                 ])
     await redis_db.publish(str(user_id), m)

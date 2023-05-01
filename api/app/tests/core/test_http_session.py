@@ -12,7 +12,7 @@ async def test_aiohttp_client(
     assert isinstance(session.aiohttp_client, TestClient), 'wrong client'
     await session.close_aiohttp_client()
     assert session.aiohttp_client is None, 'not closed'
-    # TODO: test sessionc creation with parameters (?)
+    # TODO: test session creation with parameters (?)
 
 
 async def test_client(

@@ -10,5 +10,5 @@ docker compose \
 config > docker-stack.yml
 
 docker compose -f docker-stack.yml build
-docker compose -f docker-stack.yml down --remove-orphans # Remove possibly previous broken stacks left hanging after an error
+docker compose -f docker-stack.yml down --remove-orphans
 docker compose -f docker-stack.yml up -d
