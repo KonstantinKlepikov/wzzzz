@@ -135,7 +135,7 @@ class TestHhruQueries:
         """
         data = [{'items': [simple_data, ]}, ]
         result = await hhruqueries._make_simple_result(db, data)
-        assert isinstance(result, tuple), 'wrong type'
+        assert isinstance(result, list), 'wrong type'
         assert len(result) == 2, 'wrong number of objects'
         assert isinstance(result[0], list), 'wrong in db type'
         assert len(result[0]) == 0, 'wrong in db'
