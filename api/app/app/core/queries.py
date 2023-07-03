@@ -149,7 +149,7 @@ class HhruQueriesDb:
         self,
         db: ClientSession,
         result: list[VacancyRaw],
-            ) -> tuple[list[int], VacancyRaw]:
+            ) -> list[list[int], VacancyRaw]:
         """Make simple result from list of transformed response data
 
         Args:
@@ -157,7 +157,7 @@ class HhruQueriesDb:
             result (list[VacancyRaw]): transformed response data
 
         Returns:
-            tuple[list[int], VacancyRaw]: transformed data
+            list[list[int], VacancyRaw]: transformed data
         """
         ids = [int(i['id']) for r in result for i in r['items']]
         in_db = [i['v_id'] for i in await vacancies.get_many_by_ids(db, ids)]
@@ -169,7 +169,7 @@ class HhruQueriesDb:
             if int(i['id']) not in in_db
                 }
 
-        return (in_db, not_in_db)
+        return [in_db, not_in_db]
 
     def _make_deeper_result(
         self,
