@@ -11,15 +11,16 @@
 - [api redoc](http://localhost:8001/redoc/)
 - [mongoDB admin panel](http://localhost:8082/)
 
-### Test inside api or bot container
+### Develop with each service
 
-`pytest -v -s -x` for all tests
+1. Go to service folder, f.e. `cd data-api/app` and create VSCode project by `code .`
+2. Install poery dependencies and add environment for python linting. Use `poetry config virtualenvs.in-project true` for creation of env folder inside project. Then `poetry init` (if pyproject.toml not exist) and `poetry install --with dev`.
+3. Inside container use:
 
-use `python -m IPython` to check code
-
-`mypy --install-types`
-
-`mypy app` and `flake8 app`
+    - `pytest -v -s -x` for all tests
+    - use `python -m IPython` to check code
+    - `mypy --install-types`
+    - `mypy app` and `flake8 app`
 
 ## Links
 

@@ -6,12 +6,13 @@ authors = ["Konstantin Klepikov <oformleno@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "3.10.6"
-passlib = "^1.7.4"
-toml = "^0.10.2"
-aiogram = "^3.0.0b7"
-pydantic = "^1.10.6"
-redis = "^4.5.3"
-aiogram-dialog = "^2.0.0b17"
+redis = "5.0.1"
+passlib = "1.7.4"
+toml = "0.10.2"
+aiogram = "3.1.1"
+pydantic = "^2.3"
+aiogram-dialog = "2.0.0"
+pydantic-settings = "^2.0.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=4.6"

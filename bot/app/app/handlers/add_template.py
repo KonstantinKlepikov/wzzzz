@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.kbd import (
     Cancel,
     Multiselect,
     Select,
-    ManagedMultiSelectAdapter,
+    ManagedMultiselect,
         )
 from aiogram_dialog.widgets.input import MessageInput
 from app.schemas.dialog_states import StartGrp, PATTERN, QUERY_INFO
@@ -37,7 +37,7 @@ async def get_buttons(**kwargs):
 
 async def multiselect_changed(
     event: ChatEvent,
-    select: ManagedMultiSelectAdapter,
+    select: ManagedMultiselect,
     dialog_manager: DialogManager,
     *args,
     **kwargs
