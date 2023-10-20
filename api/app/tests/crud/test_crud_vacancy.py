@@ -17,7 +17,7 @@ class TestCRUDVacancy:
             ) -> None:
         """Test crud vacancy get by id
         """
-        data = VacancyResponseInDb.Config.schema_extra['example']
+        data = VacancyResponseInDb.Config.json_schema_extra['example']
         vacancy = await crud_vacancy.get(db, {'v_id': data['v_id']})
         assert isinstance(vacancy, dict), 'wrong result type'
         assert vacancy['v_id'] == data['v_id'], 'wrong geted data'
@@ -116,13 +116,13 @@ class TestCRUDVacancy:
             ) -> None:
         """Test get many by ids
         """
-        ids = [VacancyResponseInDb.Config.schema_extra['example']['v_id'], 555555]
+        ids = [VacancyResponseInDb.Config.json_schema_extra['example']['v_id'], 555555]
         result = await crud_vacancy.get_many_by_ids(db, ids)
 
         assert isinstance(result, list), 'wromg result rype'
         assert len(result) == 1, 'wrong result len'
         assert result[0]['v_id'] == \
-            VacancyResponseInDb.Config.schema_extra['example']['v_id'], \
+            VacancyResponseInDb.Config.json_schema_extra['example']['v_id'], \
             'wrong result object'
 
     async def test_cкud_vaсancy_create_many(
@@ -149,7 +149,7 @@ class TestCRUDVacancy:
         """Test create many dublicate error
         """
         vacancies = [
-            VacancyResponseInDb(**VacancyResponseInDb.Config.schema_extra['example']),
+            VacancyResponseInDb(**VacancyResponseInDb.Config.json_schema_extra['example']),
                 ]
         with pytest.raises(DuplicateKeyError) as e:
             await crud_vacancy.create_many(db, vacancies)

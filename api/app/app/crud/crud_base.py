@@ -74,7 +74,7 @@ class CRUDBase(Generic[SchemaDbType]):
             InsertOneResult: result of creation
         """
         return await db.client[self.db_name][self.col_name] \
-            .insert_one(obj_in.dict())
+            .insert_one(obj_in.model_dump())
 
     async def replace(
         self,
@@ -93,7 +93,7 @@ class CRUDBase(Generic[SchemaDbType]):
             UpdateResult: result of update
         """
         return await db.client[self.db_name][self.col_name] \
-            .replace_one(q, obj_in.dict())
+            .replace_one(q, obj_in.model_dump())
 
     async def update(
         self,

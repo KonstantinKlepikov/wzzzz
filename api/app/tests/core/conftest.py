@@ -27,7 +27,7 @@ def urls() -> dict[str, str]:
     urls = {
         'hhru_vacancy': str(URL.build(
             path='/vacancies',
-            query=VacancyRequest.Config.schema_extra['example']
+            query=VacancyRequest.Config.json_schema_extra['example']
                 ),
             )}
     return urls

@@ -57,7 +57,7 @@ class TestUsers:
             ) -> None:
         """Test create double user rises error
         """
-        user_id = UserInDb.Config.schema_extra['example']['user_id']
+        user_id = UserInDb.Config.json_schema_extra['example']['user_id']
         response = await client.post(
             f"{settings.API_V1}/users/create",
             params={'user_id': user_id}

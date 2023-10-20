@@ -1,5 +1,6 @@
 import toml
-from pydantic import BaseSettings, SecretStr
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings
 from typing import Optional, Type
 from app.schemas.scheme_error import (
     HttpErrorMessage,

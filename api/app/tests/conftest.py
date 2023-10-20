@@ -53,18 +53,18 @@ async def db() -> Generator:
 
         # fill vacancies
         collection = db[Collections.VACANCIES.value]
-        one = VacancyResponseInDb.Config.schema_extra['example']
+        one = VacancyResponseInDb.Config.json_schema_extra['example']
         another = {'v_id': 654321}
         await collection.insert_many([one, another])
 
         # fill user
         collection = db[Collections.USERS.value]
-        one = UserInDb.Config.schema_extra['example']
+        one = UserInDb.Config.json_schema_extra['example']
         in_db = await collection.insert_one(one)
 
         # fill template
         collection = db[Collections.TEMPLATES.value]
-        one = TemplateInDb.Config.schema_extra['example']
+        one = TemplateInDb.Config.json_schema_extra['example']
         one['user'] = str(in_db.inserted_id)
         await collection.insert_one(one)
 

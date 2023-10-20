@@ -8,7 +8,7 @@ class TestVacancyResponsetData:
     def test_full_fill_response(self):
         """Test VacancyResponseScheme fill
         """
-        data = VacancyResponse.Config.schema_extra['example']
+        data = VacancyResponse.Config.json_schema_extra['example']
         scheme = VacancyResponse(**data)
 
         assert scheme.professional_roles == data['professional_roles'], \

@@ -8,9 +8,9 @@ class UserId(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
-                    'user_id': 88005553535
+                    'user_id': 88005553535  # FIXME: string
                         }
                     }
 

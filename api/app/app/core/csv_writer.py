@@ -20,7 +20,7 @@ async def get_vacancy_csv(
     """
     writer = AsyncDictWriter(
         file,
-        Vacancy.__fields__.keys(),
+        Vacancy.model_fields.keys(),
         restval="NULL",
         quoting=csv.QUOTE_ALL
             )

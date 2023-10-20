@@ -30,7 +30,7 @@ class TestCheck:
             ) -> None:
         """Test check user
         """
-        user_id = UserInDb.Config.schema_extra['example']['user_id']
+        user_id = UserInDb.Config.json_schema_extra['example']['user_id']
         user = await templ.check_user(db, user_id)
         assert user['user_id'] == user_id, 'wrong return'
 

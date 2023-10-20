@@ -7,7 +7,7 @@ class HttpErrorMessage(BaseModel):
     message: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "detail": "Some information about error",
             }
@@ -19,7 +19,7 @@ class HttpError400(HttpErrorMessage):
     """
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "detail": "Request parameters error",
                 }
@@ -31,7 +31,7 @@ class HttpError404(HttpErrorMessage):
     """
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "detail": "Resource not found",
             }
@@ -43,7 +43,7 @@ class HttpError409(HttpErrorMessage):
     """
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "detail":
                     "Something wrong with client or server data",
@@ -56,7 +56,7 @@ class HttpError429(HttpErrorMessage):
     """
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "detail":
                     "To Many Requests",

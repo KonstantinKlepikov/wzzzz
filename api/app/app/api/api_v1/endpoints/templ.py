@@ -2,7 +2,6 @@ from typing import Annotated
 from fastapi import APIRouter, status, Depends, HTTPException, Query
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
-from bson.objectid import ObjectId
 from app.db import get_session
 from app.schemas import (
     TemplatesNames,
@@ -34,7 +33,7 @@ async def create_template(
     user = await check_user(db, user_id)
     try:
         await templates.create(db, obj_in=TemplateInDb(
-            user=ObjectId(user['_id']),
+            user=str(user['_id']),
             name=template_name
                 ))
     except DuplicateKeyError:

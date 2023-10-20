@@ -35,6 +35,6 @@ async def test_vacancies_query(
     """
     result = await session.get_query(
         url='/vacancies',
-        params=VacancyRequest.Config.schema_extra['example']
+        params=VacancyRequest.Config.json_schema_extra['example']
             )
     assert result['per_page'] == 1, 'wrong result'

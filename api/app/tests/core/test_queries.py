@@ -16,7 +16,7 @@ def hhruqueries(session: TestClient) -> HhruQueriesDb:
     q = HhruQueriesDb(
         session,
         "https://api.hh.ru/vacancies",
-        VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
+        VacancyRequest(**VacancyRequest.Config.json_schema_extra['example'])
         )
     return q
 
@@ -198,9 +198,9 @@ def hhruqueriesdb(session: TestClient, mock_query: Callable) -> HhruQueriesDb:
     q = HhruQueriesDb(
         session,
         "https://api.hh.ru/vacancies",
-        VacancyRequest(**VacancyRequest.Config.schema_extra['example'])
+        VacancyRequest(**VacancyRequest.Config.json_schema_extra['example'])
         )
-    q.result[1].update(Vacancies.Config.schema_extra['example']['vacancies'])
+    q.result[1].update(Vacancies.Config.json_schema_extra['example']['vacancies'])
     return q
 
 
@@ -211,8 +211,8 @@ async def test_get_parse_save_vacancy(
     """Test parse vacancy pubsub
     """
     user_id = 12345
-    vacancy_id = list(Vacancies.Config.schema_extra['example']['vacancies'].keys())[0]
-    entry = Vacancies.Config.schema_extra['example']['vacancies']
+    vacancy_id = list(Vacancies.Config.json_schema_extra['example']['vacancies'].keys())[0]
+    entry = Vacancies.Config.json_schema_extra['example']['vacancies']
     relevance = Relevance.ALL
 
     async with RedisConnection() as conn:
