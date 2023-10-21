@@ -70,6 +70,7 @@ class SearchField(BaseStrEnum):
 
 class Collections(BaseStrEnum):
     VACANCIES = 'vacancies'
+    VACANCIES_RAW = 'vacancies raw'
     TEMPLATES = 'templates'
     USERS = 'users'
 

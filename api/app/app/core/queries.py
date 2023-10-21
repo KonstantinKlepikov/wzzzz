@@ -15,7 +15,137 @@ from app.crud import vacancies
 VacancyRaw: TypeAlias = dict[str, Any]
 
 
+class HhruBaseQueries:
+    """Query for hhru fro vacancies raw data
+    and save it to db
+
+    Atrs:
+        session (SessionMaker): aiohttp session
+        url (str): utl for queru
+        params (VacancyRequest): vacancy query params
+    """
+
+    def __init__(
+        self,
+        session: SessionMaker,
+        url: str,
+        params: VacancyRequest
+            ) -> None:
+        self.session = session
+        self.url = url
+        self.params = json.loads(params.model_dump_json(exclude_none=True))
+
+    def _get_raw(self, entry: VacancyRaw) -> VacancyRaw:  # TODO: use pydantic output keys transformation. Remove this method
+        """Replace id key by v_id key in vacancy query result
+
+        Args:
+            entry (VacancyRaw): raw entry response
+
+        Returns:
+            VacancyRaw: transformed response data
+        """
+        entry['v_id'] = entry.pop('id')
+        return entry
+
+    async def _make_simple_requests(
+        self,
+        entry: VacancyRaw,
+        sem: Semaphore | None = None,
+            ) -> list[VacancyRaw]:  # TODO: test me
+        """Make simple result of query. Here is all pages from
+        https://api.hh.ru/vacancies
+
+        Args:
+            entry (VacancyRaw): raw entry response - this is
+                                response to get number of pages
+            sem (Semaphore, optional): semaphore option for prevent
+                                       server overwelming. Defaults to None.
+
+        Returns:
+            list[VacancyRaw]: simple vacanices responces
+        """
+
+        tasks: list[asyncio.Task] = []
+
+        for page in range(1, entry['pages'] + 1):
+            p = copy(self.params)
+            p['page'] = page
+            tasks.append(asyncio.create_task(
+                self.session.get_query(url=self.url, params=p, sem=sem)  # TODO: here we transform data to pydantic classes
+                    ))
+
+        await asyncio.wait(tasks)
+        return [entry, ] + [task.result() for task in tasks]
+
+    async def _make_deeper_requests(
+        self,
+        entry: list[VacancyRaw],
+        urls: list[str],
+        sem: Optional[Semaphore] = None,
+            ) -> list[VacancyRaw]:  # TODO: test me
+        """Make request for deeper vacancy data
+
+        Args:
+            urls (list[str]): simple requests urls
+            sem (Semaphore, optional): semaphore option for prevent
+                            server overwelming. Defaults to None.
+
+        Returns:
+            list[VacancyRaw]: deeper vacancy responses
+        """
+
+        tasks: list[asyncio.Task] = []
+
+        for url in urls:
+            tasks.append(asyncio.create_task(
+                self.session.get_query(url=url, sem=sem)  # TODO: here is we transform data to pydantic classes
+                    ))
+
+        await asyncio.wait(tasks)
+        return [task.result() for task in tasks]
+
+    async def _simple_to_db(self, db: ClientSession, entry) -> list[str]:  # TODO: test me
+        """Add simple raw to db, if not exist
+
+        Args:
+            db (ClientSession): _description_
+            entry (): pydantic classes
+
+        Returns:
+            list[str]: urls of vacancies, that not in db
+        """
+        # TODO: build me
+
+    async def _deeper_to_db(self, db: ClientSession, ids: list[str]) -> None:  # TODO: test me
+        """Check simple raw vacancies in db
+
+        Args:
+            db (ClientSession): _description_
+            ids (list[str]): urls for query
+        """
+        # TODO: build me
+
+    async def query(self, db: ClientSession, entry: VacancyRaw) -> None:  # TODO: test me
+        """Request for vacancies
+
+        Args:
+            db (ClientSession): session
+            entry (VacancyRaw): raw entry response - this is
+                                response to get number of pages
+        """
+        semaphore = Semaphore(10)
+        simple = await self._make_simple_requests(entry, semaphore)
+        ids = self._simple_to_db(db, simple)
+        deeper = await self._make_deeper_requests(ids, semaphore)
+        self._deeper_to_db(db, deeper)
+
+        # TODO: send simple to deeper as available
+        # TODO: transform data not in db and save transformed...
+        # or return data for transformation
+
+
 class HhruQueriesDb:
+    """"""
 
     def __init__(
         self,
