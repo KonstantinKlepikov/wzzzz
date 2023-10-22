@@ -57,3 +57,5 @@ vacancies = CRUDVacancies(
     col_name=Collections.VACANCIES.value,
     db_name=settings.DB_NAME,
         )
+
+# TODO: add vacancies raw crud

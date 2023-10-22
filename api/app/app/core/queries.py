@@ -16,12 +16,12 @@ VacancyRaw: TypeAlias = dict[str, Any]
 
 
 class HhruBaseQueries:
-    """Query for hhru fro vacancies raw data
+    """Query for hhru for vacancies raw data
     and save it to db
 
     Atrs:
         session (SessionMaker): aiohttp session
-        url (str): utl for queru
+        url (str): url for query
         params (VacancyRequest): vacancy query params
     """
 
@@ -34,30 +34,37 @@ class HhruBaseQueries:
         self.session = session
         self.url = url
         self.params = json.loads(params.model_dump_json(exclude_none=True))
+        self.entry = self._get_entry()
 
-    def _get_raw(self, entry: VacancyRaw) -> VacancyRaw:  # TODO: use pydantic output keys transformation. Remove this method
-        """Replace id key by v_id key in vacancy query result
+
+    async def _get_entry(self) -> None:
+        """Request entruy page for queries
 
         Args:
-            entry (VacancyRaw): raw entry response
-
-        Returns:
-            VacancyRaw: transformed response data
+            url (str): url of entry page
         """
-        entry['v_id'] = entry.pop('id')
-        return entry
+        await self.session.get_query(url=self.url, params=self.params)
+
+    # def _get_raw(self, entry: VacancyRaw) -> VacancyRaw:  # FIXME: remove me
+    #     """Replace id key by v_id key in vacancy query result
+
+    #     Args:
+    #         entry (VacancyRaw): raw entry response
+
+    #     Returns:
+    #         VacancyRaw: transformed response data
+    #     """
+    #     entry['v_id'] = entry.pop('id')
+    #     return entry
 
     async def _make_simple_requests(
         self,
-        entry: VacancyRaw,
         sem: Semaphore | None = None,
             ) -> list[VacancyRaw]:  # TODO: test me
         """Make simple result of query. Here is all pages from
         https://api.hh.ru/vacancies
 
         Args:
-            entry (VacancyRaw): raw entry response - this is
-                                response to get number of pages
             sem (Semaphore, optional): semaphore option for prevent
                                        server overwelming. Defaults to None.
 
@@ -67,7 +74,7 @@ class HhruBaseQueries:
 
         tasks: list[asyncio.Task] = []
 
-        for page in range(1, entry['pages'] + 1):
+        for page in range(1, self.entry['pages'] + 1):
             p = copy(self.params)
             p['page'] = page
             tasks.append(asyncio.create_task(
@@ -75,11 +82,10 @@ class HhruBaseQueries:
                     ))
 
         await asyncio.wait(tasks)
-        return [entry, ] + [task.result() for task in tasks]
+        return [self.entry, ] + [task.result() for task in tasks]
 
     async def _make_deeper_requests(
         self,
-        entry: list[VacancyRaw],
         urls: list[str],
         sem: Optional[Semaphore] = None,
             ) -> list[VacancyRaw]:  # TODO: test me
@@ -117,7 +123,7 @@ class HhruBaseQueries:
         # TODO: build me
 
     async def _deeper_to_db(self, db: ClientSession, ids: list[str]) -> None:  # TODO: test me
-        """Check simple raw vacancies in db
+        """Add deeper raw to db, if not exist
 
         Args:
             db (ClientSession): _description_
@@ -125,23 +131,57 @@ class HhruBaseQueries:
         """
         # TODO: build me
 
-    async def query(self, db: ClientSession, entry: VacancyRaw) -> None:  # TODO: test me
+    async def query(self, db: ClientSession) -> None:  # TODO: test me
         """Request for vacancies
 
         Args:
             db (ClientSession): session
-            entry (VacancyRaw): raw entry response - this is
-                                response to get number of pages
         """
         semaphore = Semaphore(10)
-        simple = await self._make_simple_requests(entry, semaphore)
+        simple = await self._make_simple_requests(semaphore)
         ids = self._simple_to_db(db, simple)
         deeper = await self._make_deeper_requests(ids, semaphore)
         self._deeper_to_db(db, deeper)
 
-        # TODO: send simple to deeper as available
-        # TODO: transform data not in db and save transformed...
+        # TODO: send simple to deeper as it available
+        # TODO: transform data and save transformed...
         # or return data for transformation
+
+
+async def get_raw_vacancy(
+    user_id: int,
+    queries: HhruBaseQueries,
+    relevance: Relevance,
+    db: ClientSession,
+    redis_db: Redis
+        ) -> None:
+    """Get vacancy by api, parse it, save to db and add to redis pubsub
+
+    Args:
+        user_id (int): user id
+        queries (HhruQueriesDb): hhru query instance
+        relevance (Relevance): relevance of returned content
+        db (ClientSession): mongo session
+        redis_db (Redis): redis connection
+    """
+    await queries.query(db)
+    # transform data
+
+    # publish data
+    if relevance == Relevance.NEW:
+        m = ' '.join([str(key) for key in queries.result[1].keys()])
+    if relevance == Relevance.ALL:
+        m = ' '.join([
+            str(key) for key
+            # NOTE: is that right for asyncio?
+            in chain(queries.result[0], queries.result[1].keys())
+                ])
+    await redis_db.publish(str(user_id), m)
+
+
+
+
+
 
 
 class HhruQueriesDb:
