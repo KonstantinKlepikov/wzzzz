@@ -148,7 +148,7 @@ class HhruBaseQueries:
         # or return data for transformation
 
 
-async def get_raw_vacancy(
+async def get_raw_vacancy(  # TODO: remove me?
     user_id: int,
     queries: HhruBaseQueries,
     relevance: Relevance,
