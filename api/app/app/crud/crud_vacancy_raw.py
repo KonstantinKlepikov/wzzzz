@@ -9,7 +9,7 @@ from app.schemas.scheme_vacancy_raw import VacancyRaw
 from app.schemas.constraint import Collections
 
 
-class CRUDVacancies(CRUDBase[VacancyRaw]):
+class CRUDVacanciesRaw(CRUDBase[VacancyRaw]):
     """Vacancies crud
     """
 
@@ -53,13 +53,13 @@ class CRUDVacancies(CRUDBase[VacancyRaw]):
         return [res for res in result if not isinstance(res, DuplicateKeyError)]
 
 
-vacancies_simple_raw = CRUDVacancies(
+vacancies_simple_raw = CRUDVacanciesRaw(
     schema=VacancyRaw,
     col_name=Collections.VACANCIES_SIMPLE_RAW.value,
     db_name=settings.DB_NAME,
         )
 
-vacancies_deep_raw = CRUDVacancies(
+vacancies_deep_raw = CRUDVacanciesRaw(
     schema=VacancyRaw,
     col_name=Collections.VACANCIES_DEEP_RAW.value,
     db_name=settings.DB_NAME,

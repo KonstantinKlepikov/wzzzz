@@ -5,5 +5,5 @@ from app.crud.crud_user import users, CRUDUser
 from app.crud.crud_vacancy_raw import (
     vacancies_simple_raw,
     vacancies_deep_raw,
-    CRUDVacancies
+    CRUDVacanciesRaw
         )

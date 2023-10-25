@@ -32,7 +32,7 @@ class VacancyTs(BaseModel):
                 }
 
 
-class VacancyRaw(VacancyId, VacancyId):
+class VacancyRaw(VacancyId, VacancyTs):
     """Vacancy raw
     """
     raw: dict[str, Any]
