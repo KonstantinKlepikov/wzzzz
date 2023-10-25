@@ -38,6 +38,12 @@ async def create_collections() -> None:
                 await client[settings.DB_NAME][collection].create_indexes(
                     [index1, index2]
                         )
+            if collection == Collections.VACANCIES_SIMPLE_RAW or \
+                    Collections.VACANCIES_DEEP_RAW:
+                index1 = IndexModel('id', unique=True)
+                await client[settings.DB_NAME][collection].create_indexes(
+                    [index1, ]
+                        )
             if collection == Collections.TEMPLATES.value:
                 await client[settings.DB_NAME][collection].create_index(
                     [('name', ASCENDING), ('user', ASCENDING), ],

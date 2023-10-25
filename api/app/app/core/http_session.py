@@ -66,7 +66,7 @@ class SessionMaker:
                     status_code=429,
                     detail="To Many Requests"
                         )
-
+            # TODO: add here 200 and else with oter status codes
             return await response.json()
 
     @classmethod

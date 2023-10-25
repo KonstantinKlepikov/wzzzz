@@ -1,17 +1,19 @@
 import asyncio
 from typing import Any, Sequence
 from pymongo.client_session import ClientSession
+from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult
 from app.config import settings
 from app.crud import CRUDBase
-from app.schemas import VacancyResponseInDb, Collections
+from app.schemas.scheme_vacancy_raw import VacancyRaw
+from app.schemas.constraint import Collections
 
 
-class CRUDVacancies(CRUDBase[VacancyResponseInDb]):
+class CRUDVacancies(CRUDBase[VacancyRaw]):
     """Vacancies crud
     """
 
-    async def get_many_by_ids(
+    async def get_many_by_ids(  # TODO: test me
         self,
         db: ClientSession,
         ids: Sequence[int]
@@ -23,37 +25,42 @@ class CRUDVacancies(CRUDBase[VacancyResponseInDb]):
             ids (list[int]): ids list
 
         Returns:
-            dict[str, Any]: _description_
+            list[dict[str, Any]]: vacancies
         """
         tasks = [
-            asyncio.create_task(self.get(db, {'v_id': i}))
+            asyncio.create_task(self.get(db, {'id': i}))
             for i in ids
                 ]
         await asyncio.wait(tasks)
         return [task.result() for task in tasks if task.result()]
 
-    async def create_many(
+    async def create_many(  # TODO: test me
         self,
         db: ClientSession,
-        obj_in: list[VacancyResponseInDb],
+        obj_in: Sequence[VacancyRaw],
             ) -> list[InsertOneResult]:
         """Create many vacancy documents
 
         Args:
             db (ClientSession): session
-            obj_in (list[VacancyResponseInDb]): list of data
+            obj_in (Sequence[VacancyRaw]): sequence of data
 
         Returns:
             list[InsertOneResult]: results
         """
-        tasks = [asyncio.create_task(self.create(db, i)) for i in obj_in]
-        await asyncio.wait(tasks)
+        tasks = [self.create(db, i) for i in obj_in]
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+        return [res for res in result if not isinstance(res, DuplicateKeyError)]
 
-        return [task.result() for task in tasks]
 
+vacancies_simple_raw = CRUDVacancies(
+    schema=VacancyRaw,
+    col_name=Collections.VACANCIES_SIMPLE_RAW.value,
+    db_name=settings.DB_NAME,
+        )
 
-vacancies = CRUDVacancies(
-    schema=VacancyResponseInDb,
-    col_name=Collections.VACANCIES.value,
+vacancies_deep_raw = CRUDVacancies(
+    schema=VacancyRaw,
+    col_name=Collections.VACANCIES_DEEP_RAW.value,
     db_name=settings.DB_NAME,
         )

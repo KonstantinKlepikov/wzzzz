@@ -5,11 +5,11 @@ from itertools import chain
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
-from typing import Any, Optional, TypeAlias
+from typing import Any, Optional, TypeAlias, Coroutine
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
 from app.schemas import VacancyRequest, VacancyResponseInDb, Relevance
-from app.crud import vacancies
+from app.crud import vacancies, vacancies_simple_raw, vacancies_deep_raw, CRUDVacancies
 
 
 VacancyRaw: TypeAlias = dict[str, Any]
@@ -36,26 +36,14 @@ class HhruBaseQueries:
         self.params = json.loads(params.model_dump_json(exclude_none=True))
         self.entry = self._get_entry()
 
-
-    async def _get_entry(self) -> None:
+    async def _get_entry(self) -> None: # TODO: test me
         """Request entruy page for queries
 
         Args:
             url (str): url of entry page
         """
         await self.session.get_query(url=self.url, params=self.params)
-
-    # def _get_raw(self, entry: VacancyRaw) -> VacancyRaw:  # FIXME: remove me
-    #     """Replace id key by v_id key in vacancy query result
-
-    #     Args:
-    #         entry (VacancyRaw): raw entry response
-
-    #     Returns:
-    #         VacancyRaw: transformed response data
-    #     """
-    #     entry['v_id'] = entry.pop('id')
-    #     return entry
+        # FIXME: if error?
 
     async def _make_simple_requests(
         self,
@@ -63,6 +51,10 @@ class HhruBaseQueries:
             ) -> list[VacancyRaw]:  # TODO: test me
         """Make simple result of query. Here is all pages from
         https://api.hh.ru/vacancies
+
+        In this function we use firtc (entry) query to get pages for
+        subseqent requests. hen. in gather we get all responses, even if it fail.
+        Then filter failed responsses and return only correct.
 
         Args:
             sem (Semaphore, optional): semaphore option for prevent
@@ -72,17 +64,27 @@ class HhruBaseQueries:
             list[VacancyRaw]: simple vacanices responces
         """
 
-        tasks: list[asyncio.Task] = []
+        # tasks: list[asyncio.Task] = []
+
+        # for page in range(1, self.entry['pages'] + 1):
+        #     p = copy(self.params)
+        #     p['page'] = page
+        #     tasks.append(asyncio.create_task(
+        #         self.session.get_query(url=self.url, params=p, sem=sem)
+        #             ))
+
+        # await asyncio.wait(tasks)
+        # return [self.entry, ] + [task.result() for task in tasks]
+
+        tasks: list[Coroutine] = []
 
         for page in range(1, self.entry['pages'] + 1):
             p = copy(self.params)
             p['page'] = page
-            tasks.append(asyncio.create_task(
-                self.session.get_query(url=self.url, params=p, sem=sem)  # TODO: here we transform data to pydantic classes
-                    ))
+            tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
 
-        await asyncio.wait(tasks)
-        return [self.entry, ] + [task.result() for task in tasks]
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+        return [self.entry, ] + [res for res in result if not isinstance(res, Exception)]
 
     async def _make_deeper_requests(
         self,
@@ -100,36 +102,23 @@ class HhruBaseQueries:
             list[VacancyRaw]: deeper vacancy responses
         """
 
-        tasks: list[asyncio.Task] = []
+        # tasks: list[asyncio.Task] = []
+
+        # for url in urls:
+        #     tasks.append(asyncio.create_task(
+        #         self.session.get_query(url=url, sem=sem)
+        #             ))
+
+        # await asyncio.wait(tasks)
+        # return [task.result() for task in tasks]
+
+        tasks: list[Coroutine] = []
 
         for url in urls:
-            tasks.append(asyncio.create_task(
-                self.session.get_query(url=url, sem=sem)  # TODO: here is we transform data to pydantic classes
-                    ))
+            tasks.append(self.session.get_query(url=url, sem=sem))
 
-        await asyncio.wait(tasks)
-        return [task.result() for task in tasks]
-
-    async def _simple_to_db(self, db: ClientSession, entry) -> list[str]:  # TODO: test me
-        """Add simple raw to db, if not exist
-
-        Args:
-            db (ClientSession): _description_
-            entry (): pydantic classes
-
-        Returns:
-            list[str]: urls of vacancies, that not in db
-        """
-        # TODO: build me
-
-    async def _deeper_to_db(self, db: ClientSession, ids: list[str]) -> None:  # TODO: test me
-        """Add deeper raw to db, if not exist
-
-        Args:
-            db (ClientSession): _description_
-            ids (list[str]): urls for query
-        """
-        # TODO: build me
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+        return [res for res in result if not isinstance(res, Exception)]
 
     async def query(self, db: ClientSession) -> None:  # TODO: test me
         """Request for vacancies
@@ -139,47 +128,16 @@ class HhruBaseQueries:
         """
         semaphore = Semaphore(10)
         simple = await self._make_simple_requests(semaphore)
-        ids = self._simple_to_db(db, simple)
-        deeper = await self._make_deeper_requests(ids, semaphore)
-        self._deeper_to_db(db, deeper)
+        ids = [d['id'] for d in simple]
+        deep = await self._make_deeper_requests(ids, semaphore)
+
+        # TODO: add timestamp to data
+        simple_db = await vacancies_simple_raw.create_many(db, simple)
+        deep_db = await vacancies_deep_raw.create_many(db, deep)
 
         # TODO: send simple to deeper as it available
         # TODO: transform data and save transformed...
         # or return data for transformation
-
-
-async def get_raw_vacancy(  # TODO: remove me?
-    user_id: int,
-    queries: HhruBaseQueries,
-    relevance: Relevance,
-    db: ClientSession,
-    redis_db: Redis
-        ) -> None:
-    """Get vacancy by api, parse it, save to db and add to redis pubsub
-
-    Args:
-        user_id (int): user id
-        queries (HhruQueriesDb): hhru query instance
-        relevance (Relevance): relevance of returned content
-        db (ClientSession): mongo session
-        redis_db (Redis): redis connection
-    """
-    await queries.query(db)
-    # transform data
-
-    # publish data
-    if relevance == Relevance.NEW:
-        m = ' '.join([str(key) for key in queries.result[1].keys()])
-    if relevance == Relevance.ALL:
-        m = ' '.join([
-            str(key) for key
-            # NOTE: is that right for asyncio?
-            in chain(queries.result[0], queries.result[1].keys())
-                ])
-    await redis_db.publish(str(user_id), m)
-
-
-
 
 
 
