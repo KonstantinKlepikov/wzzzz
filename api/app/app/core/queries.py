@@ -2,6 +2,7 @@ import json
 import asyncio
 from asyncio import Semaphore
 from itertools import chain
+from datetime import datetime
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
@@ -9,6 +10,7 @@ from typing import Any, Optional, TypeAlias, Coroutine
 from bs4 import BeautifulSoup as bs
 from app.core import SessionMaker
 from app.schemas import VacancyRequest, VacancyResponseInDb, Relevance
+from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.crud import vacancies, vacancies_simple_raw, vacancies_deep_raw, CRUDVacancies
 
 
@@ -16,15 +18,14 @@ VacancyRaw: TypeAlias = dict[str, Any]
 
 
 class HhruBaseQueries:
-    """Query for hhru for vacancies raw data
-    and save it to db
+    """Query a hh.ru for vacancies raw data
+    and save it to db, if not exist
 
     Atrs:
         session (SessionMaker): aiohttp session
-        url (str): url for query
-        params (VacancyRequest): vacancy query params
+        url (str): url for entry query
+        params (VacancyRequest): vacancy query parameters
     """
-
     def __init__(
         self,
         session: SessionMaker,
@@ -34,27 +35,30 @@ class HhruBaseQueries:
         self.session = session
         self.url = url
         self.params = json.loads(params.model_dump_json(exclude_none=True))
-        self.entry = self._get_entry()
 
-    async def _get_entry(self) -> None: # TODO: test me
-        """Request entruy page for queries
+    @staticmethod
+    def _make_schema(data: list[VacancyRaw]) -> list[VacancyRawData]:
+        """Add timestamp to data before add it to db
 
         Args:
-            url (str): url of entry page
+            data (list[VacancyRaw]): vacancies data
+
+        Returns:
+            list[VacancyRawData]: transformed data
         """
-        await self.session.get_query(url=self.url, params=self.params)
-        # FIXME: if error?
+        ts = {'ts': datetime.utcnow()}
+        return [VacancyRawData(id=d['id'], ts=ts, raw=d) for d in data]
 
     async def _make_simple_requests(
         self,
         sem: Semaphore | None = None,
             ) -> list[VacancyRaw]:  # TODO: test me
-        """Make simple result of query. Here is all pages from
+        """Make simple result of query. Here is all pages returned from
         https://api.hh.ru/vacancies
 
-        In this function we use firtc (entry) query to get pages for
-        subseqent requests. hen. in gather we get all responses, even if it fail.
-        Then filter failed responsses and return only correct.
+        In this function we use firsc (entry) query to get pages for
+        subsequent requests. Then, we get all responses, even if it fail
+        and filter failed responsses and return only correct.
 
         Args:
             sem (Semaphore, optional): semaphore option for prevent
@@ -64,34 +68,24 @@ class HhruBaseQueries:
             list[VacancyRaw]: simple vacanices responces
         """
 
-        # tasks: list[asyncio.Task] = []
-
-        # for page in range(1, self.entry['pages'] + 1):
-        #     p = copy(self.params)
-        #     p['page'] = page
-        #     tasks.append(asyncio.create_task(
-        #         self.session.get_query(url=self.url, params=p, sem=sem)
-        #             ))
-
-        # await asyncio.wait(tasks)
-        # return [self.entry, ] + [task.result() for task in tasks]
-
         tasks: list[Coroutine] = []
+        entry = await self.session.get_query(url=self.url, params=self.params)
+        # FIXME: if error?
 
-        for page in range(1, self.entry['pages'] + 1):
+        for page in range(1, entry['pages'] + 1):
             p = copy(self.params)
             p['page'] = page
             tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
 
         result = await asyncio.gather(*tasks, return_exceptions=True)
-        return [self.entry, ] + [res for res in result if not isinstance(res, Exception)]
+        return [entry, ] + [res for res in result if not isinstance(res, Exception)]
 
     async def _make_deeper_requests(
         self,
         urls: list[str],
         sem: Optional[Semaphore] = None,
             ) -> list[VacancyRaw]:  # TODO: test me
-        """Make request for deeper vacancy data
+        """Make requests for deeper vacancy data
 
         Args:
             urls (list[str]): simple requests urls
@@ -101,17 +95,6 @@ class HhruBaseQueries:
         Returns:
             list[VacancyRaw]: deeper vacancy responses
         """
-
-        # tasks: list[asyncio.Task] = []
-
-        # for url in urls:
-        #     tasks.append(asyncio.create_task(
-        #         self.session.get_query(url=url, sem=sem)
-        #             ))
-
-        # await asyncio.wait(tasks)
-        # return [task.result() for task in tasks]
-
         tasks: list[Coroutine] = []
 
         for url in urls:
@@ -131,9 +114,8 @@ class HhruBaseQueries:
         ids = [d['id'] for d in simple]
         deep = await self._make_deeper_requests(ids, semaphore)
 
-        # TODO: add timestamp to data
-        simple_db = await vacancies_simple_raw.create_many(db, simple)
-        deep_db = await vacancies_deep_raw.create_many(db, deep)
+        simple_db = await vacancies_simple_raw.create_many(db, self._make_schema(simple)) # FIXME:
+        deep_db = await vacancies_deep_raw.create_many(db, self._make_schema(deep)) # FIXME:
 
         # TODO: send simple to deeper as it available
         # TODO: transform data and save transformed...

@@ -17,7 +17,7 @@ def hhruqueries(session: TestClient) -> HhruQueriesDb:
         session,
         "https://api.hh.ru/vacancies",
         VacancyRequest(**VacancyRequest.Config.json_schema_extra['example'])
-        )
+            )
     return q
 
 

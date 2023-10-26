@@ -99,7 +99,7 @@ class CRUDBase(Generic[SchemaDbType]):
         self,
         db: ClientSession,
         q: dict[str, Any],
-        obj_in: dict[str, Any]
+        obj_in: dict[str, Any]  # FIXME: here is a scheme
             ) -> UpdateResult:
         """Replace one existed document
         # TODO: test me and use me
@@ -118,7 +118,7 @@ class CRUDBase(Generic[SchemaDbType]):
     async def delete(
         self,
         db: ClientSession,
-        q: dict[str, Any],
+        q: dict[str, Any],  # FIXME: here is a scheme
             ) -> DeleteResult:
         """Remove one document
 

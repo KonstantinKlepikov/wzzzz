@@ -7,7 +7,7 @@ from app.config import settings
 
 
 class SessionMaker:
-    """This class realise aiohttp client session singleton pattern
+    """This class represents aiohttp client session singleton pattern
     """
     aiohttp_client: Optional[ClientSession] = None
 
@@ -46,8 +46,22 @@ class SessionMaker:
         cls,
         client: ClientSession,
         url: str,
-        params: Optional[dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
             ) -> dict[str, Any]:
+        """Request and get responses
+
+        Args:
+            client (ClientSession): session
+            url (str): url for request
+            params (dict[str, Any], optional): request parameters.
+                                               Defaults to None.
+
+        Raises:
+            HTTPException: response code depended exceptions
+
+        Returns:
+            dict[str, Any]: response
+        """
         async with client.get(url, params=params) as response:
             if response.status == 400:
                 raise HTTPException(
@@ -66,17 +80,28 @@ class SessionMaker:
                     status_code=429,
                     detail="To Many Requests"
                         )
-            # TODO: add here 200 and else with oter status codes
+            # FIXME: add here 200 and else with oter status codes
             return await response.json()
 
     @classmethod
     async def get_query(
         cls,
         url: str,
-        params: Optional[dict[str, Any]] = None,
-        sem: Optional[Semaphore] = None,
+        params: dict[str, Any] | None = None,
+        sem: Semaphore | None = None,
             ) -> dict[str, Any]:
+        """Query given url
 
+        Args:
+            url (str): url for request
+            params (dict[str, Any], optional): request parameters.
+                                               Defaults to None.
+            sem (Semaphore, optional): query constaraint.
+                                       Defaults to None.
+
+        Returns:
+            dict[str, Any]: result
+        """
         client = cls.get_aiohttp_client()
 
         if sem:

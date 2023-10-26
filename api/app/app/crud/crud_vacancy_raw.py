@@ -5,11 +5,11 @@ from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult
 from app.config import settings
 from app.crud import CRUDBase
-from app.schemas.scheme_vacancy_raw import VacancyRaw
+from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.schemas.constraint import Collections
 
 
-class CRUDVacanciesRaw(CRUDBase[VacancyRaw]):
+class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
     """Vacancies crud
     """
 
@@ -37,13 +37,13 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRaw]):
     async def create_many(  # TODO: test me
         self,
         db: ClientSession,
-        obj_in: Sequence[VacancyRaw],
+        obj_in: Sequence[VacancyRawData],
             ) -> list[InsertOneResult]:
         """Create many vacancy documents
 
         Args:
             db (ClientSession): session
-            obj_in (Sequence[VacancyRaw]): sequence of data
+            obj_in (Sequence[VacancyRawData]): sequence of data
 
         Returns:
             list[InsertOneResult]: results
@@ -54,13 +54,13 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRaw]):
 
 
 vacancies_simple_raw = CRUDVacanciesRaw(
-    schema=VacancyRaw,
+    schema=VacancyRawData,
     col_name=Collections.VACANCIES_SIMPLE_RAW.value,
     db_name=settings.DB_NAME,
         )
 
 vacancies_deep_raw = CRUDVacanciesRaw(
-    schema=VacancyRaw,
+    schema=VacancyRawData,
     col_name=Collections.VACANCIES_DEEP_RAW.value,
     db_name=settings.DB_NAME,
         )

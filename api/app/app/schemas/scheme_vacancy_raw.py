@@ -1,7 +1,6 @@
 from typing import Any
 from datetime import datetime
 from pydantic import BaseModel, NonNegativeInt, HttpUrl, conint
-from app.schemas.scheme_templates import TemplateConstraints
 
 
 class VacancyId(BaseModel):
@@ -32,7 +31,7 @@ class VacancyTs(BaseModel):
                 }
 
 
-class VacancyRaw(VacancyId, VacancyTs):
+class VacancyRawData(VacancyId, VacancyTs):
     """Vacancy raw
     """
     raw: dict[str, Any]
