@@ -3,14 +3,14 @@ from fastapi import APIRouter, status, Depends, HTTPException, Query
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from app.db import get_session
-from app.schemas import (
+from app.schemas.scheme_templates import (
     TemplatesNames,
     TemplateInDb,
     Template
         )
 from app.config import settings
-from app.crud import templates
-from app.core import check_user
+from app.crud.crud_template import templates
+from app.core.check import check_user
 
 
 router = APIRouter()

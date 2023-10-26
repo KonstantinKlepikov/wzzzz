@@ -5,7 +5,7 @@ from pymongo.client_session import ClientSession
 from pymongo.errors import CollectionInvalid
 from fastapi.logger import logger as fastAPI_logger
 from app.config import settings
-from app.schemas import Collections
+from app.schemas.constraint import Collections
 
 
 def get_client(mongodb_url: str) -> AsyncIOMotorClient:

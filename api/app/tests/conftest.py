@@ -6,14 +6,16 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from httpx import AsyncClient
 from app.config import settings
 from app.main import app
-from app.crud import CRUDVacancies, CRUDTemplate, CRUDUser
-from app.schemas import (
-    VacancyResponseInDb,
+from app.crud.crud_vacancy import CRUDVacancies
+from app.crud.crud_template import CRUDTemplate
+from app.crud.crud_user import CRUDUser
+from app.schemas.scheme_user import UserInDb
+from app.schemas.scheme_templates import (
     TemplateInDb,
     TemplateConstraints,
-    UserInDb,
-    Collections,
         )
+from app.schemas.scheme_vacanciy import VacancyResponseInDb
+from app.schemas.constraint import Collections
 from app.db import get_session
 
 

@@ -1,7 +1,7 @@
 import toml
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings
-from typing import Optional, Type
+from typing import Type
 from app.schemas.scheme_error import (
     HttpErrorMessage,
     HttpError400,
@@ -22,16 +22,16 @@ class Settings(BaseSettings):
     # db settings
     MONGODB_URL: str
     DB_NAME: str
-    ACCES_TOKEN_EXPIRES_MINUTES: Optional[int] = None
+    ACCES_TOKEN_EXPIRES_MINUTES: int | None = None
     EXPIRED_BY_SECONDS: int = 5256000
     REDIS_URL: str = None
 
     # hhru settings
     HHRU_API_TOKEN: SecretStr = None
-    HHRU_CLIENT_EMAIL: Optional[str] = None
+    HHRU_CLIENT_EMAIL: str | None = None
 
     # def settings
-    TEST_MONGODB_URL: Optional[str] = None
+    TEST_MONGODB_URL: str | None = None
 
     # open-api settings
     title: str = poetry_data['name']

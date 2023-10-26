@@ -1,6 +1,6 @@
 from aiohttp.test_utils import TestClient
-from app.core import SessionMaker
-from app.schemas import VacancyRequest
+from app.core.http_session import SessionMaker
+from app.schemas.scheme_vacanciy import VacancyRequest
 
 
 async def test_aiohttp_client(

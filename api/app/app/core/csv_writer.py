@@ -2,7 +2,7 @@ import csv
 from typing import Any
 from aiocsv import AsyncDictWriter
 from aiofiles.threadpool.text import AsyncTextIOWrapper
-from app.schemas import Vacancy
+from app.schemas.scheme_vacanciy import Vacancy
 
 
 async def get_vacancy_csv(

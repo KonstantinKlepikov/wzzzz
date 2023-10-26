@@ -1,6 +1,6 @@
 from aiofiles.tempfile import TemporaryFile
-from app.core import get_vacancy_csv
-from app.schemas import AllVacancies, Vacancy
+from app.core.csv_writer import get_vacancy_csv
+from app.schemas.scheme_vacanciy import AllVacancies, Vacancy
 
 
 class TestCsv:

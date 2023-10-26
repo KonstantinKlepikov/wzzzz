@@ -4,8 +4,9 @@ import json
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
-from app.core import HhruQueriesDb, get_parse_save_vacancy
-from app.schemas import VacancyRequest, Vacancies, Relevance
+from app.core.queries import HhruQueriesDb, get_parse_save_vacancy
+from app.schemas.scheme_vacanciy import VacancyRequest, Vacancies
+from app.schemas.constraint import Relevance
 from app.db.init_redis import RedisConnection
 
 

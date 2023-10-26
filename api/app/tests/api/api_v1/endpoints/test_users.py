@@ -2,8 +2,8 @@ import pytest
 from typing import Callable
 from httpx import AsyncClient
 from app.config import settings
-from app.crud import users, CRUDUser
-from app.schemas import UserInDb
+from app.crud.crud_user import users, CRUDUser
+from app.schemas.scheme_user import UserInDb
 
 
 class TestUsers:

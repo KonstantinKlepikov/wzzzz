@@ -2,8 +2,9 @@ import pytest
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
-from app.crud import CRUDVacancies
-from app.schemas import VacancyResponseInDb, Collections
+from app.crud.crud_vacancy import CRUDVacancies
+from app.schemas.scheme_vacanciy import VacancyResponseInDb
+from app.schemas.constraint import Collections
 
 
 class TestCRUDVacancy:

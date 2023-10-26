@@ -10,21 +10,19 @@ from fastapi import (
 from fastapi.responses import StreamingResponse
 from pymongo.client_session import ClientSession
 from aiofiles.tempfile import TemporaryFile
-from app.core import (
-    SessionMaker,
-    HhruQueriesDb,
-    check_user,
-    get_parse_save_vacancy,
-    get_vacancy_csv,
-        )
+from app.core.check import check_user
+from app.core.queries import HhruQueriesDb, get_parse_save_vacancy
+from app.core.csv_writer import get_vacancy_csv
+from app.core.http_session import SessionMaker
 from app.db import get_session, get_redis_connection
-from app.schemas import (
+from app.schemas.scheme_vacanciy import (
     VacancyRequest,
     Vacancies,
     AllVacancies,
-    Relevance,
         )
-from app.crud import templates, vacancies
+from app.schemas.constraint import Relevance
+from app.crud.crud_template import templates
+from app.crud.crud_vacancy import vacancies
 from app.config import settings
 
 

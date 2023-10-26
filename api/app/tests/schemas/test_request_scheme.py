@@ -1,4 +1,5 @@
-from app.schemas import VacancyRequest, Employment, Schedule
+from app.schemas.scheme_vacanciy import VacancyRequest
+from app.schemas.constraint import Employment, Schedule
 from datetime import datetime
 
 

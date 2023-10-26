@@ -1,6 +1,8 @@
 from pymongo.client_session import ClientSession
-from app.crud import CRUDTemplate, CRUDUser
-from app.schemas import Template, UserInDb
+from app.crud.crud_template import CRUDTemplate
+from app.crud.crud_user import CRUDUser
+from app.schemas.scheme_templates import Template
+from app.schemas.scheme_user import UserInDb
 
 
 class TestCRUDTemplate:

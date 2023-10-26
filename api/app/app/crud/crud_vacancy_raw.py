@@ -4,7 +4,7 @@ from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult
 from app.config import settings
-from app.crud import CRUDBase
+from app.crud.crud_base import CRUDBase
 from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.schemas.constraint import Collections
 

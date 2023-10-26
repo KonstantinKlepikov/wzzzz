@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from app.schemas import Template
+from app.schemas.scheme_templates import Template
 
 
 class TestTemplateSchenes:

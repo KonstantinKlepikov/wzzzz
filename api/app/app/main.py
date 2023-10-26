@@ -3,7 +3,7 @@ from fastapi.logger import logger as fastAPI_logger
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.api_v1.api import api_router
-from app.core import SessionMaker
+from app.core.http_session import SessionMaker
 from app.db import create_collections
 
 

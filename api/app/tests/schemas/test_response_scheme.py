@@ -1,4 +1,4 @@
-from app.schemas import VacancyResponse
+from app.schemas.scheme_vacanciy import VacancyResponse
 
 
 class TestVacancyResponsetData:

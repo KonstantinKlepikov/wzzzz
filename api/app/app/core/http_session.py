@@ -1,6 +1,6 @@
 from asyncio import Semaphore, sleep
 from socket import AF_INET
-from typing import Optional, Any
+from typing import Any
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from fastapi import HTTPException
 from app.config import settings
@@ -9,7 +9,7 @@ from app.config import settings
 class SessionMaker:
     """This class represents aiohttp client session singleton pattern
     """
-    aiohttp_client: Optional[ClientSession] = None
+    aiohttp_client: ClientSession | None = None
 
     @classmethod
     def get_aiohttp_client(cls) -> ClientSession:

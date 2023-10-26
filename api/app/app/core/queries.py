@@ -8,10 +8,12 @@ from copy import copy
 from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias, Coroutine
 from bs4 import BeautifulSoup as bs
-from app.core import SessionMaker
-from app.schemas import VacancyRequest, VacancyResponseInDb, Relevance
+from app.core.http_session import SessionMaker
+from app.schemas.scheme_vacanciy import VacancyRequest, VacancyResponseInDb
+from app.schemas.constraint import Relevance
 from app.schemas.scheme_vacancy_raw import VacancyRawData
-from app.crud import vacancies, vacancies_simple_raw, vacancies_deep_raw, CRUDVacancies
+from app.crud.crud_vacancy import vacancies, CRUDVacancies
+from app.crud.crud_vacancy_raw import vacancies_simple_raw, vacancies_deep_raw
 
 
 VacancyRaw: TypeAlias = dict[str, Any]

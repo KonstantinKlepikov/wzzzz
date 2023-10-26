@@ -2,8 +2,8 @@ import pytest
 from typing import Callable
 from fastapi import HTTPException
 from pymongo.client_session import ClientSession
-from app.crud import CRUDUser, users
-from app.schemas import UserInDb
+from app.crud.crud_user import CRUDUser, users
+from app.schemas.scheme_user import UserInDb
 from app.api.api_v1.endpoints import templ
 
 

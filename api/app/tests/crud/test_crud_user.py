@@ -1,6 +1,6 @@
 from pymongo.client_session import ClientSession
-from app.crud import CRUDUser
-from app.schemas import UserInDb
+from app.crud.crud_user import CRUDUser
+from app.schemas.scheme_user import UserInDb
 
 
 class TestCRUDUser:

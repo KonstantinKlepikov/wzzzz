@@ -3,8 +3,10 @@ from typing import Callable
 from httpx import AsyncClient
 from fastapi import HTTPException
 from app.config import settings
-from app.crud import CRUDUser, users, templates, CRUDTemplate
-from app.schemas import UserInDb, Template
+from app.crud.crud_user import CRUDUser, users
+from app.crud.crud_template import templates, CRUDTemplate
+from app.schemas.scheme_user import UserInDb
+from app.schemas.scheme_templates import Template
 from app.schemas.constraint import Area
 from app.api.api_v1.endpoints import templ
 

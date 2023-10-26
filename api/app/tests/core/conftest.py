@@ -3,8 +3,8 @@ import json
 from aiohttp import web
 from aiohttp.test_utils import TestClient
 from yarl import URL
-from app.core import SessionMaker
-from app.schemas import VacancyRequest
+from app.core.http_session import SessionMaker
+from app.schemas.scheme_vacanciy import VacancyRequest
 
 
 async def hhru_vacancy(request: web.Request) -> web.Response:
