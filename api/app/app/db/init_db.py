@@ -24,7 +24,7 @@ def get_client(mongodb_url: str) -> AsyncIOMotorClient:
 client = get_client(settings.MONGODB_URL)
 
 
-async def create_collections() -> None:
+async def create_collections() -> None:  #
     """Create collections
     """
     for collection in Collections.get_values():
@@ -43,7 +43,7 @@ async def create_collections() -> None:
                 index1 = IndexModel('id', unique=True)
                 await client[settings.DB_NAME][collection].create_indexes(
                     [index1, ]
-                        )
+                        )  # TODO: add ts index
             if collection == Collections.TEMPLATES.value:
                 await client[settings.DB_NAME][collection].create_index(
                     [('name', ASCENDING), ('user', ASCENDING), ],

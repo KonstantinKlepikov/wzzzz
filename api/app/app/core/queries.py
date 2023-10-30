@@ -125,7 +125,7 @@ class HhruBaseQueries:
 
 
 
-
+# FIXME: remove me
 class HhruQueriesDb:
     """"""
 
@@ -348,7 +348,7 @@ class HhruQueriesDb:
                         ]
                     )
 
-
+# FIXME: remove me
 async def get_parse_save_vacancy(
     user_id: int,
     queries: HhruQueriesDb,

@@ -4,17 +4,30 @@ import json
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
-from app.core.queries import HhruQueriesDb, get_parse_save_vacancy
+from app.core.queries import HhruQueriesDb, HhruBaseQueries, get_parse_save_vacancy
 from app.schemas.scheme_vacanciy import VacancyRequest, Vacancies
 from app.schemas.constraint import Relevance
 from app.db.init_redis import RedisConnection
 
 
+# FIXME: remove me
 @pytest.fixture
 def hhruqueries(session: TestClient) -> HhruQueriesDb:
     """Make queries class
     """
     q = HhruQueriesDb(
+        session,
+        "https://api.hh.ru/vacancies",
+        VacancyRequest(**VacancyRequest.Config.json_schema_extra['example'])
+            )
+    return q
+
+
+@pytest.fixture
+def base_queries(session: TestClient) -> HhruBaseQueries:
+    """Make queries class
+    """
+    q = HhruBaseQueries(
         session,
         "https://api.hh.ru/vacancies",
         VacancyRequest(**VacancyRequest.Config.json_schema_extra['example'])
@@ -31,6 +44,7 @@ def simple_data() -> dict[str, Any]:
     return data['items'][0]
 
 
+# FIXME: remove me
 @pytest.fixture
 def deeper_data() -> dict[str, Any]:
     """Mock deeper vacancy data
@@ -49,6 +63,49 @@ def deeper_data() -> dict[str, Any]:
             }
 
 
+@pytest.fixture
+def _deeper_data() -> dict[str, Any]:
+    """Mock deeper vacancy data
+    """
+    with open('./tests/core/vac_deep_resp.json', 'r') as f:
+        return json.loads(f.read())
+
+
+class TestHhruBaseQueries:
+    """Test HhruBaseQueries
+    """
+
+    @pytest.mark.skip('# TODO: test me')
+    def test_make_schema(self, base_queries: HhruBaseQueries) -> None:
+        """Test _make_schema
+        """
+
+    @pytest.mark.skip('# TODO: test me')
+    async def test_make_simple_requests(
+        self,
+        base_queries: HhruBaseQueries,
+        simple_data: dict[str, Any],
+        db: ClientSession
+            ) -> None:
+        """Test make_simple_result
+        """
+
+    @pytest.mark.skip('# TODO: test me')
+    def test_make_deeper_requests(
+        self,
+        hbase_queries: HhruBaseQueries,
+        _deeper_data: dict[str, Any]
+            ) -> None:
+        """Test make_deeper_result
+        """
+
+    @pytest.mark.skip('# TODO: test me')
+    def test_query(self, base_queries: HhruBaseQueries) -> None:
+        """Test query
+        """
+
+
+# FIXME: remove me
 class TestHhruQueries:
     """Test HhruqueriesDb
     """

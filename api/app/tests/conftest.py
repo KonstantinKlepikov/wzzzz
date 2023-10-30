@@ -1,6 +1,6 @@
 import pytest
 from typing import Generator
-from pymongo import ASCENDING
+from pymongo import ASCENDING, IndexModel
 from pymongo.client_session import ClientSession
 from motor.motor_asyncio import AsyncIOMotorClient
 from httpx import AsyncClient
@@ -41,10 +41,23 @@ async def db() -> Generator:
     """
     async with BdTestContext(settings.TEST_MONGODB_URL, DB_NAME) as db:
 
+        # FIXME: here use create_collection from db init and mock client
         for collection in Collections.get_values():
             await db.create_collection(collection)
             if collection == Collections.VACANCIES:
-                await db[collection].create_index('v_id', unique=True)
+                index1 = IndexModel('v_id', unique=True)
+                index2 = IndexModel(
+                    'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
+                        )
+                await client[settings.DB_NAME][collection].create_indexes(
+                    [index1, index2]
+                        )
+            if collection == Collections.VACANCIES_SIMPLE_RAW or \
+                    Collections.VACANCIES_DEEP_RAW:
+                index1 = IndexModel('id', unique=True)
+                await client[settings.DB_NAME][collection].create_indexes(
+                    [index1, ]
+                        )
             if collection == Collections.TEMPLATES.value:
                 await db[collection].create_index(
                         [('name', ASCENDING), ('user', ASCENDING), ],
