@@ -38,6 +38,7 @@ class HhruBaseQueries:
         self.url = url
         self.params = json.loads(params.model_dump_json(exclude_none=True))
 
+    # TODO: write to db raw, use raw data without schema
     @staticmethod
     def _make_schema(data: list[VacancyRaw]) -> list[VacancyRawData]:
         """Add timestamp to data before add it to db
