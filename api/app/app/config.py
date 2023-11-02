@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     HHRU_API_TOKEN: SecretStr = None
     HHRU_CLIENT_EMAIL: str | None = None
 
+    # FIXME: move to test settings
     # def settings
     TEST_MONGODB_URL: str | None = None
 

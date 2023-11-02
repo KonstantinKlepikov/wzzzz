@@ -21,7 +21,7 @@ class BaseStrEnum(str, BaseEnum):
     """Base class for enumeration
     """
 
-
+# FIXME: move to bot and use cache
 class Area(BaseEnum):
     """https://github.com/hhru/api/blob/master/docs/areas.md
     """
@@ -30,14 +30,14 @@ class Area(BaseEnum):
     GEORGIA = 28
     OTHER = 1001
 
-
+# FIXME: move to bot and use cache
 class Expirience(BaseStrEnum):
     NO = 'noExperience'
     B1TO3 = 'between1And3'
     B3TO6 = 'between3And6'
     MORE6 = 'moreThan6'
 
-
+# FIXME: move to bot and use cache
 class Employment(BaseStrEnum):
     FULL = 'full'
     PART = 'part'
@@ -45,7 +45,7 @@ class Employment(BaseStrEnum):
     VOLUN = 'volunteer'
     PROBATION = 'probation'
 
-
+# FIXME: move to bot and use cache
 class Schedule(BaseStrEnum):
     FULL = 'fullDay'
     SHIFT = 'shift'
@@ -53,7 +53,7 @@ class Schedule(BaseStrEnum):
     REMOTE = 'remote'
     FLY = 'lyInFlyOut'
 
-
+# FIXME: move to bot and use cache
 class Professional(BaseEnum):
     """https://api.hh.ru/openapi/redoc#tag/Obshie-spravochniki/operation/get-professional-roles-dictionary
     """

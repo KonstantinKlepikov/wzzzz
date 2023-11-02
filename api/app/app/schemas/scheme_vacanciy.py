@@ -25,7 +25,7 @@ class VacancyId(BaseModel):
                         }
                     }
 
-
+# FIXME: remove me
 class VacancyTs(BaseModel):
     """Timestamp
     """
@@ -39,7 +39,7 @@ class VacancyTs(BaseModel):
                         }
                     }
 
-
+# FIXME: remove me
 class VacancyRequest(TemplateConstraints):
     """Request querie to hh.ru vacancy API
     """
@@ -120,7 +120,7 @@ class Vacancy(VacancyId, VacancyResponse):
                     }
                 }
 
-
+# FIXME: remove me
 class VacancyResponseInDb(Vacancy, VacancyTs):
     """Vacancy in db
     """
@@ -145,7 +145,7 @@ class VacancyResponseInDb(Vacancy, VacancyTs):
                     }
                 }
 
-
+# FIXME: remove me
 class Vacancies(BaseModel):
     """Vacancies as dict
     """
@@ -176,7 +176,7 @@ class Vacancies(BaseModel):
                         }
                     }
 
-
+# FIXME: remove me
 class AllVacancies(BaseModel):
     """Vacancies as list
     """
