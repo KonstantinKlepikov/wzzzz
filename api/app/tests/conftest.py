@@ -39,51 +39,51 @@ class BdTestContext:
 async def db() -> Generator:
     """Get mock mongodb
     """
-    async with BdTestContext(settings.TEST_MONGODB_URL, DB_NAME) as db:
+    async with BdTestContext(settings.TEST_MONGODB_URL, DB_NAME) as d:
 
         # FIXME: here use create_collection from db init and mock client
         for collection in Collections.get_values():
-            await db.create_collection(collection)
+            await d.create_collection(collection)
             if collection == Collections.VACANCIES:
                 index1 = IndexModel('v_id', unique=True)
                 index2 = IndexModel(
                     'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
                         )
-                await client[settings.DB_NAME][collection].create_indexes(
+                await d[collection].create_indexes(
                     [index1, index2]
                         )
-            if collection == Collections.VACANCIES_SIMPLE_RAW or \
-                    Collections.VACANCIES_DEEP_RAW:
-                index1 = IndexModel('id', unique=True)
-                await client[settings.DB_NAME][collection].create_indexes(
-                    [index1, ]
-                        )
+            # if collection == Collections.VACANCIES_SIMPLE_RAW or \
+            #         Collections.VACANCIES_DEEP_RAW:
+            #     index3 = IndexModel('id', unique=True) # FIXME: pymongo.errors.BulkWriteError - use something other, like raw_id
+            #     await d[collection].create_indexes(
+            #         [index3, ]
+            #             )
             if collection == Collections.TEMPLATES.value:
-                await db[collection].create_index(
+                await d[collection].create_index(
                         [('name', ASCENDING), ('user', ASCENDING), ],
                         unique=True
                             )
             if collection == Collections.USERS.value:
-                await db[collection].create_index('user_id', unique=True)
+                await d[collection].create_index('user_id', unique=True)
 
         # fill vacancies
-        collection = db[Collections.VACANCIES.value]
+        collection = d[Collections.VACANCIES.value]
         one = VacancyResponseInDb.Config.json_schema_extra['example']
         another = {'v_id': 654321}
         await collection.insert_many([one, another])
 
         # fill user
-        collection = db[Collections.USERS.value]
+        collection = d[Collections.USERS.value]
         one = UserInDb.Config.json_schema_extra['example']
         in_db = await collection.insert_one(one)
 
         # fill template
-        collection = db[Collections.TEMPLATES.value]
+        collection = d[Collections.TEMPLATES.value]
         one = TemplateInDb.Config.json_schema_extra['example']
         one['user'] = str(in_db.inserted_id)
         await collection.insert_one(one)
 
-        yield db
+        yield d
 
 
 @pytest.fixture(scope="function")

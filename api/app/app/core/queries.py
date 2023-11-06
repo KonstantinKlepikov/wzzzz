@@ -117,8 +117,8 @@ class HhruBaseQueries:
         ids = [d['id'] for d in simple]
         deep = await self._make_deeper_requests(ids, semaphore)
 
-        simple_db = await vacancies_simple_raw.create_many(db, self._make_schema(simple)) # FIXME:
-        deep_db = await vacancies_deep_raw.create_many(db, self._make_schema(deep)) # FIXME:
+        simple_db = await vacancies_simple_raw.create_many(db, self._make_schema(simple)) # FIXME: use raw_id insted od id for db save
+        deep_db = await vacancies_deep_raw.create_many(db, self._make_schema(deep)) # FIXME: use raw_id insted od id for db save
 
         # TODO: send simple to deeper as it available
         # TODO: transform data and save transformed...

@@ -48,7 +48,7 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         Returns:
             list[InsertOneResult]: results
         """
-        tasks = [self.create(db, i) for i in obj_in]
+        tasks = [self.create(db, i) for i in obj_in]  # FIXME: use raw_id insted od id for db save. Add create_raw method
         result = await asyncio.gather(*tasks, return_exceptions=True)
         return [res for res in result if not isinstance(res, DuplicateKeyError)]
 
