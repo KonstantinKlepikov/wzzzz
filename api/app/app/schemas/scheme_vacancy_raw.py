@@ -1,12 +1,11 @@
-from typing import Any
 from datetime import datetime
-from pydantic import BaseModel, NonNegativeInt, HttpUrl, conint
+from pydantic import BaseModel, NonNegativeInt, Field, ConfigDict
 
 
 class VacancyId(BaseModel):
     """Vacancy id
     """
-    id: NonNegativeInt
+    id: NonNegativeInt = Field(..., serialization_alias='raw_id')
 
     class Config:
 
@@ -33,15 +32,17 @@ class VacancyTs(BaseModel):
 
 class VacancyRawData(VacancyId, VacancyTs):
     """Vacancy raw
+
+    Extra fields is used to allow raw vacancy data.
+    Yhis requred because we dont know actual api respons.
     """
-    raw: dict[str, Any]
 
     class Config:
 
+        extra='allow'
         json_schema_extra = {
             "example": {
                 'id': 87542153,
                 'ts': '2022-06-01T10:20:30',
-                'raw': {},
                     }
                 }

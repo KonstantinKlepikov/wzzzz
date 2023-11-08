@@ -38,9 +38,8 @@ class HhruBaseQueries:
         self.url = url
         self.params = json.loads(params.model_dump_json(exclude_none=True))
 
-    # TODO: write to db raw, use raw data without schema
     @staticmethod
-    def _make_schema(data: list[VacancyRaw]) -> list[VacancyRawData]:
+    def _make_schema(data: list[VacancyRaw]) -> list[VacancyRawData]:  # TODO: test me
         """Add timestamp to data before add it to db
 
         Args:
@@ -50,7 +49,7 @@ class HhruBaseQueries:
             list[VacancyRawData]: transformed data
         """
         ts = {'ts': datetime.utcnow()}
-        return [VacancyRawData(id=d['id'], ts=ts, raw=d) for d in data]
+        return [VacancyRawData(ts=ts, **d) for d in data]  # TODO: by_alias=True when serialize
 
     async def _make_simple_requests(
         self,

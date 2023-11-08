@@ -41,7 +41,6 @@ async def db() -> Generator:
     """
     async with BdTestContext(settings.TEST_MONGODB_URL, DB_NAME) as d:
 
-        # FIXME: here use create_collection from db init and mock client
         for collection in Collections.get_values():
             await d.create_collection(collection)
             if collection == Collections.VACANCIES:
@@ -50,13 +49,16 @@ async def db() -> Generator:
                     'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
                         )
                 await d[collection].create_indexes(
-                    [index1, index2]
+                    [index1, index2, ]
                         )
             # if collection == Collections.VACANCIES_SIMPLE_RAW or \
             #         Collections.VACANCIES_DEEP_RAW:
-            #     index3 = IndexModel('id', unique=True) # FIXME: pymongo.errors.BulkWriteError - use something other, like raw_id
+            #     index1 = IndexModel('raw_id', unique=True)
+            #     index2 = IndexModel(
+            #         'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
+            #             )
             #     await d[collection].create_indexes(
-            #         [index3, ]
+            #         [index1, index2, ]
             #             )
             if collection == Collections.TEMPLATES.value:
                 await d[collection].create_index(
@@ -70,6 +72,12 @@ async def db() -> Generator:
         collection = d[Collections.VACANCIES.value]
         one = VacancyResponseInDb.Config.json_schema_extra['example']
         another = {'v_id': 654321}
+        # FIXME: pymongo.errors.BulkWriteError: batch op errors occurred, full error:
+        # {'writeErrors': [{'index': 1, 'code': 11000, 'errmsg': 'E11000 duplicate key error
+        # collection: test-db.vacancies index: raw_id_1 dup key: { raw_id: null }', 'keyPattern':
+        # {'raw_id': 1}, 'keyValue': {'raw_id': None}, 'op': {'v_id': 654321, '_id':
+        # ObjectId('654ac2794b19c9471d2c8d9c')}}], 'writeConcernErrors': [], 'nInserted': 1,
+        # 'nUpserted': 0, 'nMatched': 0, 'nModified': 0, 'nRemoved': 0, 'upserted': []}
         await collection.insert_many([one, another])
 
         # fill user

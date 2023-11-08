@@ -36,14 +36,17 @@ async def create_collections() -> None:  #
                     'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
                         )
                 await client[settings.DB_NAME][collection].create_indexes(
-                    [index1, index2]
+                    [index1, index2, ]
                         )
-            # if collection == Collections.VACANCIES_SIMPLE_RAW or \
-            #         Collections.VACANCIES_DEEP_RAW:
-            #     index1 = IndexModel('id', unique=True)  # FIXME: pymongo.errors.BulkWriteError - use something other, like raw_id
-            #     await client[settings.DB_NAME][collection].create_indexes(
-            #         [index1, ]
-            #             )  # TODO: add ts index
+            if collection == Collections.VACANCIES_SIMPLE_RAW or \
+                    Collections.VACANCIES_DEEP_RAW:
+                index1 = IndexModel('raw_id', unique=True)
+                index2 = IndexModel(
+                    'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
+                        )
+                await client[settings.DB_NAME][collection].create_indexes(
+                    [index1, index2, ]
+                        )
             if collection == Collections.TEMPLATES.value:
                 await client[settings.DB_NAME][collection].create_index(
                     [('name', ASCENDING), ('user', ASCENDING), ],
