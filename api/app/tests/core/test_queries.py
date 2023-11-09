@@ -4,6 +4,7 @@ import json
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
+from fastapi import HTTPException
 from app.core.queries import HhruQueriesDb, HhruBaseQueries, get_parse_save_vacancy
 from app.schemas.scheme_vacanciy import VacancyRequest, Vacancies
 from app.schemas.constraint import Relevance
@@ -75,10 +76,28 @@ class TestHhruBaseQueries:
     """Test HhruBaseQueries
     """
 
-    @pytest.mark.skip('# TODO: test me')
-    def test_make_schema(self, base_queries: HhruBaseQueries) -> None:
-        """Test _make_schema
+    @pytest.fixture(scope="function")
+    async def mock_status(
+        self,
+        session: TestClient,
+        request,
+        monkeypatch,
+            ) -> Callable:
+        async def mock_return(*args, **kwargs) -> Callable:
+            raise HTTPException(request.param)
+        monkeypatch.setattr(session, "get_query", mock_return)
+
+    @pytest.mark.parametrize("mock_status", [400, 404, 429], indirect=['mock_status'])
+    async def test_make_simple_requests_raise_errors(
+        self,
+        base_queries: HhruBaseQueries,
+        mock_status: Callable,
+            ) -> None:
+        """Test make_simple_result raise errors when response raise error
         """
+        with pytest.raises(HTTPException):
+            await base_queries._make_simple_requests()
+            # TODO: get an exception code and text
 
     @pytest.mark.skip('# TODO: test me')
     async def test_make_simple_requests(

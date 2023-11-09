@@ -13,6 +13,23 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
     """Vacancies crud
     """
 
+    async def create_raw(  # TODO: test me
+        self,
+        db: ClientSession,
+        obj_in: VacancyRawData
+            ) -> InsertOneResult:
+        """Create raw vacancy document
+
+        Args:
+            db (ClientSession): session
+            obj_in (VacancyRawData): scheme to creare
+
+        Returns:
+            InsertOneResult: result of creation
+        """
+        return await db.client[self.db_name][self.col_name] \
+            .insert_one(obj_in.model_dump(by_alias=True))
+
     async def get_many_by_ids(  # TODO: test me
         self,
         db: ClientSession,
@@ -48,7 +65,7 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         Returns:
             list[InsertOneResult]: results
         """
-        tasks = [self.create(db, i) for i in obj_in]  # FIXME: use raw_id insted od id for db save. Add create_raw method
+        tasks = [self.create_raw(db, i) for i in obj_in]
         result = await asyncio.gather(*tasks, return_exceptions=True)
         return [res for res in result if not isinstance(res, DuplicateKeyError)]
 

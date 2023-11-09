@@ -54,7 +54,7 @@ class SessionMaker:
             client (ClientSession): session
             url (str): url for request
             params (dict[str, Any], optional): request parameters.
-                                               Defaults to None.
+                Defaults to None.
 
         Raises:
             HTTPException: response code depended exceptions
@@ -80,6 +80,7 @@ class SessionMaker:
                     status_code=429,
                     detail="To Many Requests"
                         )
+            # FIXME: dont raise a error
             # FIXME: add here 200 and else with other statuses codes
             return await response.json()
 
@@ -95,9 +96,9 @@ class SessionMaker:
         Args:
             url (str): url for request
             params (dict[str, Any], optional): request parameters.
-                                               Defaults to None.
+                Defaults to None.
             sem (Semaphore, optional): query constaraint.
-                                       Defaults to None.
+                Defaults to None.
 
         Returns:
             dict[str, Any]: result

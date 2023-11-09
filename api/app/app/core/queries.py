@@ -12,7 +12,7 @@ from app.core.http_session import SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest, VacancyResponseInDb
 from app.schemas.constraint import Relevance
 from app.schemas.scheme_vacancy_raw import VacancyRawData
-from app.crud.crud_vacancy import vacancies, CRUDVacancies
+from app.crud.crud_vacancy import vacancies
 from app.crud.crud_vacancy_raw import vacancies_simple_raw, vacancies_deep_raw
 
 
@@ -38,23 +38,10 @@ class HhruBaseQueries:
         self.url = url
         self.params = json.loads(params.model_dump_json(exclude_none=True))
 
-    @staticmethod
-    def _make_schema(data: list[VacancyRaw]) -> list[VacancyRawData]:  # TODO: test me
-        """Add timestamp to data before add it to db
-
-        Args:
-            data (list[VacancyRaw]): vacancies data
-
-        Returns:
-            list[VacancyRawData]: transformed data
-        """
-        ts = {'ts': datetime.utcnow()}
-        return [VacancyRawData(ts=ts, **d) for d in data]  # TODO: by_alias=True when serialize
-
     async def _make_simple_requests(
         self,
         sem: Semaphore | None = None,
-            ) -> list[VacancyRaw]:  # TODO: test me
+            ) -> list[VacancyRawData]:  # TODO: test me
         """Make simple result of query. Here is all pages returned from
         https://api.hh.ru/vacancies
 
@@ -64,15 +51,16 @@ class HhruBaseQueries:
 
         Args:
             sem (Semaphore, optional): semaphore option for prevent
-                                       server overwelming. Defaults to None.
+                server overwelming. Defaults to None.
 
         Returns:
-            list[VacancyRaw]: simple vacanices responces
+            list[VacancyRawData]: simple vacanices responces
         """
 
         tasks: list[Coroutine] = []
         entry = await self.session.get_query(url=self.url, params=self.params)
         # FIXME: if error?
+        # FIXME: use something to catch a error and exceptate it
 
         for page in range(1, entry['pages'] + 1):
             p = copy(self.params)
@@ -80,30 +68,37 @@ class HhruBaseQueries:
             tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
 
         result = await asyncio.gather(*tasks, return_exceptions=True)
-        return [entry, ] + [res for res in result if not isinstance(res, Exception)]
+
+        # FIXME: unpack answer, get vacancies and add it to list. Now is wrong
+        return [VacancyRawData(**entry), ] + \
+            [
+                VacancyRawData(**res)
+                for res in result
+                if not isinstance(res, Exception)
+                    ]
 
     async def _make_deeper_requests(
         self,
         urls: list[str],
         sem: Optional[Semaphore] = None,
-            ) -> list[VacancyRaw]:  # TODO: test me
+            ) -> list[VacancyRawData]:  # TODO: test me
         """Make requests for deeper vacancy data
 
         Args:
             urls (list[str]): simple requests urls
             sem (Semaphore, optional): semaphore option for prevent
-                            server overwelming. Defaults to None.
+                server overwelming. Defaults to None.
 
         Returns:
-            list[VacancyRaw]: deeper vacancy responses
+            list[VacancyRawData]: deeper vacancy responses
         """
-        tasks: list[Coroutine] = []
-
-        for url in urls:
-            tasks.append(self.session.get_query(url=url, sem=sem))
-
+        tasks = [self.session.get_query(url=url, sem=sem) for url in urls]
         result = await asyncio.gather(*tasks, return_exceptions=True)
-        return [res for res in result if not isinstance(res, Exception)]
+        return [
+            VacancyRawData(**res)
+            for res in result
+            if not isinstance(res, Exception)
+                ]
 
     async def query(self, db: ClientSession) -> None:  # TODO: test me
         """Request for vacancies
@@ -113,15 +108,19 @@ class HhruBaseQueries:
         """
         semaphore = Semaphore(10)
         simple = await self._make_simple_requests(semaphore)
-        ids = [d['id'] for d in simple]
-        deep = await self._make_deeper_requests(ids, semaphore)
+        urls = [d.url for d in simple]
+        # TODO: ask bd for existed vacancied before send list.
+        # remove existed from simple
+        # For this we can use as_completed()
+        deep = await self._make_deeper_requests(urls, semaphore)
 
-        simple_db = await vacancies_simple_raw.create_many(db, self._make_schema(simple)) # FIXME: use raw_id insted od id for db save
-        deep_db = await vacancies_deep_raw.create_many(db, self._make_schema(deep)) # FIXME: use raw_id insted od id for db save
+        # TODO: merge this to one method cincurently
+        await vacancies_simple_raw.create_many(db, simple)
+        await vacancies_deep_raw.create_many(db, deep)
 
-        # TODO: send simple to deeper as it available
-        # TODO: transform data and save transformed...
-        # or return data for transformation
+        # TODO: get data from db and transform it to right format
+        # use range of dates for filtering
+
 
 
 
