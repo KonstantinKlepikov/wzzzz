@@ -38,6 +38,11 @@ class HhruBaseQueries:
         self.url = url
         self.params = json.loads(params.model_dump_json(exclude_none=True))
 
+    async def _make_entry(self):
+        """Get entry page for request
+        """
+        return await self.session.get_query(url=self.url, params=self.params)
+
     async def _make_simple_requests(
         self,
         sem: Semaphore | None = None,
@@ -58,9 +63,7 @@ class HhruBaseQueries:
         """
 
         tasks: list[Coroutine] = []
-        entry = await self.session.get_query(url=self.url, params=self.params)
-        # FIXME: if error?
-        # FIXME: use something to catch a error and exceptate it
+        entry = await self._make_entry()
 
         for page in range(1, entry['pages'] + 1):
             p = copy(self.params)
@@ -70,6 +73,7 @@ class HhruBaseQueries:
         result = await asyncio.gather(*tasks, return_exceptions=True)
 
         # FIXME: unpack answer, get vacancies and add it to list. Now is wrong
+        # and we need check error if is incorrect schema
         return [VacancyRawData(**entry), ] + \
             [
                 VacancyRawData(**res)

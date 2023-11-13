@@ -63,4 +63,4 @@ class TestAiohttpClient:
             params=VacancyRequest.Config.json_schema_extra['example']
                 )
         assert result['per_page'] == 1, 'wrong result'
-        # TODO: test woth semaphores
+        # TODO: test with semaphores
