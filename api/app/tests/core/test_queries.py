@@ -131,17 +131,29 @@ class TestHhruBaseQueries:
         assert result['pages'] == entry_data['pages'], 'wrong pages'
         assert result['per_page'] == entry_data['per_page'], 'wrong per_page'
 
+    async def test_make_simple_requests(
+        self,
+        base_queries: HhruBaseQueries,
+        mock_entry_response,
+        entry_data: dict[str, Any]
+            ) -> None:
+        """Test make_simple_result
+        """
+        result = await base_queries._make_simple_requests()
+        assert len(result) == 2020, 'wrong result len'
+        assert result[0].id == result[20].id, 'mock query not doubled'
+
     @pytest.mark.skip('# TODO: test me')
-    def test_make_deeper_requests(
+    async def test_make_deeper_requests(
         self,
         hbase_queries: HhruBaseQueries,
-        _deeper_data: dict[str, Any]
+        deeper_data: dict[str, Any]
             ) -> None:
         """Test make_deeper_result
         """
 
     @pytest.mark.skip('# TODO: test me')
-    def test_query(self, base_queries: HhruBaseQueries) -> None:
+    async def test_query(self, base_queries: HhruBaseQueries) -> None:
         """Test query
         """
 

@@ -46,7 +46,7 @@ class HhruBaseQueries:
     async def _make_simple_requests(
         self,
         sem: Semaphore | None = None,
-            ) -> list[VacancyRawData]:  # TODO: test me
+            ) -> list[VacancyRawData]:
         """Make simple result of query. Here is all pages returned from
         https://api.hh.ru/vacancies
 
@@ -72,14 +72,12 @@ class HhruBaseQueries:
 
         result = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # FIXME: unpack answer, get vacancies and add it to list. Now is wrong
-        # and we need check error if is incorrect schema
-        return [VacancyRawData(**entry), ] + \
-            [
-                VacancyRawData(**res)
-                for res in result
-                if not isinstance(res, Exception)
-                    ]
+        return [
+            VacancyRawData(**res)
+            for nested in [entry, ] + result
+            for res in nested['items']
+            if not isinstance(res, Exception)
+                ]
 
     async def _make_deeper_requests(
         self,
@@ -124,7 +122,6 @@ class HhruBaseQueries:
 
         # TODO: get data from db and transform it to right format
         # use range of dates for filtering
-
 
 
 
