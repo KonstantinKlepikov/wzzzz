@@ -142,11 +142,24 @@ class TestHhruBaseQueries:
         result = await base_queries._make_simple_requests()
         assert len(result) == 2020, 'wrong result len'
         assert result[0].id == result[20].id, 'mock query not doubled'
+        assert result[0].id == int(entry_data['items'][0]['id'])
+
+    @pytest.fixture(scope="function")
+    async def mock_vacancy_by_id_response(
+        self,
+        session: TestClient,
+        deeper_data: dict[str, Any],
+        monkeypatch,
+            ) -> Callable:
+        async def mock_return(*args, **kwargs) -> Callable:
+            return deeper_data
+        monkeypatch.setattr(session, "get_query", mock_return)
 
     @pytest.mark.skip('# TODO: test me')
     async def test_make_deeper_requests(
         self,
         hbase_queries: HhruBaseQueries,
+        mock_vacancy_by_id_response,
         deeper_data: dict[str, Any]
             ) -> None:
         """Test make_deeper_result

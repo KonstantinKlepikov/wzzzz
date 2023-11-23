@@ -110,13 +110,13 @@ class HhruBaseQueries:
         """
         semaphore = Semaphore(10)
         simple = await self._make_simple_requests(semaphore)
-        urls = [d.url for d in simple]
-        # TODO: ask bd for existed vacancied before send list.
-        # remove existed from simple
-        # For this we can use as_completed()
+
+        v_ids = {d.v_id for d in simple}
+        notexisted_v_ids = await vacancies_simple_raw.get_many_notexisted_v_ids(db, v_ids)
+        urls = [d.url for d in simple if d.v_id in notexisted_v_ids]
+
         deep = await self._make_deeper_requests(urls, semaphore)
 
-        # TODO: merge this to one method cincurently
         await vacancies_simple_raw.create_many(db, simple)
         await vacancies_deep_raw.create_many(db, deep)
 
