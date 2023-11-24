@@ -2,7 +2,6 @@ import json
 import asyncio
 from asyncio import Semaphore
 from itertools import chain
-from datetime import datetime
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
@@ -102,13 +101,14 @@ class HhruBaseQueries:
             if not isinstance(res, Exception)
                 ]
 
-    async def query(self, db: ClientSession) -> None:  # TODO: test me
+    async def query(self, db: ClientSession, sem: int = 10) -> set[int]:  # TODO: test me
         """Request for vacancies
 
         Args:
             db (ClientSession): session
+            sem (int): senaphore in seconds
         """
-        semaphore = Semaphore(10)
+        semaphore = Semaphore(sem)
         simple = await self._make_simple_requests(semaphore)
 
         v_ids = {d.v_id for d in simple}
@@ -120,8 +120,7 @@ class HhruBaseQueries:
         await vacancies_simple_raw.create_many(db, simple)
         await vacancies_deep_raw.create_many(db, deep)
 
-        # TODO: get data from db and transform it to right format
-        # use range of dates for filtering
+        return v_ids
 
 
 
