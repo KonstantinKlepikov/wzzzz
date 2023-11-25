@@ -4,8 +4,11 @@ from pydantic import BaseModel, NonNegativeInt, Field, ConfigDict
 
 class VacancyId(BaseModel):
     """Vacancy id
+
+    When id is serialized - the name of attribute is change to
+    v_id - because id is reserved for mongoDb primary key
     """
-    id: NonNegativeInt = Field(..., serialization_alias='raw_id')
+    id: NonNegativeInt = Field(..., serialization_alias='v_id')
 
     class Config:
 

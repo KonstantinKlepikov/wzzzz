@@ -5,7 +5,7 @@ from itertools import chain
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
-from typing import Any, Optional, TypeAlias, Coroutine, Sequence
+from typing import Any, Optional, TypeAlias, Coroutine
 from bs4 import BeautifulSoup as bs
 from app.core.http_session import SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest, VacancyResponseInDb
@@ -101,35 +101,29 @@ class HhruBaseQueries:
             if not isinstance(res, Exception)
                 ]
 
-    # async def query(self, db: ClientSession, sem: int = 10) -> set[int]:  # TODO: test me
-    async def query(
-        self,
-        db: ClientSession,
-        sem: int = 10
-            ) -> tuple[set[int], list[VacancyRawData], list[VacancyRawData]]:  # TODO: test me
+    async def query(self, db: ClientSession, sem: int = 10) -> set[int]:
         """Request for vacancies
 
         Args:
-            db (ClientSession): database session
+            db (ClientSession): session
             sem (int): senaphore in seconds
 
         Returns:
-            set[int], list[VacancyRawData], list[VacancyRawData]:
-            ids of vacancies, simple and deep data
+            set[int]: ids of queried vacancies
         """
         semaphore = Semaphore(sem)
         simple = await self._make_simple_requests(semaphore)
 
-        v_ids = {d.v_id for d in simple}
+        v_ids = {d.id for d in simple}
         notexisted_v_ids = await vacancies_simple_raw.get_many_notexisted_v_ids(db, v_ids)
-        urls = [d.url for d in simple if d.v_id in notexisted_v_ids]
+        urls = [d.url for d in simple if d.id in notexisted_v_ids]
 
         deep = await self._make_deeper_requests(urls, semaphore)
 
-        # await vacancies_simple_raw.create_many(db, simple) # TODO: move external
-        # await vacancies_deep_raw.create_many(db, deep)
+        await vacancies_simple_raw.create_many(db, simple)
+        await vacancies_deep_raw.create_many(db, deep)
 
-        return v_ids, simple, deep
+        return v_ids
 
 
 

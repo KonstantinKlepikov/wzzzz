@@ -30,7 +30,7 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         return await db.client[self.db_name][self.col_name] \
             .insert_one(obj_in.model_dump(by_alias=True))
 
-    async def get_many_by_ids(  # TODO: test me # FIXME: remove me
+    async def get_many_by_ids(  # TODO: test me
         self,
         db: ClientSession,
         ids: Sequence[int]

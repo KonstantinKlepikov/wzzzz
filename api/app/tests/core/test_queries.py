@@ -9,7 +9,7 @@ from app.schemas.scheme_vacanciy import VacancyRequest, Vacancies
 from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.schemas.constraint import Relevance
 from app.db.init_redis import RedisConnection
-
+from app.crud.crud_vacancy_raw import vacancies_deep_raw
 
 # FIXME: remove me
 # @pytest.fixture
@@ -203,18 +203,32 @@ class TestHhruBaseQueries:
             return [VacancyRawData(**deeper_data) for _ in range(len(simple_data))]
         monkeypatch.setattr(base_queries, "_make_deeper_requests", mock_return)
 
-    @pytest.mark.skip('# TODO: test me')
+    @pytest.fixture(scope="function")
+    async def mock_get_many_notexisted_v_ids(
+        self,
+        simple_data: list[dict[str, Any]],
+        monkeypatch,
+            ) -> Callable:
+        async def mock_return(*args, **kwargs) -> Callable:
+            return {int(d['id']) for d in simple_data["items"]}
+        monkeypatch.setattr(vacancies_deep_raw , "get_many_notexisted_v_ids", mock_return)
+
     async def test_query(
         self,
         base_queries: HhruBaseQueries,
         db: ClientSession,
         mock_simple_request: list[VacancyRawData],
-        mock_deeper_request: list[VacancyRawData]
+        mock_deeper_request: list[VacancyRawData],
+        simple_data: list[dict[str, Any]],
+        mock_get_many_notexisted_v_ids: set[int]
         ) -> None:
         """Test query
         """
+        # TODO: mock save to db and taest with crud
         result = await base_queries.query(db)
-
+        assert isinstance(result, set), 'wrong type'
+        assert len(result) == 1, 'wrong len'
+        assert result.pop() == int(simple_data[0]['id']), 'wrong id'
 
 # FIXME: remove me
 # class TestHhruQueries:
