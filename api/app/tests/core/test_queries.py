@@ -1,5 +1,4 @@
 import pytest
-import asyncio
 import json
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
@@ -7,6 +6,7 @@ from pymongo.client_session import ClientSession
 from fastapi import HTTPException
 from app.core.queries import HhruQueriesDb, HhruBaseQueries, get_parse_save_vacancy
 from app.schemas.scheme_vacanciy import VacancyRequest, Vacancies
+from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.schemas.constraint import Relevance
 from app.db.init_redis import RedisConnection
 
@@ -44,14 +44,23 @@ def entry_data() -> dict[str, Any]:
         data = json.loads(f.read())
     return data
 
+# FIXME: remove me
+# @pytest.fixture
+# def simple_data() -> dict[str, Any]:
+#     """Mock hhru vacancy response
+#     """
+#     with open('./tests/core/vac_resp.json', 'r') as f:
+#         data = json.loads(f.read())
+#     return data['items'][0]
+
 
 @pytest.fixture
-def simple_data() -> dict[str, Any]:
+def simple_data() -> list[dict[str, Any]]:
     """Mock hhru vacancy response
     """
     with open('./tests/core/vac_resp.json', 'r') as f:
         data = json.loads(f.read())
-    return data['items'][0]
+    return data['items']
 
 
 # FIXME: remove me
@@ -137,7 +146,7 @@ class TestHhruBaseQueries:
         mock_entry_response,
         entry_data: dict[str, Any]
             ) -> None:
-        """Test make_simple_result
+        """Test make simple request
         """
         result = await base_queries._make_simple_requests()
         assert len(result) == 2020, 'wrong result len'
@@ -145,7 +154,7 @@ class TestHhruBaseQueries:
         assert result[0].id == int(entry_data['items'][0]['id'])
 
     @pytest.fixture(scope="function")
-    async def mock_vacancy_by_id_response(
+    async def mock_vacancy_deeper_response(
         self,
         session: TestClient,
         deeper_data: dict[str, Any],
@@ -155,20 +164,56 @@ class TestHhruBaseQueries:
             return deeper_data
         monkeypatch.setattr(session, "get_query", mock_return)
 
-    @pytest.mark.skip('# TODO: test me')
     async def test_make_deeper_requests(
         self,
-        hbase_queries: HhruBaseQueries,
-        mock_vacancy_by_id_response,
+        base_queries: HhruBaseQueries,
+        mock_vacancy_deeper_response,
         deeper_data: dict[str, Any]
             ) -> None:
-        """Test make_deeper_result
+        """Test make deeper request
         """
+        urls = [deeper_data["alternate_url"] for _ in range(10)]
+        result = await base_queries._make_deeper_requests(urls)
+        assert len(result) == 10, 'wrong result len'
+        assert isinstance(result[0], VacancyRawData)
+        assert result[0].id == int(deeper_data["id"]), 'wrong content'
+
+    # TODO: test semaphores and errors in requests
+
+    @pytest.fixture(scope="function")
+    async def mock_simple_request(
+        self,
+        base_queries: HhruBaseQueries,
+        simple_data: list[dict[str, Any]],
+        monkeypatch,
+            ) -> Callable:
+        async def mock_return(*args, **kwargs) -> Callable:
+            return [VacancyRawData(**res) for res in simple_data]
+        monkeypatch.setattr(base_queries, "_make_simple_requests", mock_return)
+
+    @pytest.fixture(scope="function")
+    async def mock_deeper_request(
+        self,
+        base_queries: HhruBaseQueries,
+        deeper_data: dict[str, Any],
+        simple_data: list[dict[str, Any]],
+        monkeypatch,
+            ) -> Callable:
+        async def mock_return(*args, **kwargs) -> Callable:
+            return [VacancyRawData(**deeper_data) for _ in range(len(simple_data))]
+        monkeypatch.setattr(base_queries, "_make_deeper_requests", mock_return)
 
     @pytest.mark.skip('# TODO: test me')
-    async def test_query(self, base_queries: HhruBaseQueries) -> None:
+    async def test_query(
+        self,
+        base_queries: HhruBaseQueries,
+        db: ClientSession,
+        mock_simple_request: list[VacancyRawData],
+        mock_deeper_request: list[VacancyRawData]
+        ) -> None:
         """Test query
         """
+        result = await base_queries.query(db)
 
 
 # FIXME: remove me

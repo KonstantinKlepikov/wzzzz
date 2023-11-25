@@ -5,7 +5,7 @@ from itertools import chain
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
-from typing import Any, Optional, TypeAlias, Coroutine
+from typing import Any, Optional, TypeAlias, Coroutine, Sequence
 from bs4 import BeautifulSoup as bs
 from app.core.http_session import SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest, VacancyResponseInDb
@@ -82,7 +82,7 @@ class HhruBaseQueries:
         self,
         urls: list[str],
         sem: Optional[Semaphore] = None,
-            ) -> list[VacancyRawData]:  # TODO: test me
+            ) -> list[VacancyRawData]:
         """Make requests for deeper vacancy data
 
         Args:
@@ -101,12 +101,21 @@ class HhruBaseQueries:
             if not isinstance(res, Exception)
                 ]
 
-    async def query(self, db: ClientSession, sem: int = 10) -> set[int]:  # TODO: test me
+    # async def query(self, db: ClientSession, sem: int = 10) -> set[int]:  # TODO: test me
+    async def query(
+        self,
+        db: ClientSession,
+        sem: int = 10
+            ) -> tuple[set[int], list[VacancyRawData], list[VacancyRawData]]:  # TODO: test me
         """Request for vacancies
 
         Args:
-            db (ClientSession): session
+            db (ClientSession): database session
             sem (int): senaphore in seconds
+
+        Returns:
+            set[int], list[VacancyRawData], list[VacancyRawData]:
+            ids of vacancies, simple and deep data
         """
         semaphore = Semaphore(sem)
         simple = await self._make_simple_requests(semaphore)
@@ -117,10 +126,10 @@ class HhruBaseQueries:
 
         deep = await self._make_deeper_requests(urls, semaphore)
 
-        await vacancies_simple_raw.create_many(db, simple)
-        await vacancies_deep_raw.create_many(db, deep)
+        # await vacancies_simple_raw.create_many(db, simple) # TODO: move external
+        # await vacancies_deep_raw.create_many(db, deep)
 
-        return v_ids
+        return v_ids, simple, deep
 
 
 
