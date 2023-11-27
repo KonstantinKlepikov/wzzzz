@@ -5,6 +5,7 @@ from pymongo.results import InsertOneResult, DeleteResult, UpdateResult
 from app.crud.crud_vacancy import CRUDVacancies
 from app.schemas.scheme_vacanciy import VacancyResponseInDb
 from app.schemas.constraint import Collections
+# FIXME: remove all tests
 
 
 class TestCRUDVacancy:

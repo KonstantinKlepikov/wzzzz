@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from app.config import settings
 from app.main import app
 from app.crud.crud_vacancy import CRUDVacancies
+from app.crud.crud_vacancy_raw import CRUDVacanciesRaw
 from app.crud.crud_template import CRUDTemplate
 from app.crud.crud_user import CRUDUser
 from app.schemas.scheme_user import UserInDb
@@ -15,6 +16,7 @@ from app.schemas.scheme_templates import (
     TemplateConstraints,
         )
 from app.schemas.scheme_vacanciy import VacancyResponseInDb
+from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.schemas.constraint import Collections
 from app.db import get_session
 
@@ -28,6 +30,7 @@ class BdTestContext:
         self.db_name = db_name
 
     async def __aenter__(self):
+        await self.client.drop_database(self.db_name)
         return self.client[self.db_name]
 
     async def __aexit__(self, exc_type, exc_value, traceback):
@@ -51,15 +54,15 @@ async def db() -> Generator:
                 await d[collection].create_indexes(
                     [index1, index2, ]
                         )
-            # if collection == Collections.VACANCIES_SIMPLE_RAW or \
-            #         Collections.VACANCIES_DEEP_RAW:
-            #     index1 = IndexModel('raw_id', unique=True)
-            #     index2 = IndexModel(
-            #         'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
-            #             )
-            #     await d[collection].create_indexes(
-            #         [index1, index2, ]
-            #             )
+            if collection == Collections.VACANCIES_SIMPLE_RAW or \
+                    Collections.VACANCIES_DEEP_RAW:
+                index1 = IndexModel('v_id', unique=True)
+                index2 = IndexModel(
+                    'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
+                        )
+                await d[collection].create_indexes(
+                    [index1, index2, ]
+                        )
             if collection == Collections.TEMPLATES.value:
                 await d[collection].create_index(
                         [('name', ASCENDING), ('user', ASCENDING), ],
@@ -67,6 +70,10 @@ async def db() -> Generator:
                             )
             if collection == Collections.USERS.value:
                 await d[collection].create_index('user_id', unique=True)
+
+        collection = d[Collections.USERS.value]
+        u = await collection.find_one({'user_id': 45456897})
+        print(u)
 
         # fill vacancies
         collection = d[Collections.VACANCIES.value]
@@ -128,6 +135,7 @@ async def crud_user() -> CRUDUser:
             )
 
 
+# FIXME: remove me
 @pytest.fixture(scope="function")
 async def crud_vacancy() -> CRUDVacancies:
     """Get crud vacancies
@@ -146,5 +154,16 @@ async def crud_template() -> CRUDTemplate:
     return CRUDTemplate(
         schema=TemplateConstraints,
         col_name=Collections.TEMPLATES.value,
+        db_name=DB_NAME
+            )
+
+
+@pytest.fixture(scope="function")
+async def crud_vacancy_raw() -> CRUDVacanciesRaw:
+    """Get crud vacancies raw
+    """
+    return CRUDVacanciesRaw(
+        schema=VacancyRawData,
+        col_name=Collections.VACANCIES.value,
         db_name=DB_NAME
             )

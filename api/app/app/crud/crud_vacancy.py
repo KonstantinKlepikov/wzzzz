@@ -6,6 +6,7 @@ from app.config import settings
 from app.crud.crud_base import CRUDBase
 from app.schemas.constraint import Collections
 from app.schemas.scheme_vacanciy import VacancyResponseInDb
+# FIXME: remove all this
 
 
 class CRUDVacancies(CRUDBase[VacancyResponseInDb]):

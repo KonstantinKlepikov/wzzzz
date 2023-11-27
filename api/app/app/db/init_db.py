@@ -40,7 +40,7 @@ async def create_collections() -> None:  #
                         )
             if collection == Collections.VACANCIES_SIMPLE_RAW or \
                     Collections.VACANCIES_DEEP_RAW:
-                index1 = IndexModel('raw_id', unique=True)
+                index1 = IndexModel('v_id', unique=True)
                 index2 = IndexModel(
                     'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
                         )
