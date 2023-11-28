@@ -15,14 +15,16 @@ class TestCRUDVacancyRaw:
     async def test_crud_vacancy_raw_create(
         self,
         db: ClientSession,
-        crud_vacancy: CRUDVacanciesRaw
+        crud_vacancy_simple_raw: CRUDVacanciesRaw,
+        crud_vacancy_deep_raw: CRUDVacanciesRaw,
             ) -> None:
         """"""
 
     async def test_crud_vacancy_raw_get_by_vacancy_id(
         self,
         db: ClientSession,
-        crud_vacancy_raw: CRUDVacanciesRaw
+        crud_vacancy_simple_raw: CRUDVacanciesRaw,
+        crud_vacancy_deep_raw: CRUDVacanciesRaw,
             ) -> None:
         """Test crud vacancy raw get by id
         """
@@ -30,7 +32,8 @@ class TestCRUDVacancyRaw:
     async def test_crud_vacancy_raw_get_notexisted_id(
         self,
         db: ClientSession,
-        crud_vacancy: CRUDVacanciesRaw
+        crud_vacancy_simple_raw: CRUDVacanciesRaw,
+        crud_vacancy_deep_raw: CRUDVacanciesRaw,
             ) -> None:
         """Test crud vacancy raw get notexisted id
         """
@@ -38,7 +41,8 @@ class TestCRUDVacancyRaw:
     async def test_crud_vacancy_raw_create_many(
         self,
         db: ClientSession,
-        crud_vacancy: CRUDVacanciesRaw
+        crud_vacancy_simple_raw: CRUDVacanciesRaw,
+        crud_vacancy_deep_raw: CRUDVacanciesRaw,
             ) -> None:
         """Test vacancy raw create many
         """
@@ -46,7 +50,8 @@ class TestCRUDVacancyRaw:
     async def test_crud_vaсancy_create_many_error_if_double(
         self,
         db: ClientSession,
-        crud_vacancy: CRUDVacanciesRaw
+        crud_vacancy_simple_raw: CRUDVacanciesRaw,
+        crud_vacancy_deep_raw: CRUDVacanciesRaw,
             ) -> None:
         """Test vacancy raw create many dublicate error
         """

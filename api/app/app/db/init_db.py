@@ -24,26 +24,23 @@ def get_client(mongodb_url: str) -> AsyncIOMotorClient:
 client = get_client(settings.MONGODB_URL)
 
 
-async def create_collections() -> None:  #
+async def create_collections() -> None:
     """Create collections
     """
+    index1 = IndexModel([('v_id'), ], unique=True)
+    index2 = IndexModel(
+            'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
+                )
+
     for collection in Collections.get_values():
         try:
             await client[settings.DB_NAME].create_collection(collection)
-            if collection == Collections.VACANCIES:
-                index1 = IndexModel('v_id', unique=True)
-                index2 = IndexModel(
-                    'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
-                        )
-                await client[settings.DB_NAME][collection].create_indexes(
-                    [index1, index2, ]
-                        )
-            if collection == Collections.VACANCIES_SIMPLE_RAW or \
-                    Collections.VACANCIES_DEEP_RAW:
-                index1 = IndexModel('v_id', unique=True)
-                index2 = IndexModel(
-                    'ts', expireAfterSeconds=settings.EXPIRED_BY_SECONDS
-                        )
+
+            if collection in (
+                Collections.VACANCIES_SIMPLE_RAW.value,
+                Collections.VACANCIES_DEEP_RAW.value,
+                Collections.VACANCIES.value
+                    ):
                 await client[settings.DB_NAME][collection].create_indexes(
                     [index1, index2, ]
                         )

@@ -10,7 +10,7 @@ class UserId(BaseModel):
 
         json_schema_extra = {
                 "example": {
-                    'user_id': 88005553535  # FIXME: string
+                    'user_id': 88005553535  # FIXME: string (???)
                         }
                     }
 
