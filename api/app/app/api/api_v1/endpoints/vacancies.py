@@ -62,7 +62,7 @@ async def ask_for_new_vacancies_with_redis(
         db, {'name': template_name, 'user': str(user['_id'])}
             )
 
-    # TODO: here we use query method for get fata from external api
+    # TODO: here we use query method for get data from external api
     # then we send to redis pub/sub ids of vacancies
 
     if template:

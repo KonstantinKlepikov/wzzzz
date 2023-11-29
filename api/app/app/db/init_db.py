@@ -36,27 +36,28 @@ async def create_collections() -> None:
         try:
             await client[settings.DB_NAME].create_collection(collection)
 
-            if collection in (
-                Collections.VACANCIES_SIMPLE_RAW.value,
-                Collections.VACANCIES_DEEP_RAW.value,
-                Collections.VACANCIES.value
-                    ):
-                await client[settings.DB_NAME][collection].create_indexes(
-                    [index1, index2, ]
-                        )
-            if collection == Collections.TEMPLATES.value:
-                await client[settings.DB_NAME][collection].create_index(
-                    [('name', ASCENDING), ('user', ASCENDING), ],
-                    unique=True
-                        )
-            if collection == Collections.USERS.value:
-                await client[settings.DB_NAME][collection].create_index(
-                    'user_id',
-                    unique=True
-                        )
-
         except CollectionInvalid:
-            continue
+            pass
+
+        # create indexes (not rexreated if exist)
+        if collection in (
+            Collections.VACANCIES_SIMPLE_RAW.value,
+            Collections.VACANCIES_DEEP_RAW.value,
+            Collections.VACANCIES.value
+                ):
+            await client[settings.DB_NAME][collection].create_indexes(
+                [index1, index2, ]
+                    )
+        if collection == Collections.TEMPLATES.value:
+            await client[settings.DB_NAME][collection].create_index(
+                [('name', ASCENDING), ('user', ASCENDING), ],
+                unique=True
+                    )
+        if collection == Collections.USERS.value:
+            await client[settings.DB_NAME][collection].create_index(
+                'user_id',
+                unique=True
+                    )
 
 
 async def get_session() -> Generator[ClientSession, None, None]:
