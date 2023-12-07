@@ -13,7 +13,7 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
     """Vacancies crud
     """
 
-    async def create_raw(  # TODO: test me
+    async def create_raw(
         self,
         db: ClientSession,
         obj_in: VacancyRawData
@@ -30,26 +30,31 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         return await db.client[self.db_name][self.col_name] \
             .insert_one(obj_in.model_dump(by_alias=True))
 
-    async def get_many_by_ids(  # TODO: test me
+    async def get_many_by_v_ids(
         self,
         db: ClientSession,
         ids: Sequence[int]
-            ) -> list[dict[str, Any]]:
+            ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
         """Get vacancies from db bay list of ids
 
         Args:
             db (ClientSession): session
-            ids (list[int]): ids list
+            ids (list[int]): v_ids list
 
         Returns:
             list[dict[str, Any]]: vacancies
         """
-        tasks = [
-            asyncio.create_task(self.get(db, {'id': i}))
-            for i in ids
-                ]
-        await asyncio.wait(tasks)
-        return [task.result() for task in tasks if task.result()]
+        # tasks = [
+        #     asyncio.create_task(self.get(db, {'id': i}))
+        #     for i in ids
+        #         ]
+        # await asyncio.wait(tasks)
+        # return [task.result() for task in tasks if task.result()]
+
+        data = db.client[self.db_name][self.col_name].find(
+            {'v_id': {'$in': list(ids)}}
+                )
+        return await data.to_list(length=len(ids))
 
     async def get_many_notexisted_v_ids(  # TODO: test me
         self,

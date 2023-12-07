@@ -9,7 +9,6 @@ class TestAiohttpClient:
     """Test aiohttp session cleint
     """
 
-
     async def test_aiohttp_client(
         self,
         session: SessionMaker,

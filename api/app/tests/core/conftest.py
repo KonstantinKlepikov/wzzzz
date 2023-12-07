@@ -1,5 +1,7 @@
 import pytest
 import json
+from typing import Any
+from functools import lru_cache
 from aiohttp import web
 from aiohttp.test_utils import TestClient
 from yarl import URL
@@ -7,29 +9,35 @@ from app.core.http_session import SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest
 
 
-async def hhru_vacancy(request: web.Request) -> web.Response:
-    """Mock hhru vacancy response
+@lru_cache
+def hhru_vacancy() -> dict[str, Any]:
+    """Mock hhru vacancy json data
     """
     with open('./tests/core/vac_resp.json', 'r') as f:
-        data = json.loads(f.read())
+        return json.loads(f.read())
+
+
+def hhru_response(request: web.Request) -> web.Response:
+    """Mock hhru vacancy response
+    """
     return web.Response(text=json.dumps(
-        data, ensure_ascii=False), content_type='application/json'
+        hhru_vacancy(), ensure_ascii=False), content_type='application/json'
             )
 
 
-async def err400(request: web.Request) -> web.Response:
+def err400(request: web.Request) -> web.Response:
     """Mock hhru vacancy response errors
     """
     return web.Response(status=400, content_type='application/json')
 
 
-async def err404(request: web.Request) -> web.Response:
+def err404(request: web.Request) -> web.Response:
     """Mock hhru vacancy response errors
     """
     return web.Response(status=404, content_type='application/json')
 
 
-async def err429(request: web.Request) -> web.Response:
+def err429(request: web.Request) -> web.Response:
     """Mock hhru vacancy response errors
     """
     return web.Response(status=429, content_type='application/json')
@@ -53,12 +61,12 @@ def urls() -> dict[str, str]:
 
 
 @pytest.fixture
-def client(loop, aiohttp_client) -> TestClient:
-    """Make a test client
+def aiohttp_custom_client(loop, aiohttp_client) -> TestClient:
+    """Make a test aioshttp client
     """
     app = web.Application()
     app.router.add_routes([
-        web.get('/vacancies', hhru_vacancy),
+        web.get('/vacancies', hhru_response),
         web.get('/err400', err400),
         web.get('/err404', err404),
         web.get('/err429', err429),
@@ -68,9 +76,9 @@ def client(loop, aiohttp_client) -> TestClient:
 
 
 @pytest.fixture
-def session(client: TestClient) -> SessionMaker:
+def session(aiohttp_custom_client: TestClient) -> SessionMaker:  # FIXME: used real session maker for test - need to return state
     """Make test session
     """
-    SessionMaker.aiohttp_client = client
+    SessionMaker.aiohttp_client = aiohttp_custom_client
     session = SessionMaker()
     return session

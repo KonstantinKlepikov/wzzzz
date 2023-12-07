@@ -26,7 +26,13 @@ class TestCRUDVacancyRaw:
             ) -> None:
         """Test vacancy raw creation
         """
-        crud = request.getfixturevalue(fixname)
+        crud: CRUDVacanciesRaw = request.getfixturevalue(fixname)
+        result = await crud.create_raw(
+            db,
+            VacancyRawData(**VacancyRawData.Config.json_schema_extra["example"])
+                )
+        assert isinstance(result, InsertOneResult), 'wrong result'
+        assert result.inserted_id, 'result hasnt _id'
 
     @pytest.mark.parametrize(
         'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
@@ -39,6 +45,12 @@ class TestCRUDVacancyRaw:
             ) -> None:
         """Test crud vacancy raw get by id
         """
+        crud: CRUDVacanciesRaw = request.getfixturevalue(fixname)
+        result = await crud.get_many_by_v_ids(db, [54321, 654321])
+        assert isinstance(result, list), 'wrong result'
+        ids = [d['v_id'] for d in result]
+        assert 654321 in ids, 'wrong id'
+        assert 54321 in ids, 'wrong id'
 
     @pytest.mark.parametrize(
         'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']

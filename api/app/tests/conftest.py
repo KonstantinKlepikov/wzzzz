@@ -56,7 +56,7 @@ async def db() -> Generator:
             if collection in (
                 Collections.VACANCIES_SIMPLE_RAW.value,
                 Collections.VACANCIES_DEEP_RAW.value,
-                Collections.VACANCIES.value
+                Collections.VACANCIES.value  # FIXME: remove me
                     ):
                 await d[collection].create_indexes(
                     [index1, index2, ]
@@ -71,10 +71,18 @@ async def db() -> Generator:
                 await d[collection].create_index([('user_id'), ], unique=True)
 
         # fill vacancies
-        collection = d[Collections.VACANCIES.value]
+        collection = d[Collections.VACANCIES.value]  # FIXME: remove me
         one = VacancyResponseInDb.Config.json_schema_extra['example']
         another = {'v_id': 654321}
         await collection.insert_many([one, another])
+
+        one = {'v_id': 54321, 'ts': '2022-06-01T10:20:31'}
+        another = {'v_id': 654321, 'ts': '2022-06-01T10:20:32'}
+        for collection in (
+            d[Collections.VACANCIES_DEEP_RAW.value],
+            d[Collections.VACANCIES_SIMPLE_RAW.value]
+                ):
+            await collection.insert_many([one, another])
 
         # fill user
         collection = d[Collections.USERS.value]
