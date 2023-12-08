@@ -74,7 +74,7 @@ class CRUDBase(Generic[SchemaDbType]):
             InsertOneResult: result of creation
         """
         return await db.client[self.db_name][self.col_name] \
-            .insert_one(obj_in.dict())
+            .insert_one(obj_in.model_dump())
 
     async def replace(
         self,
@@ -93,13 +93,13 @@ class CRUDBase(Generic[SchemaDbType]):
             UpdateResult: result of update
         """
         return await db.client[self.db_name][self.col_name] \
-            .replace_one(q, obj_in.dict())
+            .replace_one(q, obj_in.model_dump())
 
     async def update(
         self,
         db: ClientSession,
         q: dict[str, Any],
-        obj_in: dict[str, Any]
+        obj_in: dict[str, Any]  # FIXME: here is a scheme
             ) -> UpdateResult:
         """Replace one existed document
         # TODO: test me and use me
@@ -118,7 +118,7 @@ class CRUDBase(Generic[SchemaDbType]):
     async def delete(
         self,
         db: ClientSession,
-        q: dict[str, Any],
+        q: dict[str, Any],  # FIXME: here is a scheme
             ) -> DeleteResult:
         """Remove one document
 

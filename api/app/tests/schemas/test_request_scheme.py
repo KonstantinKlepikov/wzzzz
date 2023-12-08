@@ -1,4 +1,5 @@
-from app.schemas import VacancyRequest, Employment, Schedule
+from app.schemas.scheme_vacanciy import VacancyRequest
+from app.schemas.constraint import Employment, Schedule
 from datetime import datetime
 
 
@@ -9,7 +10,7 @@ class TestVacancyRequestData:
     def test_full_fill_request(self):
         """Test VacancyRequest fill
         """
-        data = VacancyRequest.Config.schema_extra['example']
+        data = VacancyRequest.Config.json_schema_extra['example']
         scheme = VacancyRequest(**data)
         dt = datetime(2022, 6, 1, 10, 20, 30)
 

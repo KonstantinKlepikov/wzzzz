@@ -2,7 +2,7 @@ import csv
 from typing import Any
 from aiocsv import AsyncDictWriter
 from aiofiles.threadpool.text import AsyncTextIOWrapper
-from app.schemas import Vacancy
+from app.schemas.scheme_vacanciy import Vacancy
 
 
 async def get_vacancy_csv(
@@ -20,7 +20,7 @@ async def get_vacancy_csv(
     """
     writer = AsyncDictWriter(
         file,
-        Vacancy.__fields__.keys(),
+        Vacancy.model_fields.keys(),
         restval="NULL",
         quoting=csv.QUOTE_ALL
             )

@@ -19,13 +19,13 @@ class VacancyId(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'v_id': 123456,
                         }
                     }
 
-
+# FIXME: remove me
 class VacancyTs(BaseModel):
     """Timestamp
     """
@@ -33,13 +33,13 @@ class VacancyTs(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'ts': '2022-06-01T10:20:30',
                         }
                     }
 
-
+# FIXME: remove me
 class VacancyRequest(TemplateConstraints):
     """Request querie to hh.ru vacancy API
     """
@@ -48,7 +48,7 @@ class VacancyRequest(TemplateConstraints):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'area': Area.get_values(),
                     'text': 'game* OR гейм*',
@@ -76,11 +76,11 @@ class VacancyResponse(BaseModel):
     description: Optional[str] = None
     key_skills: list[str] = []
     employer: Optional[str] = None
-    alternate_url: Optional[HttpUrl] = None
+    alternate_url: Optional[str] = None  # FIXME: switch to httpurl, but we have problem with model dump
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'professional_roles': ['Middle Backend Python программист', ],
                     'area': 'Москва',
@@ -103,9 +103,9 @@ class Vacancy(VacancyId, VacancyResponse):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
-                'v_id': 123456,
+                'v_id': 123456, # FIXME: string
                 'professional_roles': ['Middle Backend Python программист', ],
                 'area': 'Москва',
                 'experience': 'От 1 года до 3 лет',
@@ -120,16 +120,16 @@ class Vacancy(VacancyId, VacancyResponse):
                     }
                 }
 
-
+# FIXME: remove me
 class VacancyResponseInDb(Vacancy, VacancyTs):
     """Vacancy in db
     """
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
-                'v_id': 123456,
+                'v_id': 123456, # FIXME: string
                 'professional_roles': ['Middle Backend Python программист', ],
                 'area': 'Москва',
                 'experience': 'От 1 года до 3 лет',
@@ -145,7 +145,7 @@ class VacancyResponseInDb(Vacancy, VacancyTs):
                     }
                 }
 
-
+# FIXME: remove me
 class Vacancies(BaseModel):
     """Vacancies as dict
     """
@@ -154,7 +154,7 @@ class Vacancies(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'vacancies': {
                         76294246: {
@@ -176,7 +176,7 @@ class Vacancies(BaseModel):
                         }
                     }
 
-
+# FIXME: remove me
 class AllVacancies(BaseModel):
     """Vacancies as list
     """
@@ -185,7 +185,7 @@ class AllVacancies(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'vacancies': [
                         {

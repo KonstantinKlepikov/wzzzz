@@ -1,0 +1,107 @@
+{
+    "id": "87542153",
+    "premium": false,
+    "billing_type": {
+        "id": "standard",
+        "name": "Стандарт"
+    },
+    "relations": [],
+    "name": "Диспетчер чатов, удаленно",
+    "insider_interview": null,
+    "response_letter_required": false,
+    "area": {
+        "id": "113",
+        "name": "Россия",
+        "url": "https://api.hh.ru/areas/113?host=hh.ru"
+    },
+    "salary": {
+        "from": 30000,
+        "to": 44000,
+        "currency": "RUR",
+        "gross": true
+    },
+    "type": {
+        "id": "open",
+        "name": "Открытая"
+    },
+    "address": null,
+    "allow_messages": true,
+    "experience": {
+        "id": "noExperience",
+        "name": "Нет опыта"
+    },
+    "schedule": {
+        "id": "remote",
+        "name": "Удаленная работа"
+    },
+    "employment": {
+        "id": "full",
+        "name": "Полная занятость"
+    },
+    "department": null,
+    "contacts": null,
+    "description": "<p>Постройте вашу карьеру в Яндекс. Необходимо будет заполнить небольшую анкету, после чего с вами свяжутся для интервью.</p> <p> </p> <p><strong>Кого ищем?</strong></p> <p>Специалиста поддержки в сервисы Яндекс Go. Мы консультируем пользователей в чатах и по телефону, помогаем им по любым вопросам и решаем конфликтные ситуации. Делаем это и днем, и ночью (на выбор, конечно). Это удаленная работа на полный день за компьютером.</p> <p><br /><strong>Условия:</strong></p> <ul> <li> <p><strong>Можно зарабатывать 30.000-35.000 рублей при перевыполнении плана</strong></p> </li> <li> <p>Работаете из дома (удаленная работа)</p> </li> <li> <p>Оформление по ТК РФ (белая зарплата со всем вытекающими)</p> </li> <li> <p>Удобные графики: 5/2, 2/2</p> </li> <li> <p><strong>Смены возможны любые на выбор (с раннего утра и до полностью ночных)</strong></p> </li> <li> <p>Работа только на входящих звонках</p> </li> <li> <p>Компенсация затрат на интернет</p> </li> <li> <p>Возможность роста и развития в Яндексе</p> </li> </ul> <p><strong>Требования:</strong></p> <ul> <li>Опыт работы не требуется</li> <li>Обязательно наличие ПК или ноутбука</li> </ul> <p><strong>Почему это отличная вакансия?</strong></p> <ul> <li>Работа в крупнейшей IT компании страны</li> <li>Белая зарплата с возможностью роста</li> <li>Работаете в удобных условиях дома</li> <li>Возможность карьерного роста и развития</li> </ul> <p><br /><strong>КАК ОТКЛИКНУТЬСЯ?</strong></p> <p><strong>Нажмите откликнуться. В ответ мы пришлем ссылку на анкету </strong>(проверяйте почту и лк)<strong>. </strong>Заполните ее, после чего мы свяжемся с вами в течение 1-2 дней, если вы подходите.</p> <p><br /><strong>Количество мест ограничено</strong>. Поторопитесь. Вакансия скоро закроется.<br /><br />Будет плюсом опыт работы на вакансиях:<br />оператор колл-центра, диспетчер, менеджер по работе с клиентами, специалист поддержки<br /><br /><strong>Вакансию можно найти по запросам:</strong><br />«работа на дому, удаленная работа, работа без опыта, работа в яндексе, работа день через день, ночная работа, удаленка, работа в ночь, сменный график, работа для начинающих, работа дистанционно, диспетчер такси»</p>",
+    "branded_description": null,
+    "vacancy_constructor_template": null,
+    "key_skills": [{
+            "name": "Грамотная речь"
+        },
+        {
+            "name": "Деловое общение"
+        },
+        {
+            "name": "Диспетчер"
+        },
+        {
+            "name": "Консультирование клиентов по телефону"
+        },
+        {
+            "name": "входящие звонки"
+        }
+    ],
+    "accept_handicapped": false,
+    "accept_kids": false,
+    "archived": false,
+    "response_url": null,
+    "specializations": [],
+    "professional_roles": [{
+        "id": "40",
+        "name": "Другое"
+    }],
+    "code": null,
+    "hidden": false,
+    "quick_responses_allowed": false,
+    "driver_license_types": [],
+    "accept_incomplete_resumes": true,
+    "employer": {
+        "id": "1740",
+        "name": "Яндекс",
+        "url": "https://api.hh.ru/employers/1740?host=hh.ru",
+        "alternate_url": "https://hh.ru/employer/1740",
+        "logo_urls": {
+            "90": "https://hhcdn.ru/employer-logo/3790847.png",
+            "240": "https://hhcdn.ru/employer-logo/3790848.png",
+            "original": "https://hhcdn.ru/employer-logo-original/837491.png"
+        },
+        "vacancies_url": "https://api.hh.ru/vacancies?employer_id=1740&host=hh.ru",
+        "accredited_it_employer": false,
+        "trusted": true
+    },
+    "published_at": "2023-09-29T18:28:04+0300",
+    "created_at": "2023-09-29T18:28:04+0300",
+    "initial_created_at": "2023-09-29T18:28:04+0300",
+    "negotiations_url": null,
+    "suitable_resumes_url": null,
+    "apply_alternate_url": "https://hh.ru/applicant/vacancy_response?vacancyId=87542153",
+    "has_test": false,
+    "test": null,
+    "alternate_url": "https://hh.ru/vacancy/87542153",
+    "working_days": [],
+    "working_time_intervals": [],
+    "working_time_modes": [{
+        "id": "start_after_sixteen",
+        "name": "Можно начинать работать после 16:00"
+    }],
+    "accept_temporary": false,
+    "languages": []
+}

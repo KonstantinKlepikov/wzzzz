@@ -5,17 +5,131 @@ from itertools import chain
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
-from typing import Any, Optional, TypeAlias
+from typing import Any, Optional, TypeAlias, Coroutine
 from bs4 import BeautifulSoup as bs
-from app.core import SessionMaker
-from app.schemas import VacancyRequest, VacancyResponseInDb, Relevance
-from app.crud import vacancies
+from app.core.http_session import SessionMaker
+from app.schemas.scheme_vacanciy import VacancyRequest, VacancyResponseInDb
+from app.schemas.constraint import Relevance
+from app.schemas.scheme_vacancy_raw import VacancyRawData
+from app.crud.crud_vacancy import vacancies
+from app.crud.crud_vacancy_raw import vacancies_simple_raw, vacancies_deep_raw
 
 
 VacancyRaw: TypeAlias = dict[str, Any]
 
 
+class HhruBaseQueries:
+    """Query a hh.ru for vacancies raw data
+    and save it to db, if not exist
+
+    Atrs:
+        session (SessionMaker): aiohttp session
+        url (str): url for entry query
+        params (VacancyRequest): vacancy query parameters
+    """
+    def __init__(
+        self,
+        session: SessionMaker,
+        url: str,
+        params: VacancyRequest
+            ) -> None:
+        self.session = session
+        self.url = url
+        self.params = json.loads(params.model_dump_json(exclude_none=True))
+
+    async def _make_entry(self):
+        """Get entry page for request
+        """
+        return await self.session.get_query(url=self.url, params=self.params)
+
+    async def _make_simple_requests(
+        self,
+        sem: Semaphore | None = None,
+            ) -> list[VacancyRawData]:
+        """Make simple result of query. Here is all pages returned from
+        https://api.hh.ru/vacancies
+
+        In this function we use firsc (entry) query to get pages for
+        subsequent requests. Then, we get all responses, even if it fail
+        and filter failed responsses and return only correct.
+
+        Args:
+            sem (Semaphore, optional): semaphore option for prevent
+                server overwelming. Defaults to None.
+
+        Returns:
+            list[VacancyRawData]: simple vacanices responces
+        """
+
+        tasks: list[Coroutine] = []
+        entry = await self._make_entry()
+
+        for page in range(1, entry['pages'] + 1):
+            p = copy(self.params)
+            p['page'] = page
+            tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
+
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+
+        return [
+            VacancyRawData(**res)
+            for nested in [entry, ] + result
+            for res in nested['items']
+            if not isinstance(res, Exception)
+                ]
+
+    async def _make_deeper_requests(
+        self,
+        urls: list[str],
+        sem: Optional[Semaphore] = None,
+            ) -> list[VacancyRawData]:
+        """Make requests for deeper vacancy data
+
+        Args:
+            urls (list[str]): simple requests urls
+            sem (Semaphore, optional): semaphore option for prevent
+                server overwelming. Defaults to None.
+
+        Returns:
+            list[VacancyRawData]: deeper vacancy responses
+        """
+        tasks = [self.session.get_query(url=url, sem=sem) for url in urls]
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+        return [
+            VacancyRawData(**res)
+            for res in result
+            if not isinstance(res, Exception)
+                ]
+
+    async def query(self, db: ClientSession, sem: int = 10) -> set[int]:
+        """Request for vacancies
+
+        Args:
+            db (ClientSession): session
+            sem (int): senaphore in seconds
+
+        Returns:
+            set[int]: ids of queried vacancies
+        """
+        semaphore = Semaphore(sem)
+        simple = await self._make_simple_requests(semaphore)
+
+        v_ids = {d.id for d in simple}
+        notexisted_v_ids = await vacancies_simple_raw.get_many_notexisted_v_ids(db, v_ids)
+        urls = [d.url for d in simple if d.id in notexisted_v_ids]
+
+        deep = await self._make_deeper_requests(urls, semaphore)
+
+        await vacancies_simple_raw.create_many(db, simple)
+        await vacancies_deep_raw.create_many(db, deep)
+
+        return v_ids
+
+
+
+# FIXME: remove me
 class HhruQueriesDb:
+    """"""
 
     def __init__(
         self,
@@ -236,7 +350,7 @@ class HhruQueriesDb:
                         ]
                     )
 
-
+# FIXME: remove me
 async def get_parse_save_vacancy(
     user_id: int,
     queries: HhruQueriesDb,
