@@ -100,8 +100,8 @@ async def get_vacancies_csv(
         ) -> None:
     """Request for .csv file of new vacancies
     """
-    # TODO: here we asc db for data by_id vrom simple and deep
-    # , concatenate data by pydantic and return as file
+    # TODO: here we asc db for data by_id from simple and deep,
+    # concatenate data by pydantic and return as file
 
     vac = await vacancies.get_many_by_ids(db, redis_ids)
     vac = AllVacancies(vacancies=vac).model_dump()['vacancies']

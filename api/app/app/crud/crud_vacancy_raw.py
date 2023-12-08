@@ -44,19 +44,12 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         Returns:
             list[dict[str, Any]]: vacancies
         """
-        # tasks = [
-        #     asyncio.create_task(self.get(db, {'id': i}))
-        #     for i in ids
-        #         ]
-        # await asyncio.wait(tasks)
-        # return [task.result() for task in tasks if task.result()]
-
         data = db.client[self.db_name][self.col_name].find(
             {'v_id': {'$in': list(ids)}}
                 )
         return await data.to_list(length=len(ids))
 
-    async def get_many_notexisted_v_ids(  # TODO: test me
+    async def get_many_notexisted_v_ids(
         self,
         db: ClientSession,
         v_ids: set[int],
@@ -70,12 +63,11 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         Returns:
             set[int]: noteisted vacancies ids
         """
-        tasks = [
-            asyncio.create_task(self.get(db, {'v_id': i}))
-            for i in v_ids
-                ]
-        await asyncio.wait(tasks)
-        exist = {task.result()['v_id'] for task in tasks if task.result()}
+        exist = set()
+        async for data in db.client[self.db_name][self.col_name].find(
+            {'v_id': {'$in': list(v_ids)}}, { "v_id": 1 }
+                ):
+            exist.add(data['v_id'])
         return v_ids.symmetric_difference(exist)
 
     async def create_many(  # TODO: test me

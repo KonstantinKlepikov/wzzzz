@@ -63,7 +63,11 @@ class TestCRUDVacancyRaw:
             ) -> None:
         """Test crud vacancy raw get notexisted id
         """
-        crud = request.getfixturevalue(fixname)
+        crud: CRUDVacanciesRaw = request.getfixturevalue(fixname)
+        result = await crud.get_many_notexisted_v_ids(db, {54321, 99999})
+        assert isinstance(result, set), 'wrong result'
+        assert 99999 in result, 'wrong not existed id'
+        assert 54321 not in result, 'wrong existed id'
 
     @pytest.mark.parametrize(
         'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
