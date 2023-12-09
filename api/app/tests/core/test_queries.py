@@ -1,10 +1,12 @@
 import pytest
 import json
+import asyncio
 from functools import lru_cache
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
 from pymongo.client_session import ClientSession
-from app.core.queries import HhruBaseQueries, get_parse_save_vacancy
+from fastapi import HTTPException
+from app.core.queries import HhruBaseQueries
 from app.core.http_session import SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest
 from app.schemas.scheme_vacancy_raw import VacancyRawData
@@ -54,29 +56,6 @@ class TestHhruBaseQueries:
     """Test HhruBaseQueries
     """
 
-    # @pytest.fixture(scope="function")  # TODO: is tested in http_session, remove me
-    # async def mock_status(
-    #     self,
-    #     session: TestClient,
-    #     request,
-    #     monkeypatch,
-    #         ) -> Callable:
-    #     async def mock_return(*args, **kwargs) -> Callable:
-    #         raise HTTPException(request.param)
-    #     monkeypatch.setattr(session, "get_query", mock_return)
-
-    # @pytest.mark.parametrize("mock_status", [400, 404, 429], indirect=['mock_status'])
-    # async def test_make_simple_requests_raise_errors(  # TODO: is tested in http_session, remove me
-    #     self,
-    #     base_queries: HhruBaseQueries,
-    #     mock_status: Callable,
-    #         ) -> None:
-    #     """Test make_simple_result raise errors when response raise error
-    #     """
-    #     with pytest.raises(HTTPException):
-    #         await base_queries._make_simple_requests()
-    #         # TODO: get an exception code and text
-
     @pytest.fixture(scope="function")
     async def mock_entry_response(
         self,
@@ -112,6 +91,18 @@ class TestHhruBaseQueries:
         assert len(result) == 2020, 'wrong result len'
         assert result[0].id == result[20].id, 'mock query not doubled'
         assert result[0].id == int(entry_data['items'][0]['id'])
+
+    def test_get_corresct_simple_response(
+        self,
+        base_queries: HhruBaseQueries,
+        entry_data: dict[str, Any],
+            ) -> None:
+        """Test get corrext simple response
+        """
+        data = [entry_data, HTTPException(400)]
+        result = base_queries._get_corresct_simple_response(data)
+        assert len(result) == 20, 'wrong result len'
+        assert HTTPException not in result, 'wrong result'
 
     @pytest.fixture(scope="function")
     async def mock_vacancy_deeper_response(
@@ -186,6 +177,8 @@ class TestHhruBaseQueries:
         """
         # TODO: mock save to db and taest with crud
         result = await base_queries.query(db)
-        assert isinstance(result, set), 'wrong type'
-        assert len(result) == 1, 'wrong len'
-        assert result.pop() == int(simple_data['items'][0]['id']), 'wrong id'
+        assert isinstance(result, tuple), 'wrong type'
+        assert isinstance(result[0], list), 'wrong type'
+        assert isinstance(result[1], list), 'wrong type'
+        assert len(result[0]) == 1, 'wrong len'
+        assert result[0].pop() == int(simple_data['items'][0]['id']), 'wrong id'

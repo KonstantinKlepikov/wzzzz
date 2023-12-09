@@ -15,6 +15,7 @@ from app.core.queries import (
     HhruQueriesDb,
     HhruBaseQueries,
     get_parse_save_vacancy,
+    get_vacancy,
         )
 from app.core.csv_writer import get_vacancy_csv
 from app.core.http_session import SessionMaker
@@ -48,7 +49,7 @@ async def ask_for_new_vacancies_with_redis(
     db: ClientSession = Depends(get_session),
     redis_db: Redis = Depends(get_redis_connection),
     relevance: Relevance = Relevance.ALL,
-        ) -> Vacancies:
+        ) -> None:
     """Request for vacancies data. Call for this resource makes some operations:
     1. call hh.ru vacancy search api
     2. get 202 and wait for redis message for save vacancy data in db
@@ -62,18 +63,17 @@ async def ask_for_new_vacancies_with_redis(
         db, {'name': template_name, 'user': str(user['_id'])}
             )
 
-    # TODO: here we use query method for get data from external api
-    # then we send to redis pub/sub ids of vacancies
-
     if template:
         params = VacancyRequest(**template)
-        queries = HhruQueriesDb(SessionMaker, "https://api.hh.ru/vacancies", params)
-        entry = await queries.session.get_query(url=queries.url, params=queries.params)
+        queries = HhruBaseQueries(
+            SessionMaker,
+            settings.HHRU_VACANCY_URL,
+            params
+                )
         background_tasks.add_task(
-            get_parse_save_vacancy,
+            get_vacancy,
             user_id,
             queries,
-            entry,
             relevance,
             db,
             redis_db

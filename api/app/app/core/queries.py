@@ -6,6 +6,7 @@ from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
 from typing import Any, Optional, TypeAlias, Coroutine
+from fastapi import HTTPException
 from bs4 import BeautifulSoup as bs
 from app.core.http_session import SessionMaker
 from app.schemas.scheme_vacanciy import VacancyRequest, VacancyResponseInDb
@@ -13,6 +14,7 @@ from app.schemas.constraint import Relevance
 from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.crud.crud_vacancy import vacancies
 from app.crud.crud_vacancy_raw import vacancies_simple_raw, vacancies_deep_raw
+from app.config import settings
 
 
 VacancyRaw: TypeAlias = dict[str, Any]
@@ -42,6 +44,25 @@ class HhruBaseQueries:
         """
         return await self.session.get_query(url=self.url, params=self.params)
 
+    @staticmethod
+    def _get_corresct_simple_response(
+        data: list[dict[str, Any] | HTTPException]
+            ) -> list[VacancyRawData]:
+        """Get responses without errors
+
+        Args:
+            data (list[dict[str, Any] | HTTPException]): responses
+
+        Returns:
+            list[VacancyRawData]: vacancies
+        """
+        result = []
+        for nested in data:
+            if not isinstance(nested, Exception):
+                for res in nested['items']:
+                    result.append(VacancyRawData(**res))
+        return result
+
     async def _make_simple_requests(
         self,
         sem: Semaphore | None = None,
@@ -70,13 +91,7 @@ class HhruBaseQueries:
             tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
 
         result = await asyncio.gather(*tasks, return_exceptions=True)
-
-        return [
-            VacancyRawData(**res)
-            for nested in [entry, ] + result
-            for res in nested['items']
-            if not isinstance(res, Exception)
-                ]
+        return self._get_corresct_simple_response([entry, ] + result)
 
     async def _make_deeper_requests(
         self,
@@ -101,15 +116,19 @@ class HhruBaseQueries:
             if not isinstance(res, Exception)
                 ]
 
-    async def query(self, db: ClientSession, sem: int = 10) -> set[int]:
+    async def query(
+        self,
+        db: ClientSession,
+        sem: int = settings.SEM
+            ) -> tuple[list[int], list[int]]:
         """Request for vacancies
 
         Args:
             db (ClientSession): session
-            sem (int): senaphore in seconds
+            sem (int), default to settings.SEM: senaphore in seconds
 
         Returns:
-            set[int]: ids of queried vacancies
+            tuple[list[int], list[int]]: all v_ids of vacancies and not existed v_ids
         """
         semaphore = Semaphore(sem)
         simple = await self._make_simple_requests(semaphore)
@@ -123,7 +142,34 @@ class HhruBaseQueries:
         await vacancies_simple_raw.create_many(db, simple)
         await vacancies_deep_raw.create_many(db, deep)
 
-        return v_ids
+        return list(v_ids), list(notexisted_v_ids)
+
+
+async def get_vacancy(
+    user_id: int,
+    queries: HhruBaseQueries,
+    relevance: Relevance,
+    db: ClientSession,
+    redis_db: Redis
+        ) -> None:
+    """Get vacancy by api, parse it, save to db and add to redis pubsub
+
+    Args:
+        user_id (int): user id
+        queries (HhruBaseQueries): hhru query instance
+        relevance (Relevance): relevance of returned content
+        db (ClientSession): mongo session
+        redis_db (Redis): redis connection
+    """
+    ids = await queries.query(db)
+    if relevance == Relevance.NEW:
+        m = ' '.join([str(i) for i in ids[1]])
+    if relevance == Relevance.ALL:
+        m = ' '.join([str(i) for i in ids[0]])
+    await redis_db.publish(str(user_id), m)
+
+
+
 
 
 

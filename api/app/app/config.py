@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # hhru settings
     HHRU_API_TOKEN: SecretStr = None
     HHRU_CLIENT_EMAIL: str | None = None
+    SEM: int = 10
+    HHRU_VACANCY_URL: str = "https://api.hh.ru/vacancies"
 
     # FIXME: move to test settings
     # def settings

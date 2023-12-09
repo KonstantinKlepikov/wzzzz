@@ -28,7 +28,7 @@ class CRUDBase(Generic[SchemaDbType]):
         self,
         db: ClientSession,
         q: dict[str, Any],
-            ) -> Optional[dict[str, Any]]:
+            ) -> Optional[dict[str, Any]]:  # FIXME: here is a scheme
         """Get single document
 
         Args:
@@ -45,7 +45,7 @@ class CRUDBase(Generic[SchemaDbType]):
         db: ClientSession,
         q: dict[str, Any],
         lenght: int = 100,
-            ) -> list[dict[str, Any]]:
+            ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
         """Get many documents
 
         Args:
