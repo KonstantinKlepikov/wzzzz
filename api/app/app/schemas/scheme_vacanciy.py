@@ -12,6 +12,7 @@ from app.schemas.constraint import (
         )
 
 
+# FIXME: remove me
 class VacancyId(BaseModel):
     """Vacancy id
     """
@@ -66,7 +67,7 @@ class VacancyRequest(TemplateConstraints):
             datetime: lambda v: v.strftime('%Y-%m-%d'),
                 }
 
-
+# FIXME: remove me
 class VacancyResponse(BaseModel):
     """Response vacancy data
     """
@@ -97,6 +98,7 @@ class VacancyResponse(BaseModel):
                     }
 
 
+# FIXME: remove me
 class Vacancy(VacancyId, VacancyResponse):
     """Vacancy with id
     """
@@ -145,6 +147,7 @@ class VacancyResponseInDb(Vacancy, VacancyTs):
                     }
                 }
 
+
 # FIXME: remove me
 class Vacancies(BaseModel):
     """Vacancies as dict
@@ -175,6 +178,7 @@ class Vacancies(BaseModel):
                             }
                         }
                     }
+
 
 # FIXME: remove me
 class AllVacancies(BaseModel):

@@ -17,6 +17,7 @@ from app.core.queries import (
     get_parse_save_vacancy,
     get_vacancy,
         )
+from app.core.parsing import VacanciesParser
 from app.core.csv_writer import get_vacancy_csv
 from app.core.http_session import SessionMaker
 from app.db import get_session, get_redis_connection
@@ -28,6 +29,7 @@ from app.schemas.scheme_vacanciy import (
 from app.schemas.constraint import Relevance
 from app.crud.crud_template import templates
 from app.crud.crud_vacancy import vacancies
+from app.crud.crud_vacancy_raw import vacancies_deep_raw, vacancies_simple_raw
 from app.config import settings
 
 
@@ -100,12 +102,51 @@ async def get_vacancies_csv(
         ) -> None:
     """Request for .csv file of new vacancies
     """
-    # TODO: here we asc db for data by_id from simple and deep,
-    # concatenate data by pydantic and return as file
 
     vac = await vacancies.get_many_by_ids(db, redis_ids)
     vac = AllVacancies(vacancies=vac).model_dump()['vacancies']
     if vac:
+        async def iterfile():
+            async with TemporaryFile('w+') as f:
+                result = await get_vacancy_csv(vac, f)
+                async for line in result:
+                    yield line
+
+        return StreamingResponse(
+            iterfile(),
+            media_type='text/csv',
+            headers={
+                "Content-Disposition": "attachment;filename=vacancies.csv"
+                    }
+                )
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail="Vacancies not found."
+                )
+
+
+@router.get(
+    "/_get_csv",
+    status_code=status.HTTP_200_OK,
+    summary='Request for vacancies csv.',
+    response_description="OK. Requested data",
+    responses=settings.ERRORS,
+        )
+async def _get_vacancies_csv(
+    redis_ids: list[int] = Query(),
+    db: ClientSession = Depends(get_session),
+        ) -> None:
+    """Request for .csv file of new vacancies
+    """
+
+    vac = VacanciesParser(
+        db,
+        vacancies_simple_raw,
+        vacancies_deep_raw,
+        redis_ids
+            )
+    if vac := await vac.parse():
         async def iterfile():
             async with TemporaryFile('w+') as f:
                 result = await get_vacancy_csv(vac, f)

@@ -30,6 +30,23 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         return await db.client[self.db_name][self.col_name] \
             .insert_one(obj_in.model_dump(by_alias=True))
 
+    async def get_by_v_ids(  # TODO: test me
+        self,
+        db: ClientSession,
+        id: int
+            ) -> dict[str, Any]:  # FIXME: here is a scheme
+        """Get vacancies from db bay list of ids
+
+        Args:
+            db (ClientSession): session
+            id (int): v_ids
+
+        Returns:
+            dict[str, Any]: vacancies
+        """
+        data = db.client[self.db_name][self.col_name].find_one({'v_id': id})
+        return data
+
     async def get_many_by_v_ids(
         self,
         db: ClientSession,

@@ -1,12 +1,14 @@
 import asyncio
 from typing import Any, Sequence
 from pymongo.client_session import ClientSession
+# FIXME: remove all this
+
+
 from pymongo.results import InsertOneResult
 from app.config import settings
 from app.crud.crud_base import CRUDBase
 from app.schemas.constraint import Collections
 from app.schemas.scheme_vacanciy import VacancyResponseInDb
-# FIXME: remove all this
 
 
 class CRUDVacancies(CRUDBase[VacancyResponseInDb]):
