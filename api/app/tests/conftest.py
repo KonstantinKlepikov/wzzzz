@@ -22,6 +22,10 @@ from app.db import get_session
 
 
 DB_NAME = 'test-db'
+VACANCY = [
+    {'v_id': 54321, 'ts': '2022-06-01T10:20:31'},
+    {'v_id': 654321, 'ts': '2022-06-01T10:20:32'},
+        ]
 
 
 class BdTestContext:
@@ -76,13 +80,12 @@ async def db() -> Generator:
         another = {'v_id': 654321}
         await collection.insert_many([one, another])
 
-        one = {'v_id': 54321, 'ts': '2022-06-01T10:20:31'}
         another = {'v_id': 654321, 'ts': '2022-06-01T10:20:32'}
         for collection in (
             d[Collections.VACANCIES_DEEP_RAW.value],
             d[Collections.VACANCIES_SIMPLE_RAW.value]
                 ):
-            await collection.insert_many([one, another])
+            await collection.insert_many([VACANCY[0], VACANCY[1]])
 
         # fill user
         collection = d[Collections.USERS.value]

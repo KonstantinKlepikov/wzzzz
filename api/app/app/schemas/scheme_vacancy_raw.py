@@ -49,3 +49,33 @@ class VacancyRawData(VacancyId, VacancyTs):
                 'ts': '2022-06-01T10:20:30',
                     }
                 }
+
+
+class VacancyOut(BaseModel):
+    """Csv vacancy data
+    """
+    professional_roles: list[str] = []
+    area: str | None = None
+    experience: str | None = None
+    description: str | None = None
+    key_skills: list[str] = []
+    employer: str | None = None
+    alternate_url: str | None = None  # FIXME: switch to httpurl, but we have problem with model dump
+
+    class Config:
+
+        json_schema_extra = {
+                "example": {
+                    'professional_roles': ['Middle Backend Python программист', ],
+                    'area': 'Москва',
+                    'experience': 'От 1 года до 3 лет',
+                    'description':
+                        'Мы создаем системы искусственного интеллекта',
+                    'key_skills': [
+                        'Python', 'MongoDB', 'Swagger', 'FastAPI',
+                        'Django Framework', 'REST', 'Git', 'SQL'
+                        ],
+                    'employer': 'Lexicom',
+                    'alternate_url': 'https://hh.ru/vacancy/76294246',
+                        }
+                    }

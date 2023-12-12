@@ -11,7 +11,6 @@ from app.schemas.constraint import (
     SearchField,
         )
 
-
 # FIXME: remove me
 class VacancyId(BaseModel):
     """Vacancy id
@@ -97,7 +96,6 @@ class VacancyResponse(BaseModel):
                         }
                     }
 
-
 # FIXME: remove me
 class Vacancy(VacancyId, VacancyResponse):
     """Vacancy with id
@@ -147,7 +145,6 @@ class VacancyResponseInDb(Vacancy, VacancyTs):
                     }
                 }
 
-
 # FIXME: remove me
 class Vacancies(BaseModel):
     """Vacancies as dict
@@ -178,7 +175,6 @@ class Vacancies(BaseModel):
                             }
                         }
                     }
-
 
 # FIXME: remove me
 class AllVacancies(BaseModel):

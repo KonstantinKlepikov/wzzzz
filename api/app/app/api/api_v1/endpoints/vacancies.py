@@ -89,6 +89,43 @@ async def ask_for_new_vacancies_with_redis(
 
 
 # TODO: test me
+# @router.get(
+#     "/get_csv",
+#     status_code=status.HTTP_200_OK,
+#     summary='Request for vacancies csv.',
+#     response_description="OK. Requested data",
+#     responses=settings.ERRORS,
+#         )
+# async def get_vacancies_csv(
+#     redis_ids: list[int] = Query(),
+#     db: ClientSession = Depends(get_session),
+#         ) -> None:
+#     """Request for .csv file of new vacancies
+#     """
+
+#     vac = await vacancies.get_many_by_ids(db, redis_ids)
+#     vac = AllVacancies(vacancies=vac).model_dump()['vacancies']
+#     if vac:
+#         async def iterfile():
+#             async with TemporaryFile('w+') as f:
+#                 result = await get_vacancy_csv(vac, f)
+#                 async for line in result:
+#                     yield line
+
+#         return StreamingResponse(
+#             iterfile(),
+#             media_type='text/csv',
+#             headers={
+#                 "Content-Disposition": "attachment;filename=vacancies.csv"
+#                     }
+#                 )
+#     else:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="Vacancies not found."
+#                 )
+
+
 @router.get(
     "/get_csv",
     status_code=status.HTTP_200_OK,
@@ -103,43 +140,6 @@ async def get_vacancies_csv(
     """Request for .csv file of new vacancies
     """
 
-    vac = await vacancies.get_many_by_ids(db, redis_ids)
-    vac = AllVacancies(vacancies=vac).model_dump()['vacancies']
-    if vac:
-        async def iterfile():
-            async with TemporaryFile('w+') as f:
-                result = await get_vacancy_csv(vac, f)
-                async for line in result:
-                    yield line
-
-        return StreamingResponse(
-            iterfile(),
-            media_type='text/csv',
-            headers={
-                "Content-Disposition": "attachment;filename=vacancies.csv"
-                    }
-                )
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail="Vacancies not found."
-                )
-
-
-@router.get(
-    "/_get_csv",
-    status_code=status.HTTP_200_OK,
-    summary='Request for vacancies csv.',
-    response_description="OK. Requested data",
-    responses=settings.ERRORS,
-        )
-async def _get_vacancies_csv(
-    redis_ids: list[int] = Query(),
-    db: ClientSession = Depends(get_session),
-        ) -> None:
-    """Request for .csv file of new vacancies
-    """
-
     vac = VacanciesParser(
         db,
         vacancies_simple_raw,
@@ -147,6 +147,7 @@ async def _get_vacancies_csv(
         redis_ids
             )
     if vac := await vac.parse():
+
         async def iterfile():
             async with TemporaryFile('w+') as f:
                 result = await get_vacancy_csv(vac, f)
