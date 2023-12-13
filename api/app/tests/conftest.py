@@ -6,8 +6,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from httpx import AsyncClient
 from app.config import settings
 from app.main import app
-from app.crud.crud_vacancy import CRUDVacancies
-from app.crud.crud_vacancy_raw import CRUDVacanciesRaw
+from app.crud.crud_vacancy_raw import (
+    CRUDVacanciesRaw,
+    CRUDVacanciesRawSimple,
+        )
 from app.crud.crud_template import CRUDTemplate
 from app.crud.crud_user import CRUDUser
 from app.schemas.scheme_user import UserInDb
@@ -15,7 +17,6 @@ from app.schemas.scheme_templates import (
     TemplateInDb,
     TemplateConstraints,
         )
-from app.schemas.scheme_vacanciy import VacancyResponseInDb
 from app.schemas.scheme_vacancy_raw import VacancyRawData
 from app.schemas.constraint import Collections
 from app.db import get_session
@@ -75,12 +76,6 @@ async def db() -> Generator:
                 await d[collection].create_index([('user_id'), ], unique=True)
 
         # fill vacancies
-        collection = d[Collections.VACANCIES.value]  # FIXME: remove me
-        one = VacancyResponseInDb.Config.json_schema_extra['example']
-        another = {'v_id': 654321}
-        await collection.insert_many([one, another])
-
-        another = {'v_id': 654321, 'ts': '2022-06-01T10:20:32'}
         for collection in (
             d[Collections.VACANCIES_DEEP_RAW.value],
             d[Collections.VACANCIES_SIMPLE_RAW.value]
@@ -135,18 +130,6 @@ async def crud_user() -> CRUDUser:
             )
 
 
-# FIXME: remove me
-@pytest.fixture(scope="function")
-async def crud_vacancy() -> CRUDVacancies:
-    """Get crud vacancies
-    """
-    return CRUDVacancies(
-        schema=VacancyResponseInDb,
-        col_name=Collections.VACANCIES.value,
-        db_name=DB_NAME
-            )
-
-
 @pytest.fixture(scope="function")
 async def crud_template() -> CRUDTemplate:
     """Get crud template
@@ -159,10 +142,10 @@ async def crud_template() -> CRUDTemplate:
 
 
 @pytest.fixture(scope="function")
-async def crud_vacancy_simple_raw() -> CRUDVacanciesRaw:
+async def crud_vacancy_simple_raw() -> CRUDVacanciesRawSimple:
     """Get crud vacancies raw
     """
-    return CRUDVacanciesRaw(
+    return CRUDVacanciesRawSimple(
         schema=VacancyRawData,
         col_name=Collections.VACANCIES_SIMPLE_RAW.value,
         db_name=DB_NAME

@@ -1,8 +1,7 @@
-import asyncio
 from typing import Any
 from bs4 import BeautifulSoup as bs
 from pymongo.client_session import ClientSession
-from app.crud.crud_vacancy_raw import CRUDVacanciesRaw
+from app.crud.crud_vacancy_raw import CRUDVacanciesRaw, CRUDVacanciesRawSimple
 from app.schemas.scheme_vacancy_raw import VacancyOut
 
 
@@ -13,22 +12,22 @@ class VacanciesParser:
     def __init__(
             self,
             db: ClientSession,
-            simple: CRUDVacanciesRaw,
+            simple: CRUDVacanciesRawSimple,
             deep: CRUDVacanciesRaw,
-            ids: list[int]
+            v_ids: list[int]
                 ) -> None:
         """Parse vacancies
 
         Args:
             db (ClientSession): session
-            simple (CRUDVacanciesRaw): simple crud
+            simple (CRUDVacanciesRawSimple): simple crud
             deep (CRUDVacanciesRaw): deep crud
-            ids (list[int]): v_ids list
+            v_ids (list[int]): v_ids list
         """
         self.db = db
         self.simple = simple
         self.deep = deep
-        self.ids = ids
+        self.v_ids = v_ids
 
     @staticmethod
     def _field_to_list(x: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -80,30 +79,13 @@ class VacanciesParser:
             return text
         return None
 
-    async def _merged_vacancy(  # TODO: test me
-        self, id: int) -> tuple[dict[str, Any], dict[str, Any]]:
-        """Get simple and deep part of data
-
-        Args:
-            id (int): v_id
-
-        Returns:
-            tuple[dict[str, Any], dict[str, Any]]: simple and deep data
-        """
-        return await self.simple.get_by_v_ids(self.db, id), \
-                await self.deep.get_by_v_ids(self.db, id)
-
-
     async def _get_merged_vacancies(self) -> list[dict[str, Any]]:  # TODO: test me
         """Get merget vacancies
 
         Returns:
-         list[dict[str, Any]: merged vacancies
+            list[dict[str, Any]: merged vacancies
         """
-        tasks = [self._merged_vacancy(id) for id in self.ids]
-        result = await asyncio.gather(*tasks)
-        print(result)
-        return [dict(res[0], *res[1]) for res in result]
+        return await self.simple.get_many_merged_by_v_ids(self.db, self.v_ids)
 
     async def parse(self) -> list[dict[str, Any]]:  # TODO: test me
         """Parse vacancyies raw data
@@ -115,13 +97,13 @@ class VacanciesParser:
 
         return [
                 VacancyOut(
-                    professional_roles=self._field_to_list(v['professional_roles']),
-                    area=self._field_to_value(v['area']),
-                    experience=self._field_to_value(v['expirience']),
-                    description=self._html_to_text([v['description']]),
-                    key_skills=self._field_to_list(v['key_skills']),
-                    employer=self._field_to_value(v['employer']),
-                    alternate_url=self._field_to_value(v['alternate_url']),
+                    professional_roles=self._field_to_list(v.get('professional_roles')),
+                    area=self._field_to_value(v.get('area')),
+                    experience=self._field_to_value(v.get('experience')),
+                    description=self._html_to_text(v.get('description')),
+                    key_skills=self._field_to_list(v.get('key_skills')),
+                    employer=self._field_to_value(v.get('employer')),
+                    alternate_url=self._field_to_value(v.get('alternate_url')),
                         ).model_dump()
                     for v in vac
                 ]

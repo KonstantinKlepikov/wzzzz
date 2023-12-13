@@ -1,6 +1,5 @@
 import pytest
 import json
-import asyncio
 from functools import lru_cache
 from typing import Any, Callable
 from aiohttp.test_utils import TestClient
@@ -8,8 +7,7 @@ from pymongo.client_session import ClientSession
 from fastapi import HTTPException
 from app.core.queries import HhruBaseQueries
 from app.core.http_session import SessionMaker
-from app.schemas.scheme_vacanciy import VacancyRequest
-from app.schemas.scheme_vacancy_raw import VacancyRawData
+from app.schemas.scheme_vacancy_raw import VacancyRawData, VacancyRequest
 from app.crud.crud_vacancy_raw import vacancies_deep_raw
 
 

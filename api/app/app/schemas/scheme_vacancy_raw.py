@@ -1,5 +1,15 @@
 from datetime import datetime
-from pydantic import BaseModel, NonNegativeInt, Field, ConfigDict
+from pydantic import BaseModel, NonNegativeInt, Field, conint
+from datetime import datetime
+from app.schemas.scheme_templates import TemplateConstraints
+from app.schemas.constraint import (
+    Area,
+    Expirience,
+    Employment,
+    Professional,
+    Schedule,
+    SearchField,
+        )
 
 
 class VacancyId(BaseModel):
@@ -51,6 +61,33 @@ class VacancyRawData(VacancyId, VacancyTs):
                 }
 
 
+class VacancyRequest(TemplateConstraints):
+    """Request querie to hh.ru vacancy API
+    """
+    page: conint(ge=0, le=100) = 0
+    per_page: conint(gt=0, le=100) = 100
+
+    class Config:
+
+        json_schema_extra = {
+                "example": {
+                    'area': Area.get_values(),
+                    'text': 'game* OR гейм*',
+                    'search_field': SearchField.get_names(),
+                    'expirience': Expirience.get_names(),
+                    'employment': [Employment.FULL, Employment.PART, ],
+                    'schedule': [Schedule.REMOTE, ],
+                    'professional_role': Professional.get_values(),
+                    'date_from': '2022-06-01T10:20:30',
+                    'page': 0,
+                    'per_page': 100,
+                        }
+                    }
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%d'),
+                }
+
+
 class VacancyOut(BaseModel):
     """Csv vacancy data
     """
@@ -60,7 +97,7 @@ class VacancyOut(BaseModel):
     description: str | None = None
     key_skills: list[str] = []
     employer: str | None = None
-    alternate_url: str | None = None  # FIXME: switch to httpurl, but we have problem with model dump
+    alternate_url: str | None = None
 
     class Config:
 

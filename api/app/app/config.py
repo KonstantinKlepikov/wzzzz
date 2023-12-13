@@ -61,9 +61,11 @@ class Settings(BaseSettings):
         429: {'model': HttpError429}
             }
 
+
     SIZE_POOL_HTTP: int = 100
     TIMEOUT_AIOHTTP: int = 2
     QUERY_SLEEP: float = 0.05
+
 
     def get_hhru_auth(self):
         """Get auth headers for api query
