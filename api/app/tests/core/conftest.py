@@ -6,7 +6,7 @@ from aiohttp import web
 from aiohttp.test_utils import TestClient
 from yarl import URL
 from app.core.http_session import SessionMaker
-from app.schemas.scheme_vacanciy import VacancyRequest
+from app.schemas.scheme_vacancy_raw import VacancyRequest
 
 
 @lru_cache

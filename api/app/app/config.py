@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # hhru settings
     HHRU_API_TOKEN: SecretStr = None
     HHRU_CLIENT_EMAIL: str | None = None
+    SEM: int = 10
+    HHRU_VACANCY_URL: str = "https://api.hh.ru/vacancies"
 
     # FIXME: move to test settings
     # def settings
@@ -59,9 +61,11 @@ class Settings(BaseSettings):
         429: {'model': HttpError429}
             }
 
+
     SIZE_POOL_HTTP: int = 100
     TIMEOUT_AIOHTTP: int = 2
     QUERY_SLEEP: float = 0.05
+
 
     def get_hhru_auth(self):
         """Get auth headers for api query

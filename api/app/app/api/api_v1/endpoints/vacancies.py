@@ -11,22 +11,15 @@ from fastapi.responses import StreamingResponse
 from pymongo.client_session import ClientSession
 from aiofiles.tempfile import TemporaryFile
 from app.core.check import check_user
-from app.core.queries import (
-    HhruQueriesDb,
-    HhruBaseQueries,
-    get_parse_save_vacancy,
-        )
+from app.core.queries import HhruBaseQueries, get_vacancy
+from app.core.parsing import VacanciesParser
 from app.core.csv_writer import get_vacancy_csv
 from app.core.http_session import SessionMaker
 from app.db import get_session, get_redis_connection
-from app.schemas.scheme_vacanciy import (
-    VacancyRequest,
-    Vacancies,
-    AllVacancies,
-        )
 from app.schemas.constraint import Relevance
 from app.crud.crud_template import templates
-from app.crud.crud_vacancy import vacancies
+from app.schemas.scheme_vacancy_raw import VacancyRequest
+from app.crud.crud_vacancy_raw import vacancies_deep_raw, vacancies_simple_raw
 from app.config import settings
 
 
@@ -48,7 +41,7 @@ async def ask_for_new_vacancies_with_redis(
     db: ClientSession = Depends(get_session),
     redis_db: Redis = Depends(get_redis_connection),
     relevance: Relevance = Relevance.ALL,
-        ) -> Vacancies:
+        ) -> None:
     """Request for vacancies data. Call for this resource makes some operations:
     1. call hh.ru vacancy search api
     2. get 202 and wait for redis message for save vacancy data in db
@@ -62,18 +55,17 @@ async def ask_for_new_vacancies_with_redis(
         db, {'name': template_name, 'user': str(user['_id'])}
             )
 
-    # TODO: here we use query method for get data from external api
-    # then we send to redis pub/sub ids of vacancies
-
     if template:
         params = VacancyRequest(**template)
-        queries = HhruQueriesDb(SessionMaker, "https://api.hh.ru/vacancies", params)
-        entry = await queries.session.get_query(url=queries.url, params=queries.params)
+        queries = HhruBaseQueries(
+            SessionMaker,
+            settings.HHRU_VACANCY_URL,
+            params
+                )
         background_tasks.add_task(
-            get_parse_save_vacancy,
+            get_vacancy,
             user_id,
             queries,
-            entry,
             relevance,
             db,
             redis_db
@@ -100,12 +92,15 @@ async def get_vacancies_csv(
         ) -> None:
     """Request for .csv file of new vacancies
     """
-    # TODO: here we asc db for data by_id from simple and deep,
-    # concatenate data by pydantic and return as file
 
-    vac = await vacancies.get_many_by_ids(db, redis_ids)
-    vac = AllVacancies(vacancies=vac).model_dump()['vacancies']
-    if vac:
+    vac = VacanciesParser(
+        db,
+        vacancies_simple_raw,
+        vacancies_deep_raw,
+        redis_ids
+            )
+    if vac := await vac.parse():
+
         async def iterfile():
             async with TemporaryFile('w+') as f:
                 result = await get_vacancy_csv(vac, f)

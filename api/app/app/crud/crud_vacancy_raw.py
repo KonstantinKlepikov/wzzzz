@@ -30,12 +30,29 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         return await db.client[self.db_name][self.col_name] \
             .insert_one(obj_in.model_dump(by_alias=True))
 
+    async def get_by_v_ids(  # TODO: test me
+        self,
+        db: ClientSession,
+        id: int
+            ) -> dict[str, Any]:  # FIXME: here is a scheme
+        """Get vacancies from db bay list of ids
+
+        Args:
+            db (ClientSession): session
+            id (int): v_ids
+
+        Returns:
+            dict[str, Any]: vacancies
+        """
+        data = db.client[self.db_name][self.col_name].find_one({'v_id': id})
+        return data
+
     async def get_many_by_v_ids(
         self,
         db: ClientSession,
         ids: Sequence[int]
             ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
-        """Get vacancies from db bay list of ids
+        """Get vacancies from db by list of ids
 
         Args:
             db (ClientSession): session
@@ -89,7 +106,53 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
         return [res for res in result if not isinstance(res, DuplicateKeyError)]
 
 
-vacancies_simple_raw = CRUDVacanciesRaw(
+class CRUDVacanciesRawSimple(CRUDVacanciesRaw):
+    """_summary_
+    """
+
+    async def get_many_merged_by_v_ids(
+        self,
+        db: ClientSession,
+        v_ids: Sequence[int]
+            ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
+
+        """Get merged simple and deep vacancies from db by list of ids
+
+        Args:
+            db (ClientSession): session
+            v_ids (list[int]): v_ids list
+
+        Returns:
+            list[dict[str, Any]]: vacancies
+        """
+        data = db.client[self.db_name][self.col_name].aggregate(
+            pipeline=[
+                {'$match': {'v_id': {'$in': list(v_ids)}}},
+                {
+                    '$lookup':
+                        {
+                            'from': Collections.VACANCIES_DEEP_RAW.value,
+                            'localField': "v_id",
+                            'foreignField': "v_id",
+                            'as': "deep",
+                        }
+                    },
+                {
+                    '$replaceRoot': {
+                        'newRoot': {
+                            '$mergeObjects': [{'$arrayElemAt': [ "$deep", 0 ]}, "$$ROOT"]
+                                }
+                            }
+                    },
+                {
+                    '$project': {'deep': 0, '_id': 0}
+                    },
+                ]
+            )
+        return await data.to_list(length=None)
+
+
+vacancies_simple_raw = CRUDVacanciesRawSimple(
     schema=VacancyRawData,
     col_name=Collections.VACANCIES_SIMPLE_RAW.value,
     db_name=settings.DB_NAME,

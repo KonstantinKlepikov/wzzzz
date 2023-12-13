@@ -2,7 +2,7 @@ import pytest
 from aiohttp.test_utils import TestClient
 from fastapi import HTTPException
 from app.core.http_session import SessionMaker
-from app.schemas.scheme_vacanciy import VacancyRequest
+from app.schemas.scheme_vacancy_raw import VacancyRequest
 
 
 class TestAiohttpClient:
