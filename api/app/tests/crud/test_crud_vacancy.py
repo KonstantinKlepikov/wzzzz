@@ -2,48 +2,48 @@ import pytest
 import nest_asyncio
 from pymongo.client_session import ClientSession
 from pymongo.results import InsertOneResult
-from app.crud.crud_vacancy_raw import CRUDVacanciesRaw, CRUDVacanciesRawSimple
-from app.schemas.scheme_vacancy_raw import VacancyRawData
+from app.crud.crud_vacancy import CRUDVacancies, CRUDVacanciesSimple
+from app.schemas.scheme_vacancy import VacancyData
 
 
 nest_asyncio.apply()
 
 
-class TestCRUDVacancyRaw:
-    """Test crud vacancy raw
+class TestCRUDVacancy:
+    """Test crud vacancy
     """
 
     @pytest.mark.parametrize(
-        'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
+        'fixname', ['crud_vacancy_simple', 'crud_vacancy_deep']
             )
-    async def test_crud_vacancy_raw_create(
+    async def test_crud_vacancy_create(
         self,
         db: ClientSession,
         fixname,
         request
             ) -> None:
-        """Test vacancy raw creation
+        """Test vacancy creation
         """
-        crud: CRUDVacanciesRaw = request.getfixturevalue(fixname)
-        result = await crud.create_raw(
+        crud: CRUDVacancies = request.getfixturevalue(fixname)
+        result = await crud.create(
             db,
-            VacancyRawData(**VacancyRawData.Config.json_schema_extra["example"])
+            VacancyData(**VacancyData.Config.json_schema_extra["example"])
                 )
         assert isinstance(result, InsertOneResult), 'wrong result'
         assert result.inserted_id, 'result hasnt _id'
 
     @pytest.mark.parametrize(
-        'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
+        'fixname', ['crud_vacancy_simple', 'crud_vacancy_deep']
             )
-    async def test_crud_vacancy_raw_get_by_vacancies_ids(
+    async def test_crud_vacancy_get_by_vacancies_ids(
         self,
         db: ClientSession,
         fixname,
         request
             ) -> None:
-        """Test crud vacancy raw get by id
+        """Test crud vacancy get by id
         """
-        crud: CRUDVacanciesRaw = request.getfixturevalue(fixname)
+        crud: CRUDVacancies = request.getfixturevalue(fixname)
         result = await crud.get_many_by_v_ids(db, [54321, 654321])
         assert isinstance(result, list), 'wrong result'
         ids = [d['v_id'] for d in result]
@@ -51,17 +51,17 @@ class TestCRUDVacancyRaw:
         assert 54321 in ids, 'wrong id'
 
     @pytest.mark.parametrize(
-        'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
+        'fixname', ['crud_vacancy_simple', 'crud_vacancy_deep']
             )
-    async def test_crud_vacancy_raw_get_notexisted_id(
+    async def test_crud_vacancy_get_notexisted_id(
         self,
         db: ClientSession,
         fixname,
         request
             ) -> None:
-        """Test crud vacancy raw get notexisted id
+        """Test crud vacancy get notexisted id
         """
-        crud: CRUDVacanciesRaw = request.getfixturevalue(fixname)
+        crud: CRUDVacancies = request.getfixturevalue(fixname)
         result = await crud.get_many_notexisted_v_ids(db, {54321, 99999})
         assert isinstance(result, set), 'wrong result'
         assert 99999 in result, 'wrong not existed id'
@@ -69,21 +69,21 @@ class TestCRUDVacancyRaw:
 
     @pytest.mark.skip("TODO: test me")
     @pytest.mark.parametrize(
-        'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
+        'fixname', ['crud_vacancy_simple', 'crud_vacancy_deep']
             )
-    async def test_crud_vacancy_raw_create_many(
+    async def test_crud_vacancy_create_many(
         self,
         db: ClientSession,
         fixname,
         request
             ) -> None:
-        """Test vacancy raw create many
+        """Test vacancy create many
         """
         crud = request.getfixturevalue(fixname)
 
     @pytest.mark.skip("TODO: test me")
     @pytest.mark.parametrize(
-        'fixname', ['crud_vacancy_simple_raw', 'crud_vacancy_deep_raw']
+        'fixname', ['crud_vacancy_simple', 'crud_vacancy_deep']
             )
     async def test_crud_vaсancy_create_many_error_if_double(
         self,
@@ -91,24 +91,24 @@ class TestCRUDVacancyRaw:
         fixname,
         request
             ) -> None:
-        """Test vacancy raw create many dublicate error
+        """Test vacancy create many dublicate error
         """
         crud = request.getfixturevalue(fixname)
 
 
-class TestCRUDVacancyRawSimple:
-    """Test crud vacancy raw for simple hhru api data
+class TestCRUDVacancySimple:
+    """Test crud vacancy for simple hhru api data
     """
 
     # TODO: test merging of data
-    async def test_crud_vacancy_raw_get_merged_by_vacancies_ids(
+    async def test_crud_vacancy_get_merged_by_vacancies_ids(
         self,
         db: ClientSession,
-        crud_vacancy_simple_raw: CRUDVacanciesRawSimple
+        crud_vacancy_simple: CRUDVacanciesSimple
             ) -> None:
-        """Test crud vacancy simple raw get merged by ids
+        """Test crud vacancy simple get merged by ids
         """
-        result = await crud_vacancy_simple_raw.get_many_merged_by_v_ids(
+        result = await crud_vacancy_simple.get_many_merged_by_v_ids(
             db, [54321, 654321]
                 )
         assert isinstance(result, list), 'wrong result'

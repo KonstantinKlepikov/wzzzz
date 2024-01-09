@@ -1,8 +1,8 @@
 from typing import Any
 from bs4 import BeautifulSoup as bs
 from pymongo.client_session import ClientSession
-from app.crud.crud_vacancy_raw import CRUDVacanciesRaw, CRUDVacanciesRawSimple
-from app.schemas.scheme_vacancy_raw import VacancyOut
+from app.crud.crud_vacancy import CRUDVacancies, CRUDVacanciesSimple
+from app.schemas.scheme_vacancy import VacancyOut
 
 
 class VacanciesParser:
@@ -12,16 +12,16 @@ class VacanciesParser:
     def __init__(
             self,
             db: ClientSession,
-            simple: CRUDVacanciesRawSimple,
-            deep: CRUDVacanciesRaw,
+            simple: CRUDVacanciesSimple,
+            deep: CRUDVacancies,
             v_ids: list[int]
                 ) -> None:
         """Parse vacancies
 
         Args:
             db (ClientSession): session
-            simple (CRUDVacanciesRawSimple): simple crud
-            deep (CRUDVacanciesRaw): deep crud
+            simple (CRUDVacanciesSimple): simple crud
+            deep (CRUDVacancies): deep crud
             v_ids (list[int]): v_ids list
         """
         self.db = db
@@ -34,7 +34,7 @@ class VacanciesParser:
         """Make list ov values from response field
 
         Args:
-            x (VacancyRaw): vacancy
+            x (list[dict[str, Any]] | None): field
 
         Returns:
             list[Any]: transformed data
@@ -52,7 +52,7 @@ class VacanciesParser:
         """Get value from response field
 
         Args:
-            x (VacancyRaw): vacancy raw
+            x (dict[str, Any] | None): field
 
         Returns:
             Any: transformed data
@@ -64,7 +64,7 @@ class VacanciesParser:
         return None
 
     @staticmethod
-    def _html_to_text(x: dict[str, Any] | None) -> str | None:
+    def _html_to_text(x: str) -> str | None:
         """Transform html to text
 
         Args:
@@ -79,7 +79,7 @@ class VacanciesParser:
             return text
         return None
 
-    async def _get_merged_vacancies(self) -> list[dict[str, Any]]:  # TODO: test me
+    async def _merged_vacancies(self) -> list[dict[str, Any]]:  # TODO: test me
         """Get merget vacancies
 
         Returns:
@@ -93,7 +93,7 @@ class VacanciesParser:
         Returns:
             list[dict[str, Any]]: parsed vacancies
         """
-        vac = await self._get_merged_vacancies()
+        vac = await self._merged_vacancies()
 
         return [
                 VacancyOut(

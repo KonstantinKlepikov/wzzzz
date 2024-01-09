@@ -18,8 +18,8 @@ from app.core.http_session import SessionMaker
 from app.db import get_session, get_redis_connection
 from app.schemas.constraint import Relevance
 from app.crud.crud_template import templates
-from app.schemas.scheme_vacancy_raw import VacancyRequest
-from app.crud.crud_vacancy_raw import vacancies_deep_raw, vacancies_simple_raw
+from app.schemas.scheme_vacancy import VacancyRequest
+from app.crud.crud_vacancy import vacancies_deep, vacancies_simple
 from app.config import settings
 
 
@@ -95,8 +95,8 @@ async def get_vacancies_csv(
 
     vac = VacanciesParser(
         db,
-        vacancies_simple_raw,
-        vacancies_deep_raw,
+        vacancies_simple,
+        vacancies_deep,
         redis_ids
             )
     if vac := await vac.parse():

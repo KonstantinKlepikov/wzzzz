@@ -7,8 +7,8 @@ from pymongo.client_session import ClientSession
 from fastapi import HTTPException
 from app.core.queries import HhruBaseQueries
 from app.core.http_session import SessionMaker
-from app.schemas.scheme_vacancy_raw import VacancyRawData, VacancyRequest
-from app.crud.crud_vacancy_raw import vacancies_deep_raw
+from app.schemas.scheme_vacancy import VacancyData, VacancyRequest
+from app.crud.crud_vacancy import vacancies_deep
 
 
 @pytest.fixture
@@ -77,7 +77,7 @@ class TestHhruBaseQueries:
         assert result['pages'] == entry_data['pages'], 'wrong pages'
         assert result['per_page'] == entry_data['per_page'], 'wrong per_page'
 
-    async def test_make_simple_requests(
+    async def test_make_simple(
         self,
         base_queries: HhruBaseQueries,
         mock_entry_response,
@@ -85,12 +85,12 @@ class TestHhruBaseQueries:
             ) -> None:
         """Test make simple request
         """
-        result = await base_queries._make_simple_requests()
+        result = await base_queries._make_simple()
         assert len(result) == 2020, 'wrong result len'
         assert result[0].id == result[20].id, 'mock query not doubled'
         assert result[0].id == int(entry_data['items'][0]['id'])
 
-    def test_get_corresct_simple_response(
+    def test_clean_simple_response(
         self,
         base_queries: HhruBaseQueries,
         entry_data: dict[str, Any],
@@ -98,7 +98,7 @@ class TestHhruBaseQueries:
         """Test get corrext simple response
         """
         data = [entry_data, HTTPException(400)]
-        result = base_queries._get_corresct_simple_response(data)
+        result = base_queries._clean_simple_response(data)
         assert len(result) == 20, 'wrong result len'
         assert HTTPException not in result, 'wrong result'
 
@@ -113,7 +113,7 @@ class TestHhruBaseQueries:
             return deeper_data
         monkeypatch.setattr(session, "get_query", mock_return)
 
-    async def test_make_deeper_requests(
+    async def test_make_deep(
         self,
         base_queries: HhruBaseQueries,
         mock_vacancy_deeper_response,
@@ -122,9 +122,9 @@ class TestHhruBaseQueries:
         """Test make deeper request
         """
         urls = [deeper_data["alternate_url"] for _ in range(10)]
-        result = await base_queries._make_deeper_requests(urls)
+        result = await base_queries._make_deep(urls)
         assert len(result) == 10, 'wrong result len'
-        assert isinstance(result[0], VacancyRawData)
+        assert isinstance(result[0], VacancyData)
         assert result[0].id == int(deeper_data["id"]), 'wrong content'
 
     # TODO: test semaphores and errors in requests
@@ -137,8 +137,8 @@ class TestHhruBaseQueries:
         monkeypatch,
             ) -> Callable:
         async def mock_return(*args, **kwargs) -> Callable:
-            return [VacancyRawData(**res) for res in simple_data['items']]
-        monkeypatch.setattr(base_queries, "_make_simple_requests", mock_return)
+            return [VacancyData(**res) for res in simple_data['items']]
+        monkeypatch.setattr(base_queries, "_make_simple", mock_return)
 
     @pytest.fixture(scope="function")
     async def mock_deeper_request(
@@ -149,8 +149,8 @@ class TestHhruBaseQueries:
         monkeypatch,
             ) -> Callable:
         async def mock_return(*args, **kwargs) -> Callable:
-            return [VacancyRawData(**deeper_data) for _ in range(len(simple_data))]
-        monkeypatch.setattr(base_queries, "_make_deeper_requests", mock_return)
+            return [VacancyData(**deeper_data) for _ in range(len(simple_data))]
+        monkeypatch.setattr(base_queries, "_make_deep", mock_return)
 
     @pytest.fixture(scope="function")
     async def mock_get_many_notexisted_v_ids(
@@ -160,14 +160,14 @@ class TestHhruBaseQueries:
             ) -> Callable:
         async def mock_return(*args, **kwargs) -> Callable:
             return {int(d['id']) for d in simple_data["items"]}
-        monkeypatch.setattr(vacancies_deep_raw , "get_many_notexisted_v_ids", mock_return)
+        monkeypatch.setattr(vacancies_deep , "get_many_notexisted_v_ids", mock_return)
 
     async def test_query(
         self,
         base_queries: HhruBaseQueries,
         db: ClientSession,
-        mock_simple_request: list[VacancyRawData],
-        mock_deeper_request: list[VacancyRawData],
+        mock_simple_request: list[VacancyData],
+        mock_deeper_request: list[VacancyData],
         simple_data: list[dict[str, Any]],
         mock_get_many_notexisted_v_ids: set[int]
         ) -> None:

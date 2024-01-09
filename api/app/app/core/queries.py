@@ -10,12 +10,12 @@ from fastapi import HTTPException
 from bs4 import BeautifulSoup as bs
 from app.core.http_session import SessionMaker
 from app.schemas.constraint import Relevance
-from app.schemas.scheme_vacancy_raw import VacancyRawData, VacancyRequest
-from app.crud.crud_vacancy_raw import vacancies_simple_raw, vacancies_deep_raw
+from app.schemas.scheme_vacancy import VacancyData, VacancyRequest
+from app.crud.crud_vacancy import vacancies_simple, vacancies_deep
 from app.config import settings
 
 
-VacancyRaw: TypeAlias = dict[str, Any]
+Vacancy: TypeAlias = dict[str, Any]
 
 
 class HhruBaseQueries:
@@ -43,28 +43,28 @@ class HhruBaseQueries:
         return await self.session.get_query(url=self.url, params=self.params)
 
     @staticmethod
-    def _get_corresct_simple_response(
+    def _clean_simple_response(
         data: list[dict[str, Any] | HTTPException]
-            ) -> list[VacancyRawData]:
+            ) -> list[VacancyData]:
         """Get responses without errors
 
         Args:
             data (list[dict[str, Any] | HTTPException]): responses
 
         Returns:
-            list[VacancyRawData]: vacancies
+            list[VacancyData]: vacancies
         """
         result = []
         for nested in data:
             if not isinstance(nested, Exception):
                 for res in nested['items']:
-                    result.append(VacancyRawData(**res))
+                    result.append(VacancyData(**res))
         return result
 
-    async def _make_simple_requests(
+    async def _make_simple(
         self,
         sem: Semaphore | None = None,
-            ) -> list[VacancyRawData]:
+            ) -> list[VacancyData]:
         """Make simple result of query. Here is all pages returned from
         https://api.hh.ru/vacancies
 
@@ -77,7 +77,7 @@ class HhruBaseQueries:
                 server overwelming. Defaults to None.
 
         Returns:
-            list[VacancyRawData]: simple vacanices responces
+            list[VacancyData]: simple vacanices responces
         """
 
         tasks: list[Coroutine] = []
@@ -89,14 +89,14 @@ class HhruBaseQueries:
             tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
 
         result = await asyncio.gather(*tasks, return_exceptions=True)
-        return self._get_corresct_simple_response([entry, ] + result)
+        return self._clean_simple_response([entry, ] + result)
 
-    async def _make_deeper_requests(
+    async def _make_deep(
         self,
         urls: list[str],
         sem: Optional[Semaphore] = None,
-            ) -> list[VacancyRawData]:
-        """Make requests for deeper vacancy data
+            ) -> list[VacancyData]:
+        """Make requests for deep vacancy data
 
         Args:
             urls (list[str]): simple requests urls
@@ -104,12 +104,12 @@ class HhruBaseQueries:
                 server overwelming. Defaults to None.
 
         Returns:
-            list[VacancyRawData]: deeper vacancy responses
+            list[VacancyData]: deeper vacancy responses
         """
         tasks = [self.session.get_query(url=url, sem=sem) for url in urls]
         result = await asyncio.gather(*tasks, return_exceptions=True)
         return [
-            VacancyRawData(**res)
+            VacancyData(**res)
             for res in result
             if not isinstance(res, Exception)
                 ]
@@ -129,16 +129,16 @@ class HhruBaseQueries:
             tuple[list[int], list[int]]: all v_ids of vacancies and not existed v_ids
         """
         semaphore = Semaphore(sem)
-        simple = await self._make_simple_requests(semaphore)
+        simple = await self._make_simple(semaphore)
 
         v_ids = {d.id for d in simple}
-        notexisted_v_ids = await vacancies_simple_raw.get_many_notexisted_v_ids(db, v_ids)
+        notexisted_v_ids = await vacancies_simple.get_many_notexisted_v_ids(db, v_ids)
         urls = [d.url for d in simple if d.id in notexisted_v_ids]
 
-        deep = await self._make_deeper_requests(urls, semaphore)
+        deep = await self._make_deep(urls, semaphore)
 
-        await vacancies_simple_raw.create_many(db, simple)
-        await vacancies_deep_raw.create_many(db, deep)
+        await vacancies_simple.create_many(db, simple)
+        await vacancies_deep.create_many(db, deep)
 
         return list(v_ids), list(notexisted_v_ids)
 
