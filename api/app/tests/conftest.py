@@ -6,9 +6,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from httpx import AsyncClient
 from app.config import settings
 from app.main import app
-from app.crud.crud_vacancy_raw import (
-    CRUDVacanciesRaw,
-    CRUDVacanciesRawSimple,
+from app.crud.crud_vacancy import (
+    CRUDVacancies,
+    CRUDVacanciesSimple,
         )
 from app.crud.crud_template import CRUDTemplate
 from app.crud.crud_user import CRUDUser
@@ -17,7 +17,7 @@ from app.schemas.scheme_templates import (
     TemplateInDb,
     TemplateConstraints,
         )
-from app.schemas.scheme_vacancy_raw import VacancyRawData
+from app.schemas.scheme_vacancy import VacancyData
 from app.schemas.constraint import Collections
 from app.db import get_session
 
@@ -142,22 +142,22 @@ async def crud_template() -> CRUDTemplate:
 
 
 @pytest.fixture(scope="function")
-async def crud_vacancy_simple_raw() -> CRUDVacanciesRawSimple:
-    """Get crud vacancies raw
+async def crud_vacancy_simple() -> CRUDVacanciesSimple:
+    """Get crud vacancies
     """
-    return CRUDVacanciesRawSimple(
-        schema=VacancyRawData,
+    return CRUDVacanciesSimple(
+        schema=VacancyData,
         col_name=Collections.VACANCIES_SIMPLE_RAW.value,
         db_name=DB_NAME
             )
 
 
 @pytest.fixture(scope="function")
-async def crud_vacancy_deep_raw() -> CRUDVacanciesRaw:
-    """Get crud vacancies raw
+async def crud_vacancy_deep() -> CRUDVacancies:
+    """Get crud vacancies
     """
-    return CRUDVacanciesRaw(
-        schema=VacancyRawData,
+    return CRUDVacancies(
+        schema=VacancyData,
         col_name=Collections.VACANCIES_DEEP_RAW.value,
         db_name=DB_NAME
             )

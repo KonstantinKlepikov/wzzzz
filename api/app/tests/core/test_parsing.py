@@ -1,21 +1,21 @@
 import pytest
 from app.core.parsing import VacanciesParser
-from app.crud.crud_vacancy_raw import CRUDVacanciesRaw
+from app.crud.crud_vacancy import CRUDVacancies
 from tests.conftest import VACANCY
 
 
 @pytest.fixture
 def parser(
     db,
-    crud_vacancy_simple_raw: CRUDVacanciesRaw,
-    crud_vacancy_deep_raw: CRUDVacanciesRaw,
+    crud_vacancy_simple: CRUDVacancies,
+    crud_vacancy_deep: CRUDVacancies,
         ) -> VacanciesParser:
     """Make test session
     """
     return VacanciesParser(
         db,
-        crud_vacancy_simple_raw,
-        crud_vacancy_deep_raw,
+        crud_vacancy_simple,
+        crud_vacancy_deep,
         [VACANCY[0]['v_id'], VACANCY[1]['v_id']]
             )
 

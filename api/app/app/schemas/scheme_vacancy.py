@@ -43,7 +43,7 @@ class VacancyTs(BaseModel):
                 }
 
 
-class VacancyRawData(VacancyId, VacancyTs):
+class VacancyData(VacancyId, VacancyTs):
     """Vacancy raw
 
     Extra fields is used to allow raw vacancy data.

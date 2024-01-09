@@ -5,24 +5,24 @@ from pymongo.errors import DuplicateKeyError
 from pymongo.results import InsertOneResult
 from app.config import settings
 from app.crud.crud_base import CRUDBase
-from app.schemas.scheme_vacancy_raw import VacancyRawData
+from app.schemas.scheme_vacancy import VacancyData
 from app.schemas.constraint import Collections
 
 
-class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
+class CRUDVacancies(CRUDBase[VacancyData]):
     """Vacancies crud
     """
 
-    async def create_raw(
+    async def create(
         self,
         db: ClientSession,
-        obj_in: VacancyRawData
+        obj_in: VacancyData
             ) -> InsertOneResult:
         """Create raw vacancy document
 
         Args:
             db (ClientSession): session
-            obj_in (VacancyRawData): scheme to creare
+            obj_in (VacancyData): scheme to creare
 
         Returns:
             InsertOneResult: result of creation
@@ -90,23 +90,23 @@ class CRUDVacanciesRaw(CRUDBase[VacancyRawData]):
     async def create_many(  # TODO: test me
         self,
         db: ClientSession,
-        obj_in: Sequence[VacancyRawData],
+        obj_in: Sequence[VacancyData],
             ) -> list[InsertOneResult]:
         """Create many vacancy documents
 
         Args:
             db (ClientSession): session
-            obj_in (Sequence[VacancyRawData]): sequence of data
+            obj_in (Sequence[VacancyData]): sequence of data
 
         Returns:
             list[InsertOneResult]: results
         """
-        tasks = [self.create_raw(db, i) for i in obj_in]
+        tasks = [self.create(db, i) for i in obj_in]
         result = await asyncio.gather(*tasks, return_exceptions=True)
         return [res for res in result if not isinstance(res, DuplicateKeyError)]
 
 
-class CRUDVacanciesRawSimple(CRUDVacanciesRaw):
+class CRUDVacanciesSimple(CRUDVacancies):
     """_summary_
     """
 
@@ -152,14 +152,14 @@ class CRUDVacanciesRawSimple(CRUDVacanciesRaw):
         return await data.to_list(length=None)
 
 
-vacancies_simple_raw = CRUDVacanciesRawSimple(
-    schema=VacancyRawData,
+vacancies_simple = CRUDVacanciesSimple(
+    schema=VacancyData,
     col_name=Collections.VACANCIES_SIMPLE_RAW.value,
     db_name=settings.DB_NAME,
         )
 
-vacancies_deep_raw = CRUDVacanciesRaw(
-    schema=VacancyRawData,
+vacancies_deep = CRUDVacancies(
+    schema=VacancyData,
     col_name=Collections.VACANCIES_DEEP_RAW.value,
     db_name=settings.DB_NAME,
         )
