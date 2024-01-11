@@ -9,7 +9,7 @@ from app.schemas.scheme_vacancy import VacancyData
 from app.schemas.constraint import Collections
 
 
-class CRUDVacancies(CRUDBase[VacancyData]):
+class CRUDVacancies(CRUDBase):
     """Vacancies crud
     """
 
@@ -34,7 +34,7 @@ class CRUDVacancies(CRUDBase[VacancyData]):
         self,
         db: ClientSession,
         id: int
-            ) -> dict[str, Any]:  # FIXME: here is a scheme
+            ) -> dict[str, Any]:
         """Get vacancies from db bay list of ids
 
         Args:
@@ -51,7 +51,7 @@ class CRUDVacancies(CRUDBase[VacancyData]):
         self,
         db: ClientSession,
         ids: Sequence[int]
-            ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
+            ) -> list[dict[str, Any]]:
         """Get vacancies from db by list of ids
 
         Args:
@@ -114,7 +114,7 @@ class CRUDVacanciesSimple(CRUDVacancies):
         self,
         db: ClientSession,
         v_ids: Sequence[int]
-            ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
+            ) -> list[dict[str, Any]]:
 
         """Get merged simple and deep vacancies from db by list of ids
 
@@ -153,13 +153,11 @@ class CRUDVacanciesSimple(CRUDVacancies):
 
 
 vacancies_simple = CRUDVacanciesSimple(
-    schema=VacancyData,
     col_name=Collections.VACANCIES_SIMPLE_RAW.value,
     db_name=settings.DB_NAME,
         )
 
 vacancies_deep = CRUDVacancies(
-    schema=VacancyData,
     col_name=Collections.VACANCIES_DEEP_RAW.value,
     db_name=settings.DB_NAME,
         )

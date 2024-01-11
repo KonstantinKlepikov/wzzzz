@@ -13,11 +13,7 @@ from app.crud.crud_vacancy import (
 from app.crud.crud_template import CRUDTemplate
 from app.crud.crud_user import CRUDUser
 from app.schemas.scheme_user import UserInDb
-from app.schemas.scheme_templates import (
-    TemplateInDb,
-    TemplateConstraints,
-        )
-from app.schemas.scheme_vacancy import VacancyData
+from app.schemas.scheme_templates import TemplateInDb
 from app.schemas.constraint import Collections
 from app.db import get_session
 
@@ -124,7 +120,6 @@ async def crud_user() -> CRUDUser:
     """Get crud users
     """
     return CRUDUser(
-        schema=UserInDb,
         col_name=Collections.USERS.value,
         db_name=DB_NAME
             )
@@ -135,7 +130,6 @@ async def crud_template() -> CRUDTemplate:
     """Get crud template
     """
     return CRUDTemplate(
-        schema=TemplateConstraints,
         col_name=Collections.TEMPLATES.value,
         db_name=DB_NAME
             )
@@ -146,7 +140,6 @@ async def crud_vacancy_simple() -> CRUDVacanciesSimple:
     """Get crud vacancies
     """
     return CRUDVacanciesSimple(
-        schema=VacancyData,
         col_name=Collections.VACANCIES_SIMPLE_RAW.value,
         db_name=DB_NAME
             )
@@ -157,7 +150,6 @@ async def crud_vacancy_deep() -> CRUDVacancies:
     """Get crud vacancies
     """
     return CRUDVacancies(
-        schema=VacancyData,
         col_name=Collections.VACANCIES_DEEP_RAW.value,
         db_name=DB_NAME
             )

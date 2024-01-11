@@ -67,9 +67,3 @@ REDIS_URL=wzzzz-redis-dev
 ```
 
 ## Still oppened problems
-
-- [72](https://github.com/KonstantinKlepikov/wzzzz/issues/72) rewrite query for db ids (get ids from chunk asynchronously) and rewrite cumbersome csv getter for bot
-- [71](https://github.com/KonstantinKlepikov/wzzzz/issues/71) test all stack
-- [70](https://github.com/KonstantinKlepikov/wzzzz/issues/70) switch redis to aiohttp pub/sub
-- [39](https://github.com/KonstantinKlepikov/wzzzz/issues/39) add change template resource to api and bot
-- [15](https://github.com/KonstantinKlepikov/wzzzz/issues/15) get vacancy by id

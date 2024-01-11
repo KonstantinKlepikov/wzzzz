@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from pymongo.client_session import ClientSession
 from pymongo.errors import DuplicateKeyError
 from app.db import get_session
-from app.schemas.scheme_user import UserInDb, User
+from app.schemas.scheme_user import User
 from app.config import settings
 from app.crud.crud_user import users
 
@@ -24,10 +24,8 @@ async def create_user(
         ) -> None:
     """Create user with given user id
     """
-    user = UserInDb(user_id=user_id)
-
     try:
-        await users.create(db, user)
+        await users.create(db, {"user_id": user_id})
 
     except DuplicateKeyError:
 
