@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, Optional, Any
+from typing import TypeVar, Optional, Any
 from pydantic import BaseModel
 from pymongo.client_session import ClientSession
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
@@ -9,10 +9,9 @@ SchemaDbType = TypeVar("SchemaDbType", bound=BaseModel)
 SchemaReturnType = TypeVar("SchemaReturnType", bound=BaseModel)
 
 
-class CRUDBase(Generic[SchemaDbType]):
+class CRUDBase:
     def __init__(
         self,
-        schema: Type[SchemaReturnType],
         col_name: str,
         db_name: str = settings.DB_NAME
             ):
@@ -20,7 +19,6 @@ class CRUDBase(Generic[SchemaDbType]):
         CRUD object with default methods to Create,
         Read, Update, Delete (CRUD).
         """
-        self.schema = schema
         self.col_name = col_name
         self.db_name = db_name
 
@@ -28,7 +26,7 @@ class CRUDBase(Generic[SchemaDbType]):
         self,
         db: ClientSession,
         q: dict[str, Any],
-            ) -> Optional[dict[str, Any]]:  # FIXME: here is a scheme
+            ) -> Optional[dict[str, Any]]:
         """Get single document
 
         Args:
@@ -45,7 +43,7 @@ class CRUDBase(Generic[SchemaDbType]):
         db: ClientSession,
         q: dict[str, Any],
         lenght: int = 100,
-            ) -> list[dict[str, Any]]:  # FIXME: here is a scheme
+            ) -> list[dict[str, Any]]:
         """Get many documents
 
         Args:
@@ -62,25 +60,25 @@ class CRUDBase(Generic[SchemaDbType]):
     async def create(
         self,
         db: ClientSession,
-        obj_in: SchemaDbType
+        obj_in: dict[str, Any]
             ) -> InsertOneResult:
         """Create document
 
         Args:
             db (ClientSession): session
-            obj_in (SchemaDbType): scheme to creare
+            obj_in (dict[str, Any]): scheme to creare
 
         Returns:
             InsertOneResult: result of creation
         """
         return await db.client[self.db_name][self.col_name] \
-            .insert_one(obj_in.model_dump())
+            .insert_one(obj_in)
 
     async def replace(
         self,
         db: ClientSession,
         q: dict[str, Any],
-        obj_in: SchemaDbType
+        obj_in: dict[str, Any]
             ) -> UpdateResult:
         """Replace one existed document
 
@@ -93,16 +91,15 @@ class CRUDBase(Generic[SchemaDbType]):
             UpdateResult: result of update
         """
         return await db.client[self.db_name][self.col_name] \
-            .replace_one(q, obj_in.model_dump())
+            .replace_one(q, obj_in)
 
     async def update(
         self,
         db: ClientSession,
         q: dict[str, Any],
-        obj_in: dict[str, Any]  # FIXME: here is a scheme
+        obj_in: dict[str, Any]
             ) -> UpdateResult:
         """Replace one existed document
-        # TODO: test me and use me
 
         Args:
             db (ClientSession): session
@@ -118,7 +115,7 @@ class CRUDBase(Generic[SchemaDbType]):
     async def delete(
         self,
         db: ClientSession,
-        q: dict[str, Any],  # FIXME: here is a scheme
+        q: dict[str, Any],
             ) -> DeleteResult:
         """Remove one document
 

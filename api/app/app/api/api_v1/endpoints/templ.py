@@ -32,10 +32,10 @@ async def create_template(
     """
     user = await check_user(db, user_id)
     try:
-        await templates.create(db, obj_in=TemplateInDb(
-            user=str(user['_id']),
-            name=template_name
-                ))
+        await templates.create(db, obj_in={
+            "user": str(user['_id']),
+            "name": template_name}
+                )
     except DuplicateKeyError:
         raise HTTPException(
             status_code=409,
@@ -146,12 +146,10 @@ async def change_template(
         template (Template): new template constraints
     """
     user = await check_user(db, user_id)
-    t = TemplateInDb(user=str(user['_id']), **template.dict())
-    result = await templates.replace(
-        db,
-        {'name': template.name, 'user': str(user['_id'])},
-        t
-            )
+    q = {'name': template.name, 'user': str(user['_id'])}
+    obj_in = template.model_dump()
+    obj_in.update({"user": str(user['_id'])})
+    result = await templates.replace(db, q, obj_in)
     if result.modified_count == 0:
         raise HTTPException(
             status_code=404,
