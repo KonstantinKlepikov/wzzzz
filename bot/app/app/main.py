@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from aiogram import Bot, Dispatcher
-from aiogram_dialog import DialogRegistry, Dialog
+from aiogram_dialog import Dialog, setup_dialogs
 from aiogram.fsm.storage.redis import RedisStorage
 import redis.asyncio as redis
 from app.handlers import start, templates, template, add_template
@@ -12,7 +12,6 @@ from app.config import settings
 
 async def main():
     """Start bot"""
-    logging.basicConfig(level=logging.INFO)
     bot = Bot(token=settings.TG_API_TOKEN.get_secret_value())
     dp = Dispatcher()
     qm = QuerieMaker(bot)
@@ -37,13 +36,14 @@ async def main():
         add_template.define_text,
         add_template.create_template_window
             )
-    registry = DialogRegistry()
-    registry.register(main_dialog)
-    registry.setup_dp(dp)
+
+    dp.include_router(main_dialog)
+    setup_dialogs(dp)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, skip_updates=True)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(main())

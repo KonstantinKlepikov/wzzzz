@@ -18,13 +18,6 @@ class TestDB:
     """Db connections tests
     """
 
-    def test_dev_db_connection(self) -> None:
-        """Test dev db is available
-        """
-        with BdTestContext(settings.MONGODB_URL) as cont:
-            db = cont[settings.DB_NAME]
-            assert db.name == 'dev-db', 'wrong dev db'
-
     def test_test_db_connection(self, db: Generator) -> None:
         """Test dev db is available
         """

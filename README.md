@@ -11,15 +11,16 @@
 - [api redoc](http://localhost:8001/redoc/)
 - [mongoDB admin panel](http://localhost:8082/)
 
-### Test inside api or bot container
+### Develop with each service
 
-`pytest -v -s -x` for all tests
+1. Go to service folder, f.e. `cd data-api/app` and create VSCode project by `code .`
+2. Install poery dependencies and add environment for python linting. Use `poetry config virtualenvs.in-project true` for creation of env folder inside project. Then `poetry init` (if pyproject.toml not exist) and `poetry install --with dev`.
+3. Inside container use:
 
-use `python -m IPython` to check code
-
-`mypy --install-types`
-
-`mypy app` and `flake8 app`
+    - `pytest -v -s -x` for all tests
+    - use `python -m IPython` to check code
+    - `mypy --install-types`
+    - `mypy app` and `flake8 app`
 
 ## Links
 
@@ -66,9 +67,3 @@ REDIS_URL=wzzzz-redis-dev
 ```
 
 ## Still oppened problems
-
-- [72](https://github.com/KonstantinKlepikov/wzzzz/issues/72) rewrite query for db ids (get ids from chunk asynchronously) and rewrite cumbersome csv getter for bot
-- [71](https://github.com/KonstantinKlepikov/wzzzz/issues/71) test all stack
-- [70](https://github.com/KonstantinKlepikov/wzzzz/issues/70) switch redis to aiohttp pub/sub
-- [39](https://github.com/KonstantinKlepikov/wzzzz/issues/39) add change template resource to api and bot
-- [15](https://github.com/KonstantinKlepikov/wzzzz/issues/15) get vacancy by id

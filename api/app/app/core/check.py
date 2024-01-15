@@ -1,7 +1,7 @@
 from typing import Optional, Any
 from fastapi import HTTPException
 from pymongo.client_session import ClientSession
-from app.crud import users
+from app.crud.crud_user import users
 
 
 async def check_user(

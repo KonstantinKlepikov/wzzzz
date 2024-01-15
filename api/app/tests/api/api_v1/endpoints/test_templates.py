@@ -3,8 +3,10 @@ from typing import Callable
 from httpx import AsyncClient
 from fastapi import HTTPException
 from app.config import settings
-from app.crud import CRUDUser, users, templates, CRUDTemplate
-from app.schemas import UserInDb, Template
+from app.crud.crud_user import CRUDUser, users
+from app.crud.crud_template import templates, CRUDTemplate
+from app.schemas.scheme_user import UserInDb
+from app.schemas.scheme_templates import Template
 from app.schemas.constraint import Area
 from app.api.api_v1.endpoints import templ
 
@@ -101,7 +103,7 @@ class TestTemplates:
         response = await client.post(
             f"{settings.API_V1}/templates/create_empty",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                 'template_name': 'big_template'
                     }
                 )
@@ -115,11 +117,11 @@ class TestTemplates:
             ) -> None:
         """Test get template
         """
-        templ_n = Template.Config.schema_extra['example']['name']
+        templ_n = Template.Config.json_schema_extra['example']['name']
         response = await client.get(
             f"{settings.API_V1}/templates/get",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                 'template_name': templ_n
                     }
                 )
@@ -137,7 +139,7 @@ class TestTemplates:
         response = await client.get(
             f"{settings.API_V1}/templates/get",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                 'template_name': 'not_existed'
                     }
                 )
@@ -152,11 +154,11 @@ class TestTemplates:
             ) -> None:
         """Test get list of templates
         """
-        templ_n = Template.Config.schema_extra['example']['name']
+        templ_n = Template.Config.json_schema_extra['example']['name']
         response = await client.get(
             f"{settings.API_V1}/templates/get_names",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                     }
                 )
         assert response.status_code == 200, f'{response.content=}'
@@ -172,11 +174,11 @@ class TestTemplates:
             ) -> None:
         """Test delete template
         """
-        templ_n = Template.Config.schema_extra['example']['name']
+        templ_n = Template.Config.json_schema_extra['example']['name']
         response = await client.delete(
             f"{settings.API_V1}/templates/delete",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                 'template_name': templ_n
                     }
                 )
@@ -193,7 +195,7 @@ class TestTemplates:
         response = await client.delete(
             f"{settings.API_V1}/templates/delete",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                 'template_name': 'not_existed'
                     }
                 )
@@ -208,13 +210,13 @@ class TestTemplates:
             ) -> None:
         """Test replace template
         """
-        templ = Template.Config.schema_extra['example']
+        templ = Template.Config.json_schema_extra['example']
         templ['area'] = [Area.KAZAKHSTAN, ]
         templ = Template(**templ).json()
         response = await client.patch(
             f"{settings.API_V1}/templates/replace",
             params={
-                'user_id': UserInDb.Config.schema_extra['example']['user_id'],
+                'user_id': UserInDb.Config.json_schema_extra['example']['user_id'],
                        },
             data=templ
                 )

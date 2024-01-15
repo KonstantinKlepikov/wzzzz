@@ -5,18 +5,28 @@ from itertools import chain
 from redis.asyncio import Redis
 from copy import copy
 from pymongo.client_session import ClientSession
-from typing import Any, Optional, TypeAlias
+from typing import Any, Optional, TypeAlias, Coroutine
+from fastapi import HTTPException
 from bs4 import BeautifulSoup as bs
-from app.core import SessionMaker
-from app.schemas import VacancyRequest, VacancyResponseInDb, Relevance
-from app.crud import vacancies
+from app.core.http_session import SessionMaker
+from app.schemas.constraint import Relevance
+from app.schemas.scheme_vacancy import VacancyData, VacancyRequest
+from app.crud.crud_vacancy import vacancies_simple, vacancies_deep
+from app.config import settings
 
 
-VacancyRaw: TypeAlias = dict[str, Any]
+Vacancy: TypeAlias = dict[str, Any]
 
 
-class HhruQueriesDb:
+class HhruBaseQueries:
+    """Query a hh.ru for vacancies raw data
+    and save it to db, if not exist
 
+    Atrs:
+        session (SessionMaker): aiohttp session
+        url (str): url for entry query
+        params (VacancyRequest): vacancy query parameters
+    """
     def __init__(
         self,
         session: SessionMaker,
@@ -25,222 +35,117 @@ class HhruQueriesDb:
             ) -> None:
         self.session = session
         self.url = url
-        self.params = json.loads(params.json(exclude_none=True))
-        self.result: tuple[list[int], VacancyRaw] = ([], {})
+        self.params = json.loads(params.model_dump_json(exclude_none=True))
+
+    async def _make_entry(self):
+        """Get entry page for request
+        """
+        return await self.session.get_query(url=self.url, params=self.params)
 
     @staticmethod
-    def _field_to_list(x: Optional[list[VacancyRaw] | VacancyRaw]) -> list[Any]:
-        """Make list ov values from response field
+    def _clean_simple_response(
+        data: list[dict[str, Any] | HTTPException]
+            ) -> list[VacancyData]:
+        """Get responses without errors
 
         Args:
-            x (VacancyRaw): vacancy raw
+            data (list[dict[str, Any] | HTTPException]): responses
 
         Returns:
-            list[Any]: transformed data
+            list[VacancyData]: vacancies
         """
-        if x:
-            if isinstance(x[0], dict):
-                items = [i['name'] for i in x]
-                return items
-            else:
-                return [x, ]
-        return []
-
-    @staticmethod
-    def _field_to_value(x: Optional[VacancyRaw]) -> Optional[Any]:
-        """Get value from response field
-
-        Args:
-            x (VacancyRaw): vacancy raw
-
-        Returns:
-            Any: transformed data
-        """
-        if x:
-            if isinstance(x, dict):
-                return x.get('name')
-            return x
-        return None
-
-    @staticmethod
-    def _html_to_text(x: Optional[str]) -> Optional[str]:
-        """Transform html to text
-
-        Args:
-            x (str): html text
-
-        Returns:
-            str: text without tags
-        """
-        if x:
-            soup = bs(x, features="html.parser")
-            text = soup.get_text()
-            return text
-        return None
-
-    def _simple_to_dict(self, item: VacancyRaw) -> VacancyRaw:
-        """Get simple vacancy dict
-
-        Args:
-            item (VacancyRaw): vacancy raw
-
-        Returns:
-            VacancyRaw: transformed vacancy raw
-        """
-        result = {}
-        for field in ['area', 'employer', ]:
-            result[field] = self._field_to_value(item.get(field))
-        result['alternate_url'] = item.get('alternate_url')
-        result['url'] = item.get('url')
+        result = []
+        for nested in data:
+            if not isinstance(nested, Exception):
+                for res in nested['items']:
+                    result.append(VacancyData(**res))
         return result
 
-    def _deeper_to_dict(self, item: VacancyRaw) -> VacancyRaw:
-        """Get deeper vacancy dict
-
-        Args:
-            item (VacancyRaw): vacancy raw
-
-        Returns:
-            VacancyRaw: transformed vacancy raw
-        """
-        result = {}
-        result['experience'] = self._field_to_value(item.get('experience'))
-        for field in ['professional_roles', 'key_skills', ]:
-            result[field] = self._field_to_list(item.get(field))
-        result['description'] = self._html_to_text(item.get('description'))
-        return result
-
-    async def _make_simple_requests(
+    async def _make_simple(
         self,
-        result: VacancyRaw,
-        sem: Optional[Semaphore] = None,
-            ) -> list[VacancyRaw]:
+        sem: Semaphore | None = None,
+            ) -> list[VacancyData]:
+        """Make simple result of query. Here is all pages returned from
+        https://api.hh.ru/vacancies
 
-        tasks = []
+        In this function we use firsc (entry) query to get pages for
+        subsequent requests. Then, we get all responses, even if it fail
+        and filter failed responsses and return only correct.
 
-        for page in range(1, result['pages'] + 1):
+        Args:
+            sem (Semaphore, optional): semaphore option for prevent
+                server overwelming. Defaults to None.
+
+        Returns:
+            list[VacancyData]: simple vacanices responces
+        """
+
+        tasks: list[Coroutine] = []
+        entry = await self._make_entry()
+
+        for page in range(1, entry['pages'] + 1):
             p = copy(self.params)
             p['page'] = page
-            tasks.append(asyncio.create_task(
-                self.session.get_query(url=self.url, params=p, sem=sem)
-                    ))
+            tasks.append(self.session.get_query(url=self.url, params=p, sem=sem))
 
-        await asyncio.wait(tasks)
-        return [result, ] + [task.result() for task in tasks]
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+        return self._clean_simple_response([entry, ] + result)
 
-    async def _make_deeper_requests(
+    async def _make_deep(
         self,
-        result: dict[int, VacancyRaw],
+        urls: list[str],
         sem: Optional[Semaphore] = None,
-            ) -> list[VacancyRaw]:
+            ) -> list[VacancyData]:
+        """Make requests for deep vacancy data
 
-        tasks = []
+        Args:
+            urls (list[str]): simple requests urls
+            sem (Semaphore, optional): semaphore option for prevent
+                server overwelming. Defaults to None.
 
-        for page in result.values():
-            if page.get('url'):
-                tasks.append(asyncio.create_task(
-                    self.session.get_query(url=page['url'], sem=sem)
-                        ))
+        Returns:
+            list[VacancyData]: deeper vacancy responses
+        """
+        tasks = [self.session.get_query(url=url, sem=sem) for url in urls]
+        result = await asyncio.gather(*tasks, return_exceptions=True)
+        return [
+            VacancyData(**res)
+            for res in result
+            if not isinstance(res, Exception)
+                ]
 
-        await asyncio.wait(tasks)
-        return [task.result() for task in tasks]
-
-    async def _make_simple_result(
+    async def query(
         self,
         db: ClientSession,
-        result: list[VacancyRaw],
-            ) -> list[list[int], VacancyRaw]:
-        """Make simple result from list of transformed response data
-
-        Args:
-            db (ClientSession): session
-            result (list[VacancyRaw]): transformed response data
-
-        Returns:
-            list[list[int], VacancyRaw]: transformed data
-        """
-        ids = [int(i['id']) for r in result for i in r['items']]
-        in_db = [i['v_id'] for i in await vacancies.get_many_by_ids(db, ids)]
-
-        not_in_db = {
-            i['id']: self._simple_to_dict(i)
-            for r in result
-            for i in r['items']
-            if int(i['id']) not in in_db
-                }
-
-        return [in_db, not_in_db]
-
-    def _make_deeper_result(
-        self,
-        result: list[VacancyRaw]
-            ) -> dict[int, VacancyRaw]:
-        """Make deeper result from list of transformed response data
-
-        Args:
-            result (list[VacancyRaw]): transformed response data
-
-        Returns:
-            dict[int, VacancyRaw]: transformed data
-        """
-        return {r['id']: self._deeper_to_dict(r) for r in result}
-
-    @staticmethod
-    def _update(
-        simple: dict[int, VacancyRaw],
-        deeper: dict[int, VacancyRaw]
-            ) -> dict[int, VacancyRaw]:
-        for key in simple.keys():
-            if deeper.get(key):
-                simple[key].update(deeper[key])
-        return simple
-
-    async def vacancies_query(self, db: ClientSession, entry: VacancyRaw) -> None:
+        sem: int = settings.SEM
+            ) -> tuple[list[int], list[int]]:
         """Request for vacancies
 
         Args:
             db (ClientSession): session
-            entry (VacancyRaw): raw entry response - this is
-                                response to get number of pages
+            sem (int), default to settings.SEM: senaphore in seconds
 
         Returns:
-            dict(str, VacancyRaw): transformed response data
+            tuple[list[int], list[int]]: all v_ids of vacancies and not existed v_ids
         """
-        semaphore = Semaphore(10)
-        simple = await self._make_simple_requests(entry, semaphore)
-        self.result = await self._make_simple_result(db, simple)
+        semaphore = Semaphore(sem)
+        simple = await self._make_simple(semaphore)
 
-        if self.result[1]:
-            deeper = await self._make_deeper_requests(
-                self.result[1], semaphore
-                    )
-            deeper_result = self._make_deeper_result(deeper)
-            self.result[1] = self._update(
-                self.result[1], deeper_result
-                    )
+        v_ids = {d.id for d in simple}
+        notexisted_v_ids = await vacancies_simple.get_many_notexisted_v_ids(db, v_ids)
+        urls = [d.url for d in simple if d.id in notexisted_v_ids]
 
-    async def save_to_db(self, db: ClientSession) -> None:
-        """Save vacancies to db
+        deep = await self._make_deep(urls, semaphore)
 
-        Args:
-            db (ClientSession): database session
-        """
-        if self.result[1]:
+        await vacancies_simple.create_many(db, simple)
+        await vacancies_deep.create_many(db, deep)
 
-            await vacancies.create_many(
-                db,
-                [
-                    VacancyResponseInDb(v_id=key, **val)
-                    for key, val
-                    in self.result[1].items()
-                        ]
-                    )
+        return list(v_ids), list(notexisted_v_ids)
 
 
-async def get_parse_save_vacancy(
+async def get_vacancy(
     user_id: int,
-    queries: HhruQueriesDb,
-    entry: VacancyRaw,
+    queries: HhruBaseQueries,
     relevance: Relevance,
     db: ClientSession,
     redis_db: Redis
@@ -249,22 +154,14 @@ async def get_parse_save_vacancy(
 
     Args:
         user_id (int): user id
-        queries (HhruQueriesDb): hhru query instance
-        entry (VacancyRaw): raw entry response - this is
-                            response to get number of pages
+        queries (HhruBaseQueries): hhru query instance
         relevance (Relevance): relevance of returned content
         db (ClientSession): mongo session
         redis_db (Redis): redis connection
     """
-    await queries.vacancies_query(db, entry)
-    await queries.save_to_db(db)
-    # TODO: test this case
+    ids = await queries.query(db)
     if relevance == Relevance.NEW:
-        m = ' '.join([str(key) for key in queries.result[1].keys()])
+        m = ' '.join([str(i) for i in ids[1]])
     if relevance == Relevance.ALL:
-        m = ' '.join([
-            str(key) for key
-            # NOTE: is that right for asyncio?
-            in chain(queries.result[0], queries.result[1].keys())
-                ])
+        m = ' '.join([str(i) for i in ids[0]])
     await redis_db.publish(str(user_id), m)

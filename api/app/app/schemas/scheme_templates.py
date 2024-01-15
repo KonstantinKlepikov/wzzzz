@@ -1,9 +1,10 @@
 from typing import Optional
+from typing_extensions import Annotated
 from enum import Enum
 from pydantic import BaseModel, constr, validator
+from pydantic.functional_validators import AfterValidator
 from datetime import timedelta, datetime
 from bson.objectid import ObjectId
-from bson.errors import InvalidId
 from app.schemas.constraint import (
     Employment,
     Schedule,
@@ -42,7 +43,7 @@ class TemplateConstraints(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 'area': Area.get_names(),
                 'expirience': Expirience.get_names(),
@@ -59,11 +60,11 @@ class TemplateConstraints(BaseModel):
 class TemplateName(BaseModel):
     """Template name
     """
-    name: constr(max_length=20, regex="^[A-Za-z0-9_-]*$")  # noqa: F722
+    name: constr(max_length=20, pattern="^[A-Za-z0-9_-]*$")  # noqa: F722
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'name': 'my_template'
                         }
@@ -77,7 +78,7 @@ class TemplatesNames(BaseModel):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'names': [
                         {'name': 'my_template'},
@@ -92,7 +93,7 @@ class Template(TemplateName, TemplateConstraints):
     """
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'name': 'my_template',
                     'area': Area.get_names(),
@@ -107,20 +108,13 @@ class Template(TemplateName, TemplateConstraints):
                     }
 
 
-class PydanticObjectId(ObjectId):
+def check_object_id(value: str) -> str:
+    if not ObjectId.is_valid(value):
+        raise ValueError('ObjectId required')
+    return value
 
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
 
-    @classmethod
-    def validate(cls, v):
-        if not isinstance(v, ObjectId):
-            try:
-                ObjectId(v)
-            except InvalidId:
-                raise TypeError('ObjectId required')
-        return str(v)
+PydanticObjectId = Annotated[str, AfterValidator(check_object_id)]
 
 
 class TemplateInDb(Template):
@@ -130,7 +124,7 @@ class TemplateInDb(Template):
 
     class Config:
 
-        schema_extra = {
+        json_schema_extra = {
                 "example": {
                     'name': 'my_template',
                     'area': Area.get_values(),
