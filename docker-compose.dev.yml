@@ -15,7 +15,7 @@ services:
       - wzzzz-dev-api-network
 
   wzzzz-mongo-dev:
-    image: mongo
+    image: mongo:6
     container_name: wzzzz-mongo-dev
     restart: unless-stopped
     env_file: .env
